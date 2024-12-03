@@ -5,7 +5,10 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.poo.checker.Checker;
 import org.poo.checker.CheckerConstants;
+import org.poo.database.UserDatabase;
 import org.poo.fileio.ObjectInput;
+import org.poo.fileio.UserInput;
+import org.poo.user.User;
 
 import java.io.File;
 import java.io.IOException;
@@ -92,6 +95,15 @@ public final class Main {
          * output.add(objectNode);
          *
          */
+        UserDatabase userDB = UserDatabase.getInstance();
+
+        // building the user database
+        for (UserInput userInp : inputData.getUsers()) {
+            User usr = new User(userInp);
+            userDB.addEntry(usr.getUserData().getEmail(), usr);
+        }
+
+
 
         ObjectWriter objectWriter = objectMapper.writerWithDefaultPrettyPrinter();
         objectWriter.writeValue(new File(filePath2), output);
