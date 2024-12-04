@@ -3,7 +3,9 @@ package org.poo.database;
 import org.poo.user.User;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.Data;
 
+@Data
 public final class UserDatabase {
 
     private static UserDatabase instance;

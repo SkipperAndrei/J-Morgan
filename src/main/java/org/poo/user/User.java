@@ -1,14 +1,21 @@
 package org.poo.user;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.account.Account;
+import org.poo.card.Card;
 import org.poo.fileio.UserInput;
-import java.util.ArrayList;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import lombok.Data;
 
 @Data
 public class User {
     private UserInput userData = new UserInput();
-    private ArrayList<Account> userAccounts = new ArrayList<>();
+    private Map<String, Account> userAccounts = new HashMap<String, Account>();
 
     public User(UserInput userData) {
         this.userData.setFirstName(userData.getFirstName());
@@ -18,13 +25,34 @@ public class User {
 
     public void addAccount(Account account) {
 
-        if (account.getUserEmail() != userData.getEmail()) {
+        if (!account.getEmail().equals(userData.getEmail())) {
             // System.out.println("Incompatible user e-mails...\n");
             return;
         }
 
-        userAccounts.add(account);
+        userAccounts.put(account.getIBAN(), account);
     }
 
+    public void addCard(String IBAN, Card card) {
+        userAccounts.get(IBAN).getCards().add(card);
+    }
+
+    public ObjectNode userToJson(ObjectMapper mapper) {
+
+        ObjectNode userNode = mapper.createObjectNode();
+
+        userNode.put("firstName", userData.getFirstName());
+        userNode.put("lastName", userData.getLastName());
+        userNode.put("email", userData.getEmail());
+
+        ArrayNode userAccounts = mapper.createArrayNode();
+
+        for (Account acc : this.userAccounts.values()) {
+            userAccounts.add(acc.accountToJson(mapper));
+        }
+
+        userNode.set("accounts", userAccounts);
+        return userNode;
+    }
 
 }
