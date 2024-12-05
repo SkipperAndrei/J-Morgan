@@ -1,27 +1,31 @@
 package org.poo.command;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import lombok.Data;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
 import org.poo.output.OutputGenerator;
 
-@Data
-public class PrintUsers implements Command {
 
+public class DeleteCard implements Command {
+
+    private String email;
+    private String cardNumber;
     private int timestamp;
 
-    public PrintUsers(CommandInput command) {
+    public DeleteCard(CommandInput command) {
+        email = command.getEmail();
+        cardNumber = command.getCardNumber();
         timestamp = command.getTimestamp();
     }
 
     @Override
     public void executeCommand(UserDatabase userDatabase) {
+        //TODO
         return;
     }
 
     @Override
     public void generateOutput(OutputGenerator outputGenerator) {
-        outputGenerator.addUsers(timestamp);
+        //TODO
+        return;
     }
 }

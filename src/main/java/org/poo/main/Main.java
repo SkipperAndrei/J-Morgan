@@ -13,6 +13,7 @@ import org.poo.fileio.ObjectInput;
 import org.poo.fileio.UserInput;
 import org.poo.output.OutputGenerator;
 import org.poo.user.User;
+import org.poo.utils.Utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -100,7 +101,12 @@ public final class Main {
          *
          */
         UserDatabase userDB = UserDatabase.getInstance();
-        OutputGenerator generator = OutputGenerator.getInstance(objectMapper, output, userDB);
+
+        if (userDB == null) {
+            System.out.println("Tzeaka fraere");
+        }
+        OutputGenerator generator = new OutputGenerator(objectMapper, output, userDB);
+        // OutputGenerator generator = OutputGenerator.getInstance(objectMapper, output, userDB);
 
         // building the user database
         for (UserInput userInp : inputData.getUsers()) {
@@ -108,19 +114,21 @@ public final class Main {
             userDB.addEntry(usr.getUserData().getEmail(), usr);
         }
 
+        // System.out.println(generator);
+
         for (CommandInput command : inputData.getCommands()) {
             Command comm = FactoryCommand.extractCommand(command);
             try {
                 // Try block because not all commands are implemented
-                // System.out.println(command.getCommand());
                 comm.executeCommand(userDB);
-                comm.generateOutput(generator, command.getTimestamp());
-            } catch (Exception ex) {
+                comm.generateOutput(generator);
+            } catch (NullPointerException ex) {
                 continue;
             }
-
         }
 
+        userDB.getDatabase().clear();
+        Utils.resetRandom();
         ObjectWriter objectWriter = objectMapper.writerWithDefaultPrettyPrinter();
         objectWriter.writeValue(new File(filePath2), output);
     }

@@ -12,25 +12,27 @@ public final class FactoryCommand {
 
         switch(command.getCommand()) {
 
-            case "printUsers": {
-                return new PrintUsers();
-            }
+            case "printUsers" :
+                return new PrintUsers(command);
 
-            case "addAccount": {
+            case "addAccount" :
                 return new AddAccount(command);
-            }
 
-            case "createCard" : {
+            case "deleteAccount" :
+                return new DeleteAccount(command);
+
+            case "createCard" :
                 return new CreateCard(command);
-            }
 
-            case "addFunds" : {
+            case "addFunds" :
                 return new AddFunds(command);
-            }
 
-            default: {
+            case "deleteCard" :
+                // return new DeleteCard(command);
                 return null;
-            }
+
+            default :
+                return null;
         }
     }
 }

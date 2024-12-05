@@ -3,34 +3,34 @@ package org.poo.command;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
 import org.poo.output.OutputGenerator;
-import lombok.Data;
-import org.poo.user.User;
 
-@Data
-public class AddFunds implements Command {
+public class DeleteAccount implements Command {
 
+    private String email;
     private String account;
-    private double amount;
     private int timestamp;
+    private boolean error = false;
 
-    public AddFunds(CommandInput command) {
+
+    public DeleteAccount(CommandInput command) {
+        email = command.getEmail();
         account = command.getAccount();
-        amount = command.getAmount();
         timestamp = command.getTimestamp();
     }
 
     @Override
     public void executeCommand(UserDatabase userDatabase) {
 
-        for (User usr: userDatabase.getDatabase().values()) {
-            if (usr.getUserAccounts().containsKey(account)) {
-                usr.getUserAccounts().get(account).incrementFunds(amount);
-            }
+        try {
+            userDatabase.getEntry(email).getUserAccounts().remove(account);
+        } catch (Exception ex) {
+            error = true;
         }
+
     }
 
     @Override
     public void generateOutput(OutputGenerator outputGenerator) {
-        return;
+        outputGenerator.deleteAccount(timestamp, error);
     }
 }

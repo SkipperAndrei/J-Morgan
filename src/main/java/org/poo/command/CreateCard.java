@@ -30,7 +30,7 @@ public class CreateCard implements Command {
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator, int timestamp) {
+    public void generateOutput(OutputGenerator outputGenerator) {
         return;
     }
 

@@ -38,7 +38,7 @@ public class AddAccount implements Command {
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator, final int timestamp) {
+    public void generateOutput(OutputGenerator outputGenerator) {
         return;
     }
 }
