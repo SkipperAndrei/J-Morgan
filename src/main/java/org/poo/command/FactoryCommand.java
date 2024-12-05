@@ -20,9 +20,13 @@ public final class FactoryCommand {
                 return new AddAccount(command);
             }
 
-//            case "createCard" : {
-//                return new CreateCard(command);
-//            }
+            case "createCard" : {
+                return new CreateCard(command);
+            }
+
+            case "addFunds" : {
+                return new AddFunds(command);
+            }
 
             default: {
                 return null;

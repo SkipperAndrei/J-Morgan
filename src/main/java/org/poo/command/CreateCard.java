@@ -26,6 +26,7 @@ public class CreateCard implements Command {
         Card card = new Card();
         //TODO
 
+        userDatabase.getEntry(cardHolder).addCard(account, card);
     }
 
     @Override

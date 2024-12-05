@@ -28,6 +28,14 @@ public class Account {
         IBAN = Utils.generateIBAN();
     }
 
+    public void incrementFunds(final double amount) {
+        balance += amount;
+    }
+
+    public void decrementFunds(final double amount) {
+        balance -= amount;
+    }
+
     public ObjectNode accountToJson(ObjectMapper mapper) {
         ObjectNode accountNode = mapper.createObjectNode();
 

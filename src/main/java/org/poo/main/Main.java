@@ -111,7 +111,8 @@ public final class Main {
         for (CommandInput command : inputData.getCommands()) {
             Command comm = FactoryCommand.extractCommand(command);
             try {
-                System.out.println(command.getCommand());
+                // Try block because not all commands are implemented
+                // System.out.println(command.getCommand());
                 comm.executeCommand(userDB);
                 comm.generateOutput(generator, command.getTimestamp());
             } catch (Exception ex) {
