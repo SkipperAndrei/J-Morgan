@@ -6,7 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.poo.card.Card;
 import org.poo.utils.Utils;
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @Data
 @NoArgsConstructor
@@ -17,7 +18,7 @@ public class Account {
     private int timestamp;
     private String IBAN;
     private double balance;
-    private ArrayList<Card> cards = new ArrayList<>();
+    private Map<String, Card> cards = new LinkedHashMap<>();
 
     public Account(final String email, final String currency, final String AccountType, final int timestamp) {
         this.email = email;
@@ -36,6 +37,15 @@ public class Account {
         balance -= amount;
     }
 
+    public Card searchCardNumber(final String cardNumber) {
+        for (Card card : cards.values()) {
+            if (card.cardNumber.equals(cardNumber)) {
+                return card;
+            }
+        }
+        return null;
+    }
+
     public ObjectNode accountToJson(ObjectMapper mapper) {
         ObjectNode accountNode = mapper.createObjectNode();
 
@@ -45,11 +55,13 @@ public class Account {
         accountNode.put("type", AccountType);
 
         ArrayNode creditCards = mapper.createArrayNode();
-        for (Card card : cards) {
+        for (Card card : cards.values()) {
             creditCards.add(card.cardToJson(mapper));
         }
 
         accountNode.set("cards", creditCards);
         return accountNode;
     }
+
+
 }

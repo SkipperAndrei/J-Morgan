@@ -4,7 +4,9 @@ package org.poo.card;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.utils.Utils;
+import lombok.Data;
 
+@Data
 public class Card {
 
     public String cardNumber;

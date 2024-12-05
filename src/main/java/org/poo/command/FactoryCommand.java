@@ -24,12 +24,14 @@ public final class FactoryCommand {
             case "createCard" :
                 return new CreateCard(command);
 
+            case "createOneTimeCard" :
+                return new CreateOneTimeCard(command);
+
             case "addFunds" :
                 return new AddFunds(command);
 
             case "deleteCard" :
-                // return new DeleteCard(command);
-                return null;
+                return new DeleteCard(command);
 
             default :
                 return null;

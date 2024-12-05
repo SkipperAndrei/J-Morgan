@@ -8,6 +8,7 @@ import org.poo.card.Card;
 import org.poo.fileio.UserInput;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import lombok.Data;
@@ -15,7 +16,7 @@ import lombok.Data;
 @Data
 public class User {
     private UserInput userData = new UserInput();
-    private Map<String, Account> userAccounts = new HashMap<String, Account>();
+    private Map<String, Account> userAccounts = new LinkedHashMap<>();
 
     public User(UserInput userData) {
         this.userData.setFirstName(userData.getFirstName());
@@ -34,7 +35,7 @@ public class User {
     }
 
     public void addCard(String IBAN, Card card) {
-        userAccounts.get(IBAN).getCards().add(card);
+        userAccounts.get(IBAN).getCards().put(card.getCardNumber(), card);
     }
 
     public ObjectNode userToJson(ObjectMapper mapper) {

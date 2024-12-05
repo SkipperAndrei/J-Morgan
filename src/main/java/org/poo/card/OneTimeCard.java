@@ -11,4 +11,5 @@ public class OneTimeCard extends Card {
         super();
         expired = false;
     }
+
 }
