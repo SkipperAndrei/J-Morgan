@@ -5,7 +5,15 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.poo.checker.Checker;
 import org.poo.checker.CheckerConstants;
+import org.poo.command.Command;
+import org.poo.command.FactoryCommand;
+import org.poo.database.UserDatabase;
+import org.poo.fileio.CommandInput;
 import org.poo.fileio.ObjectInput;
+import org.poo.fileio.UserInput;
+import org.poo.output.OutputGenerator;
+import org.poo.user.User;
+import org.poo.utils.Utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -92,7 +100,35 @@ public final class Main {
          * output.add(objectNode);
          *
          */
+        UserDatabase userDB = UserDatabase.getInstance();
 
+        if (userDB == null) {
+            System.out.println("Tzeaka fraere");
+        }
+        OutputGenerator generator = new OutputGenerator(objectMapper, output, userDB);
+        // OutputGenerator generator = OutputGenerator.getInstance(objectMapper, output, userDB);
+
+        // building the user database
+        for (UserInput userInp : inputData.getUsers()) {
+            User usr = new User(userInp);
+            userDB.addEntry(usr.getUserData().getEmail(), usr);
+        }
+
+        // System.out.println(generator);
+
+        for (CommandInput command : inputData.getCommands()) {
+            Command comm = FactoryCommand.extractCommand(command);
+            try {
+                // Try block because not all commands are implemented
+                comm.executeCommand(userDB);
+                comm.generateOutput(generator);
+            } catch (NullPointerException ex) {
+                continue;
+            }
+        }
+
+        userDB.getDatabase().clear();
+        Utils.resetRandom();
         ObjectWriter objectWriter = objectMapper.writerWithDefaultPrettyPrinter();
         objectWriter.writeValue(new File(filePath2), output);
     }
