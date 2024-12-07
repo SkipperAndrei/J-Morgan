@@ -40,6 +40,10 @@ public final class ExchangeRateDatabase {
 
     public boolean addUnknownExchange(String from, String to) {
 
+        if (exchangeGraph.containsEdge(from, to)) {
+            return true;
+        }
+
         DijkstraShortestPath<String, DefaultWeightedEdge> djikstra = new DijkstraShortestPath<>(exchangeGraph);
         GraphPath<String, DefaultWeightedEdge> path = djikstra.getPath(from, to);
 

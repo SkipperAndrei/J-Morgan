@@ -17,11 +17,14 @@ import lombok.Data;
 public class User {
     private UserInput userData = new UserInput();
     private Map<String, Account> userAccounts = new LinkedHashMap<>();
+    private Map<String, Account> userAliasAccounts = new LinkedHashMap<>();
+    private ArrayNode userTransactions;
 
     public User(UserInput userData) {
         this.userData.setFirstName(userData.getFirstName());
         this.userData.setLastName(userData.getLastName());
         this.userData.setEmail(userData.getEmail());
+        userTransactions = new ObjectMapper().createArrayNode();
     }
 
     public void addAccount(Account account) {
@@ -33,8 +36,16 @@ public class User {
         userAccounts.put(account.getIBAN(), account);
     }
 
+    public void addAccountAlias(Account account, String alias) {
+        userAliasAccounts.put(alias, account);
+    }
+
     public void addCard(String IBAN, Card card) {
         userAccounts.get(IBAN).getCards().put(card.getCardNumber(), card);
+    }
+
+    public void addTransaction(ObjectNode transaction) {
+        userTransactions.add(transaction);
     }
 
     public ObjectNode userToJson(ObjectMapper mapper) {

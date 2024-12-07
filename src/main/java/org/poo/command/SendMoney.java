@@ -1,5 +1,6 @@
 package org.poo.command;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.poo.account.Account;
 import org.poo.database.ExchangeRateDatabase;
@@ -13,6 +14,7 @@ public class SendMoney implements Command {
     private final static int WRONG_OWNER = -1;
     private final static int NON_EXISTENT_ACC = -2;
     private final static int INSUFFICIENT_FUNDS = -3;
+    private final static int SAVINGS_ACC = -4;
     private final static int SUCCESS = 0;
 
     private String email;
@@ -22,6 +24,7 @@ public class SendMoney implements Command {
     private double amount;
     private String description;
     private int timestamp;
+    private String senderCurrency;
     private ExchangeRateDatabase exchangeRateDatabase;
     private int actionCode = WRONG_OWNER;
 
@@ -31,17 +34,18 @@ public class SendMoney implements Command {
         account = command.getAccount();
         receiver = command.getReceiver();
         amount = command.getAmount();
+        originalAmount = amount;
         description = command.getDescription();
         timestamp = command.getTimestamp();
         this.exchangeRateDatabase = exchangeRateDatabase;
     }
 
     public void executeOrError(final Account senderAcc, final Account receiverAcc) {
-        if (senderAcc.getBalance() < amount) {
+        if (senderAcc.getBalance() < originalAmount) {
             actionCode = INSUFFICIENT_FUNDS;
             return;
         }
-        senderAcc.decrementFunds(amount);
+        senderAcc.decrementFunds(originalAmount);
         receiverAcc.incrementFunds(amount);
         actionCode = SUCCESS;
     }
@@ -49,7 +53,6 @@ public class SendMoney implements Command {
     public void checkAmount(final Account senderAcc, final Account receiverAcc) {
 
         if (senderAcc.getCurrency().equals(receiverAcc.getCurrency())) {
-            originalAmount = amount;
             executeOrError(senderAcc, receiverAcc);
             return;
         }
@@ -57,8 +60,7 @@ public class SendMoney implements Command {
         if (exchangeRateDatabase.addUnknownExchange(receiverAcc.getCurrency(), senderAcc.getCurrency())) {
             DefaultWeightedEdge edge = exchangeRateDatabase.getExchangeGraph().
                                         getEdge(receiverAcc.getCurrency(), senderAcc.getCurrency());
-            originalAmount = amount;
-            amount *= exchangeRateDatabase.getExchangeGraph().getEdgeWeight(edge);
+            amount /= exchangeRateDatabase.getExchangeGraph().getEdgeWeight(edge);
             executeOrError(senderAcc, receiverAcc);
         }
     }
@@ -71,6 +73,10 @@ public class SendMoney implements Command {
                 checkAmount(senderAcc, user.getUserAccounts().get(receiver));
                 return;
             }
+
+            if (user.getUserAliasAccounts().containsKey(receiver)) {
+                checkAmount(senderAcc, user.getUserAliasAccounts().get(receiver));
+            }
         }
         actionCode = NON_EXISTENT_ACC;
 
@@ -79,16 +85,32 @@ public class SendMoney implements Command {
     @Override
     public void executeCommand(UserDatabase userDatabase) {
 
-        if (userDatabase.getDatabase().get(email).getUserAccounts().containsKey(account)) {
+        if (userDatabase.getEntry(email).getUserAccounts().containsKey(account)) {
+            senderCurrency = userDatabase.getEntry(email).getUserAccounts().get(account).getCurrency();
             checkReceiver(userDatabase,
                           userDatabase.getDatabase().get(email).getUserAccounts().get(account));
+            return;
         }
-
 
     }
 
     @Override
     public void generateOutput(OutputGenerator outputGenerator) {
-        return;
+
+        switch (actionCode) {
+            case SUCCESS:
+                ObjectNode sendMoneyNode = outputGenerator.getMapper().createObjectNode();
+                sendMoneyNode.put("timestamp", timestamp);
+                sendMoneyNode.put("description", description);
+                sendMoneyNode.put("senderIBAN", account);
+                sendMoneyNode.put("receiverIBAN", receiver);
+                sendMoneyNode.put("amount", amount + " " + senderCurrency);
+                sendMoneyNode.put("transferType", "sent");
+                outputGenerator.getUserDatabase().getEntry(email).addTransaction(sendMoneyNode);
+                return;
+
+            default :
+                return;
+        }
     }
 }

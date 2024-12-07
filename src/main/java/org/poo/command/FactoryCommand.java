@@ -44,6 +44,12 @@ public final class FactoryCommand {
             case "sendMoney" :
                 return new SendMoney(command, exchangeRateDatabase);
 
+            case "setAlias" :
+                return new SetAlias(command);
+
+            case "printTransactions" :
+                return new PrintTransactions(command);
+
             default :
                 return null;
         }

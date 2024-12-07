@@ -1,8 +1,10 @@
 package org.poo.database;
 
 import org.poo.user.User;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TreeMap;
+
 import lombok.Data;
 
 @Data
@@ -12,7 +14,7 @@ public final class UserDatabase {
     private Map<String, User> database;
 
     private UserDatabase() {
-        database = new HashMap<>();
+        database = new LinkedHashMap<>();
     }
 
     public static UserDatabase getInstance() {

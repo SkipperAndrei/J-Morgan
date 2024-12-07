@@ -1,5 +1,6 @@
 package org.poo.output;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -68,4 +69,18 @@ public final class OutputGenerator {
         output.add(errorNode);
     }
 
+    public void printTransaction(final int timestamp, User user) {
+        ObjectNode transactionNode = mapper.createObjectNode();
+        transactionNode.put("command", "printTransactions");
+        System.out.println(user.getUserTransactions());
+        ArrayNode transactions = mapper.createArrayNode();
+        // transactionNode.set("output", user.getUserTransactions());
+        for (JsonNode transaction : user.getUserTransactions()) {
+            transactions.add(transaction);
+        }
+        transactionNode.set("output", transactions);
+        transactionNode.put("timestamp", timestamp);
+        System.out.println(user.getUserTransactions());
+        output.add(transactionNode);
+    }
 }
