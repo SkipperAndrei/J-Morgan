@@ -27,7 +27,6 @@ public class User {
     public void addAccount(Account account) {
 
         if (!account.getEmail().equals(userData.getEmail())) {
-            // System.out.println("Incompatible user e-mails...\n");
             return;
         }
 

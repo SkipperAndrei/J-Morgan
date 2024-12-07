@@ -54,4 +54,18 @@ public final class OutputGenerator {
         output.add(deleteNode);
     }
 
+    public void errorPayment(final int timestamp, final String description) {
+        ObjectNode errorNode = mapper.createObjectNode();
+        errorNode.put("command", "payOnline");
+
+        ObjectNode infoNode = mapper.createObjectNode();
+        infoNode.put("timestamp", timestamp);
+        infoNode.put("description", description);
+
+        errorNode.set("output", infoNode);
+        errorNode.put("timestamp", timestamp);
+
+        output.add(errorNode);
+    }
+
 }

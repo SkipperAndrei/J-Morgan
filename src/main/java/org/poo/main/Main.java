@@ -3,12 +3,15 @@ package org.poo.main;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import org.jgrapht.graph.DefaultWeightedEdge;
 import org.poo.checker.Checker;
 import org.poo.checker.CheckerConstants;
 import org.poo.command.Command;
 import org.poo.command.FactoryCommand;
+import org.poo.database.ExchangeRateDatabase;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
+import org.poo.fileio.ExchangeInput;
 import org.poo.fileio.ObjectInput;
 import org.poo.fileio.UserInput;
 import org.poo.output.OutputGenerator;
@@ -81,32 +84,10 @@ public final class Main {
         ObjectInput inputData = objectMapper.readValue(file, ObjectInput.class);
 
         ArrayNode output = objectMapper.createArrayNode();
-
-        /*
-         * TODO Implement your function here
-         *
-         * How to add output to the output array?
-         * There are multiple ways to do this, here is one example:
-         *
-         * ObjectMapper mapper = new ObjectMapper();
-         *
-         * ObjectNode objectNode = mapper.createObjectNode();
-         * objectNode.put("field_name", "field_value");
-         *
-         * ArrayNode arrayNode = mapper.createArrayNode();
-         * arrayNode.add(objectNode);
-         *
-         * output.add(arrayNode);
-         * output.add(objectNode);
-         *
-         */
+        
         UserDatabase userDB = UserDatabase.getInstance();
-
-        if (userDB == null) {
-            System.out.println("Tzeaka fraere");
-        }
+        ExchangeRateDatabase exchangeDB = ExchangeRateDatabase.getInstance();
         OutputGenerator generator = new OutputGenerator(objectMapper, output, userDB);
-        // OutputGenerator generator = OutputGenerator.getInstance(objectMapper, output, userDB);
 
         // building the user database
         for (UserInput userInp : inputData.getUsers()) {
@@ -114,10 +95,25 @@ public final class Main {
             userDB.addEntry(usr.getUserData().getEmail(), usr);
         }
 
-        // System.out.println(generator);
+        // building the exchange rate database
+        for (ExchangeInput exchange : inputData.getExchangeRates()) {
+            exchangeDB.addNewExchange(exchange.getFrom(), exchange.getTo(), exchange.getRate());
+            exchangeDB.addNewExchange(exchange.getTo(), exchange.getFrom(), 1 / exchange.getRate());
+        }
+
+        // DEBUG
+
+//        for (DefaultWeightedEdge edge : exchangeDB.getExchangeGraph().edgeSet()) {
+//            String source = exchangeDB.getExchangeGraph().getEdgeSource(edge);
+//            String target = exchangeDB.getExchangeGraph().getEdgeTarget(edge);
+//            double weight = exchangeDB.getExchangeGraph().getEdgeWeight(edge);
+//
+//            System.out.println("From " + source + " to " + target + ": " + weight);
+//        }
+
 
         for (CommandInput command : inputData.getCommands()) {
-            Command comm = FactoryCommand.extractCommand(command);
+            Command comm = FactoryCommand.extractCommand(command, exchangeDB);
             try {
                 // Try block because not all commands are implemented
                 comm.executeCommand(userDB);
@@ -128,6 +124,7 @@ public final class Main {
         }
 
         userDB.getDatabase().clear();
+        exchangeDB.resetExchangeDatabase();
         Utils.resetRandom();
         ObjectWriter objectWriter = objectMapper.writerWithDefaultPrettyPrinter();
         objectWriter.writeValue(new File(filePath2), output);

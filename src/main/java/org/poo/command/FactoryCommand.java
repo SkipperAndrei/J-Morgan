@@ -1,5 +1,6 @@
 package org.poo.command;
 
+import org.poo.database.ExchangeRateDatabase;
 import org.poo.fileio.CommandInput;
 
 public final class FactoryCommand {
@@ -8,7 +9,8 @@ public final class FactoryCommand {
         throw new UnsupportedOperationException("This is a utility class");
     }
 
-    public static Command extractCommand(final CommandInput command) {
+    public static Command extractCommand(final CommandInput command,
+                                         final ExchangeRateDatabase exchangeRateDatabase) {
 
         switch(command.getCommand()) {
 
@@ -27,11 +29,20 @@ public final class FactoryCommand {
             case "createOneTimeCard" :
                 return new CreateOneTimeCard(command);
 
+            case "deleteCard" :
+                return new DeleteCard(command);
+
+            case "setMinimumBalance" :
+                return new SetMinimumBalance(command);
+
             case "addFunds" :
                 return new AddFunds(command);
 
-            case "deleteCard" :
-                return new DeleteCard(command);
+            case "payOnline" :
+                return new PayOnline(command, exchangeRateDatabase);
+
+            case "sendMoney" :
+                return new SendMoney(command, exchangeRateDatabase);
 
             default :
                 return null;

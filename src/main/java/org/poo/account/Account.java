@@ -18,6 +18,7 @@ public class Account {
     private int timestamp;
     private String IBAN;
     private double balance;
+    private double minimumBalance;
     private Map<String, Card> cards = new LinkedHashMap<>();
 
     public Account(final String email, final String currency, final String AccountType, final int timestamp) {
@@ -26,6 +27,7 @@ public class Account {
         this.AccountType = AccountType;
         this.timestamp = timestamp;
         balance = 0;
+        minimumBalance = 0;
         IBAN = Utils.generateIBAN();
     }
 
