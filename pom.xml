@@ -61,5 +61,10 @@
             <version>1.18.34</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jgrapht</groupId>
+            <artifactId>jgrapht-core</artifactId>
+            <version>1.5.2</version>
+        </dependency>
     </dependencies>
 </project>

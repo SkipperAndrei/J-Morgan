@@ -5,10 +5,11 @@ import lombok.Data;
 @Data
 public class OneTimeCard extends Card {
 
-    private boolean expired;
+    private int expired;
 
     public OneTimeCard() {
         super();
-        expired = false;
+        expired = 0;
     }
+
 }

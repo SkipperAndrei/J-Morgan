@@ -1,6 +1,7 @@
 package org.poo.command;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.account.Account;
 import org.poo.account.SavingAccount;
 import org.poo.database.UserDatabase;
@@ -39,6 +40,9 @@ public class AddAccount implements Command {
 
     @Override
     public void generateOutput(OutputGenerator outputGenerator) {
-        return;
+        ObjectNode newAccountNode = outputGenerator.getMapper().createObjectNode();
+        newAccountNode.put("timestamp", timestamp);
+        newAccountNode.put("description", "New account created");
+        outputGenerator.getUserDatabase().getEntry(email).addTransaction(newAccountNode);
     }
 }
