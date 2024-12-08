@@ -57,10 +57,10 @@ public class SendMoney implements Command {
             return;
         }
 
-        if (exchangeRateDatabase.addUnknownExchange(receiverAcc.getCurrency(), senderAcc.getCurrency())) {
+        if (exchangeRateDatabase.addUnknownExchange(senderAcc.getCurrency(), receiverAcc.getCurrency())) {
             DefaultWeightedEdge edge = exchangeRateDatabase.getExchangeGraph().
-                                        getEdge(receiverAcc.getCurrency(), senderAcc.getCurrency());
-            amount /= exchangeRateDatabase.getExchangeGraph().getEdgeWeight(edge);
+                                        getEdge(senderAcc.getCurrency(), receiverAcc.getCurrency());
+            amount *= exchangeRateDatabase.getExchangeGraph().getEdgeWeight(edge);
             executeOrError(senderAcc, receiverAcc);
         }
     }
@@ -107,6 +107,13 @@ public class SendMoney implements Command {
                 sendMoneyNode.put("amount", originalAmount + " " + senderCurrency);
                 sendMoneyNode.put("transferType", "sent");
                 outputGenerator.getUserDatabase().getEntry(email).addTransaction(sendMoneyNode);
+                return;
+
+            case INSUFFICIENT_FUNDS:
+                ObjectNode noFundsNode = outputGenerator.getMapper().createObjectNode();
+                noFundsNode.put("timestamp", timestamp);
+                noFundsNode.put("description", "Insufficient funds");
+                outputGenerator.getUserDatabase().getEntry(email).addTransaction(noFundsNode);
                 return;
 
             default :
