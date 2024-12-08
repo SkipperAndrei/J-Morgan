@@ -104,7 +104,7 @@ public class SendMoney implements Command {
                 sendMoneyNode.put("description", description);
                 sendMoneyNode.put("senderIBAN", account);
                 sendMoneyNode.put("receiverIBAN", receiver);
-                sendMoneyNode.put("amount", amount + " " + senderCurrency);
+                sendMoneyNode.put("amount", originalAmount + " " + senderCurrency);
                 sendMoneyNode.put("transferType", "sent");
                 outputGenerator.getUserDatabase().getEntry(email).addTransaction(sendMoneyNode);
                 return;

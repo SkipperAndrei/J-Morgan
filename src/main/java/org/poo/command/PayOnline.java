@@ -1,5 +1,6 @@
 package org.poo.command;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.poo.account.Account;
 import org.poo.card.Card;
@@ -65,7 +66,7 @@ public class PayOnline implements Command {
 
         Card card = acc.getCards().get(cardNumber);
 
-        if (card.getStatus().equals("frozen")) {
+        if (card.getStatus().toString().equals("frozen")) {
             return FROZEN_CARD;
         }
 
@@ -107,13 +108,38 @@ public class PayOnline implements Command {
 
         switch (actionCode) {
 
-            case UNKNOWN_CARD : {
-                outputGenerator.errorPayment(timestamp, "Card not found");
-            }
-
-            default : {
+            case UNKNOWN_CARD :
+                outputGenerator.errorPayment(timestamp, "Card not found", "payOnline");
                 return;
-            }
+
+            case INSUFFICIENT_FUNDS:
+                ObjectNode errorNode = outputGenerator.getMapper().createObjectNode();
+                errorNode.put("timestamp", timestamp);
+                errorNode.put("description", "Insufficient funds");
+                outputGenerator.getUserDatabase().getEntry(email).addTransaction(errorNode);
+                return;
+
+            case FROZEN_CARD:
+                ObjectNode frozenNode = outputGenerator.getMapper().createObjectNode();
+                frozenNode.put("timestamp", timestamp);
+                frozenNode.put("description", "The card is frozen");
+                outputGenerator.getUserDatabase().getEntry(email).addTransaction(frozenNode);
+                return;
+
+            case POSSIBLE_TRANSACTION:
+//                outputGenerator
+//                outputGenerator.successPayment(timestamp, amount, commerciant);
+                ObjectNode paymentNode = outputGenerator.getMapper().createObjectNode();
+                paymentNode.put("timestamp", timestamp);
+                paymentNode.put("description", "Card payment");
+                paymentNode.put("amount", amount);
+                paymentNode.put("commerciant", commerciant);
+                outputGenerator.getUserDatabase().getEntry(email).addTransaction(paymentNode);
+                return;
+
+            default :
+                return;
+
         }
 
     }

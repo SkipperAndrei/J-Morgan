@@ -47,6 +47,9 @@ public final class FactoryCommand {
             case "setAlias" :
                 return new SetAlias(command);
 
+            case "checkCardStatus" :
+                return new CheckCardStatus(command);
+
             case "printTransactions" :
                 return new PrintTransactions(command);
 

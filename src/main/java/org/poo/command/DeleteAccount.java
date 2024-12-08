@@ -22,7 +22,12 @@ public class DeleteAccount implements Command {
     public void executeCommand(UserDatabase userDatabase) {
 
         try {
-            userDatabase.getEntry(email).getUserAccounts().remove(account);
+            // userDatabase.getEntry(email).getUserAccounts().remove(account);
+            if (userDatabase.getEntry(email).getUserAccounts().get(account).getBalance() != 0) {
+                error = true;
+            } else {
+                userDatabase.getEntry(email).getUserAccounts().remove(account);
+            }
         } catch (Exception ex) {
             error = true;
         }

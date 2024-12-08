@@ -55,9 +55,18 @@ public final class OutputGenerator {
         output.add(deleteNode);
     }
 
-    public void errorPayment(final int timestamp, final String description) {
+    public void successPayment(final int timestamp, final double amount, final String commerciant) {
+        ObjectNode paymentNode = mapper.createObjectNode();
+        paymentNode.put("timestamp", timestamp);
+        paymentNode.put("description", "Card payment");
+        paymentNode.put("amount", amount);
+        paymentNode.put("commerciant", commerciant);
+        output.add(paymentNode);
+    }
+
+    public void errorPayment(final int timestamp, final String description, final String command) {
         ObjectNode errorNode = mapper.createObjectNode();
-        errorNode.put("command", "payOnline");
+        errorNode.put("command", command);
 
         ObjectNode infoNode = mapper.createObjectNode();
         infoNode.put("timestamp", timestamp);
@@ -71,16 +80,18 @@ public final class OutputGenerator {
 
     public void printTransaction(final int timestamp, User user) {
         ObjectNode transactionNode = mapper.createObjectNode();
+
         transactionNode.put("command", "printTransactions");
-        System.out.println(user.getUserTransactions());
         ArrayNode transactions = mapper.createArrayNode();
-        // transactionNode.set("output", user.getUserTransactions());
+
         for (JsonNode transaction : user.getUserTransactions()) {
             transactions.add(transaction);
         }
+
         transactionNode.set("output", transactions);
         transactionNode.put("timestamp", timestamp);
-        System.out.println(user.getUserTransactions());
         output.add(transactionNode);
     }
+
+
 }
