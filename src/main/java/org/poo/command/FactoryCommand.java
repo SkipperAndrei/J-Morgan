@@ -78,6 +78,10 @@ public final class FactoryCommand {
                 return new AddInterest(command);
             }
 
+            case "report" -> {
+                return new Report(command);
+            }
+
             default -> {
                 return null;
             }

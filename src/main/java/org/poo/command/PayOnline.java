@@ -83,11 +83,6 @@ public class PayOnline implements Command {
             return cardCheck(acc);
         }
 
-//        if (exchangeRateDatabase.addUnknownExchange(currency, acc.getCurrency())) {
-//            DefaultWeightedEdge edge = exchangeRateDatabase.getExchangeGraph().getEdge(currency, acc.getCurrency());
-//            amount *= exchangeRateDatabase.getExchangeGraph().getEdgeWeight(edge);
-//            return cardCheck(acc);
-//        }
 
         try {
             amount *= exchangeRateDatabase.getExchangeRate(currency, acc.getCurrency());

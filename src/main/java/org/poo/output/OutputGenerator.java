@@ -11,6 +11,7 @@ import org.poo.database.UserDatabase;
 import org.poo.user.User;
 import lombok.Data;
 
+import java.util.Iterator;
 import java.util.List;
 
 @Data
@@ -128,4 +129,41 @@ public final class OutputGenerator {
         return successNode;
     }
 
+    public void generateReport(final int startTimestamp, final int endTimestamp,
+                               final String email, final String account, final int timestamp) {
+
+        ObjectNode reportNode = mapper.createObjectNode();
+
+        reportNode.put("command", "report");
+        ObjectNode outputNode = mapper.createObjectNode();
+
+        Account acc = userDatabase.getUserEntry(email).getUserAccounts().get(account);
+        outputNode.put("IBAN", account);
+        outputNode.put("balance", acc.getBalance());
+        outputNode.put("currency", acc.getCurrency());
+
+        ArrayNode transactions = mapper.createArrayNode();
+
+        Iterator<JsonNode> jsonIterator = acc.getAccountTransactions().elements();
+
+        while (jsonIterator.hasNext()) {
+
+            ObjectNode transactionNode = (ObjectNode) jsonIterator.next();
+
+            if (transactionNode.get("timestamp").asInt() > endTimestamp) {
+                break;
+            }
+
+            if (transactionNode.get("timestamp").asInt() < startTimestamp) {
+                continue;
+            }
+            transactions.add(transactionNode);
+        }
+
+        outputNode.set("transactions", transactions);
+
+        reportNode.set("output", outputNode);
+        reportNode.put("timestamp", timestamp);
+        output.add(reportNode);
+    }
 }
