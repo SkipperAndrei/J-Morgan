@@ -5,9 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.account.Account;
+import org.poo.account.SavingAccount;
+import org.poo.command.SplitPayment;
 import org.poo.database.UserDatabase;
 import org.poo.user.User;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 public final class OutputGenerator {
@@ -55,9 +59,18 @@ public final class OutputGenerator {
         output.add(deleteNode);
     }
 
-    public void errorPayment(final int timestamp, final String description) {
+    public void successPayment(final int timestamp, final double amount, final String commerciant) {
+        ObjectNode paymentNode = mapper.createObjectNode();
+        paymentNode.put("timestamp", timestamp);
+        paymentNode.put("description", "Card payment");
+        paymentNode.put("amount", amount);
+        paymentNode.put("commerciant", commerciant);
+        output.add(paymentNode);
+    }
+
+    public void errorSetting(final int timestamp, final String description, final String command) {
         ObjectNode errorNode = mapper.createObjectNode();
-        errorNode.put("command", "payOnline");
+        errorNode.put("command", command);
 
         ObjectNode infoNode = mapper.createObjectNode();
         infoNode.put("timestamp", timestamp);
@@ -71,16 +84,48 @@ public final class OutputGenerator {
 
     public void printTransaction(final int timestamp, User user) {
         ObjectNode transactionNode = mapper.createObjectNode();
+
         transactionNode.put("command", "printTransactions");
-        System.out.println(user.getUserTransactions());
         ArrayNode transactions = mapper.createArrayNode();
-        // transactionNode.set("output", user.getUserTransactions());
+
         for (JsonNode transaction : user.getUserTransactions()) {
             transactions.add(transaction);
         }
+
         transactionNode.set("output", transactions);
         transactionNode.put("timestamp", timestamp);
-        System.out.println(user.getUserTransactions());
         output.add(transactionNode);
     }
+
+    public void tryToAddTransaction(Account acc, ObjectNode transaction) {
+
+        try {
+            ((SavingAccount) acc).getInterestRate();
+            return;
+        } catch (ClassCastException e) {
+            userDatabase.getUserEntry(acc.getEmail()).getUserAccounts().
+                        get(acc.getIBAN()).addTransaction(transaction);
+        }
+
+    }
+
+    public ObjectNode defaultSplitOutput(List<String> args, final int timestamp,
+                                          final String currency, final double amount) {
+
+        ObjectNode successNode = mapper.createObjectNode();
+        successNode.put("timestamp", timestamp);
+        successNode.put("description", "Split payment of " +
+                                                String.format("%.2f", amount) + " " + currency);
+        successNode.put("currency", currency);
+        successNode.put("amount", amount / args.size());
+
+        ArrayNode involvedAccounts = mapper.createArrayNode();
+        for (String arg : args) {
+            involvedAccounts.add(arg);
+        }
+
+        successNode.set("involvedAccounts", involvedAccounts);
+        return successNode;
+    }
+
 }

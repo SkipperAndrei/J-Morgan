@@ -3,7 +3,6 @@ package org.poo.main;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import org.jgrapht.graph.DefaultWeightedEdge;
 import org.poo.checker.Checker;
 import org.poo.checker.CheckerConstants;
 import org.poo.command.Command;
@@ -92,7 +91,7 @@ public final class Main {
         // building the user database
         for (UserInput userInp : inputData.getUsers()) {
             User usr = new User(userInp);
-            userDB.addEntry(usr.getUserData().getEmail(), usr);
+            userDB.addUserEntry(usr.getUserData().getEmail(), usr);
         }
 
         // building the exchange rate database

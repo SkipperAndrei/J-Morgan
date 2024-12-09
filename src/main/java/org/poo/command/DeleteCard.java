@@ -1,5 +1,6 @@
 package org.poo.command;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.account.Account;
 import org.poo.card.Card;
 import org.poo.database.UserDatabase;
@@ -12,6 +13,7 @@ public class DeleteCard implements Command {
     private String email;
     private String cardNumber;
     private int timestamp;
+    private String account;
     private boolean found = false;
 
     public DeleteCard(CommandInput command) {
@@ -23,13 +25,15 @@ public class DeleteCard implements Command {
     @Override
     public void executeCommand(UserDatabase userDatabase) {
         try {
-            for (Account ac : userDatabase.getEntry(email).getUserAccounts().values()) {
+            for (Account ac : userDatabase.getUserEntry(email).getUserAccounts().values()) {
 
                 Card card = ac.getCards().get(cardNumber);
 
                 if (card != null) {
                     userDatabase.getDatabase().get(email).getUserAccounts().
                                 get(ac.getIBAN()).getCards().remove(card.getCardNumber());
+                    account = ac.getIBAN();
+                    found = true;
                 }
             }
         } catch (Exception e) {
@@ -39,6 +43,20 @@ public class DeleteCard implements Command {
 
     @Override
     public void generateOutput(OutputGenerator outputGenerator) {
-        return;
+
+        ObjectNode deleteCardNode = outputGenerator.getMapper().createObjectNode();
+        deleteCardNode.put("timestamp", timestamp);
+        if (found) {
+            deleteCardNode.put("description", "The card has been destroyed");
+            deleteCardNode.put("card", cardNumber);
+            deleteCardNode.put("cardHolder", email);
+            deleteCardNode.put("account", account);
+        } else {
+            deleteCardNode.put("description", "Card not found");
+        }
+        outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(deleteCardNode);
+        Account acc = outputGenerator.getUserDatabase().getUserEntry(email).
+                        getUserAccounts().get(account);
+        outputGenerator.tryToAddTransaction(acc, deleteCardNode);
     }
 }
