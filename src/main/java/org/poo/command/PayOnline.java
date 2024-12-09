@@ -17,6 +17,7 @@ public class PayOnline implements Command {
     private static final int FROZEN_CARD = -2;
     private static final int INSUFFICIENT_FUNDS = -3;
     private static final int UNKNOWN_CARD = -4;
+    private static final int SAVING_ACCOUNT = -5;
     private static final int POSSIBLE_TRANSACTION = 0;
 
     private String cardNumber;
@@ -25,6 +26,7 @@ public class PayOnline implements Command {
     private String currency;
     private int timestamp;
     private String description;
+    private String IBAN;
     private String commerciant;
     private String email;
     private int actionCode = UNKNOWN_CARD;
@@ -41,6 +43,7 @@ public class PayOnline implements Command {
         originalAmount = amount;
         this.exchangeRateDatabase = exchangeRateDatabase;
     }
+
 
     public int paymentCheck(Account acc, Card card) {
 
@@ -80,28 +83,34 @@ public class PayOnline implements Command {
             return cardCheck(acc);
         }
 
-        if (exchangeRateDatabase.addUnknownExchange(currency, acc.getCurrency())) {
-            DefaultWeightedEdge edge = exchangeRateDatabase.getExchangeGraph().getEdge(currency, acc.getCurrency());
-            amount *= exchangeRateDatabase.getExchangeGraph().getEdgeWeight(edge);
+//        if (exchangeRateDatabase.addUnknownExchange(currency, acc.getCurrency())) {
+//            DefaultWeightedEdge edge = exchangeRateDatabase.getExchangeGraph().getEdge(currency, acc.getCurrency());
+//            amount *= exchangeRateDatabase.getExchangeGraph().getEdgeWeight(edge);
+//            return cardCheck(acc);
+//        }
+
+        try {
+            amount *= exchangeRateDatabase.getExchangeRate(currency, acc.getCurrency());
             return cardCheck(acc);
+        } catch (NullPointerException e) {
+            return UNKNOWN_CURRENCY;
         }
 
-        return UNKNOWN_CURRENCY;
     }
 
     @Override
     public void executeCommand(UserDatabase userDatabase) {
 
-        for (Account acc : userDatabase.getEntry(email).getUserAccounts().values()) {
+        for (Account acc : userDatabase.getUserEntry(email).getUserAccounts().values()) {
 
             if (acc.getCards().containsKey(cardNumber)) {
+                IBAN = acc.getIBAN();
                 actionCode = currencyCheck(acc);
             }
         }
 
     }
 
-    // TODO add other error fields for transactions
     // This method will be changed when we get to print Transactions
     @Override
     public void generateOutput(OutputGenerator outputGenerator) {
@@ -109,32 +118,46 @@ public class PayOnline implements Command {
         switch (actionCode) {
 
             case UNKNOWN_CARD :
-                outputGenerator.errorPayment(timestamp, "Card not found", "payOnline");
+
+                outputGenerator.errorSetting(timestamp, "Card not found", "payOnline");
                 return;
 
             case INSUFFICIENT_FUNDS:
+
                 ObjectNode errorNode = outputGenerator.getMapper().createObjectNode();
                 errorNode.put("timestamp", timestamp);
                 errorNode.put("description", "Insufficient funds");
-                outputGenerator.getUserDatabase().getEntry(email).addTransaction(errorNode);
+                outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(errorNode);
+
+                Account acc = outputGenerator.getUserDatabase().getUserEntry(email).getUserAccounts().get(IBAN);
+                outputGenerator.tryToAddTransaction(acc, errorNode);
                 return;
 
             case FROZEN_CARD:
+
                 ObjectNode frozenNode = outputGenerator.getMapper().createObjectNode();
                 frozenNode.put("timestamp", timestamp);
                 frozenNode.put("description", "The card is frozen");
-                outputGenerator.getUserDatabase().getEntry(email).addTransaction(frozenNode);
+                outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(frozenNode);
+
+                Account affectedAcc = outputGenerator.getUserDatabase().getUserEntry(email).getUserAccounts().get(IBAN);
+                outputGenerator.tryToAddTransaction(affectedAcc, frozenNode);
                 return;
 
             case POSSIBLE_TRANSACTION:
-//                outputGenerator
-//                outputGenerator.successPayment(timestamp, amount, commerciant);
+
                 ObjectNode paymentNode = outputGenerator.getMapper().createObjectNode();
                 paymentNode.put("timestamp", timestamp);
                 paymentNode.put("description", "Card payment");
                 paymentNode.put("amount", amount);
                 paymentNode.put("commerciant", commerciant);
-                outputGenerator.getUserDatabase().getEntry(email).addTransaction(paymentNode);
+
+                Account transAcc = outputGenerator.getUserDatabase().getUserEntry(email).getUserAccounts().get(IBAN);
+
+                outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(paymentNode);
+                outputGenerator.tryToAddTransaction(transAcc, paymentNode);
+                outputGenerator.getUserDatabase().getUserEntry(email).getUserAccounts().
+                                get(IBAN).updatePayments(commerciant, amount);
                 return;
 
             default :

@@ -1,6 +1,5 @@
 package org.poo.command;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.account.Account;
 import org.poo.account.SavingAccount;
@@ -17,6 +16,7 @@ public class AddAccount implements Command {
     private String description;
     private int timestamp;
     private double interestRate;
+    private String newIBAN;
 
     public AddAccount(CommandInput command) {
         email = command.getEmail();
@@ -35,7 +35,9 @@ public class AddAccount implements Command {
         } else {
             newAccount = new SavingAccount(email, currency, accountType, timestamp, interestRate);
         }
-        userDB.getEntry(email).addAccount(newAccount);
+        newIBAN = newAccount.getIBAN();
+        userDB.getUserEntry(email).addAccount(newAccount);
+        userDB.addMailEntry(newIBAN, email);
     }
 
     @Override
@@ -43,6 +45,9 @@ public class AddAccount implements Command {
         ObjectNode newAccountNode = outputGenerator.getMapper().createObjectNode();
         newAccountNode.put("timestamp", timestamp);
         newAccountNode.put("description", "New account created");
-        outputGenerator.getUserDatabase().getEntry(email).addTransaction(newAccountNode);
+        outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(newAccountNode);
+        Account acc = outputGenerator.getUserDatabase().getUserEntry(email).
+                    getUserAccounts().get(newIBAN);
+        outputGenerator.tryToAddTransaction(acc, newAccountNode);
     }
 }

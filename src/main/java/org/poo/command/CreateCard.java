@@ -1,6 +1,7 @@
 package org.poo.command;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.poo.account.Account;
 import org.poo.card.Card;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
@@ -31,10 +32,10 @@ public class CreateCard implements Command {
 
         //TODO
 
-        if (userDatabase.getEntry(cardHolder).getUserAccounts().containsKey(account)) {
+        if (userDatabase.getUserEntry(cardHolder).getUserAccounts().containsKey(account)) {
             Card card = new Card();
             cardNumber = card.getCardNumber();
-            userDatabase.getEntry(cardHolder).addCard(account, card);
+            userDatabase.getUserEntry(cardHolder).addCard(account, card);
             return;
         }
 
@@ -64,7 +65,10 @@ public class CreateCard implements Command {
         }
 
 
-        outputGenerator.getUserDatabase().getEntry(cardHolder).addTransaction(createCardNode);
+        outputGenerator.getUserDatabase().getUserEntry(cardHolder).addTransaction(createCardNode);
+        Account acc = outputGenerator.getUserDatabase().getUserEntry(cardHolder).
+                                                getUserAccounts().get(account);
+        outputGenerator.tryToAddTransaction(acc, createCardNode);
     }
 
 }

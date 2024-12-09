@@ -5,9 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.account.Account;
+import org.poo.account.SavingAccount;
+import org.poo.command.SplitPayment;
 import org.poo.database.UserDatabase;
 import org.poo.user.User;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 public final class OutputGenerator {
@@ -64,7 +68,7 @@ public final class OutputGenerator {
         output.add(paymentNode);
     }
 
-    public void errorPayment(final int timestamp, final String description, final String command) {
+    public void errorSetting(final int timestamp, final String description, final String command) {
         ObjectNode errorNode = mapper.createObjectNode();
         errorNode.put("command", command);
 
@@ -93,5 +97,35 @@ public final class OutputGenerator {
         output.add(transactionNode);
     }
 
+    public void tryToAddTransaction(Account acc, ObjectNode transaction) {
+
+        try {
+            ((SavingAccount) acc).getInterestRate();
+            return;
+        } catch (ClassCastException e) {
+            userDatabase.getUserEntry(acc.getEmail()).getUserAccounts().
+                        get(acc.getIBAN()).addTransaction(transaction);
+        }
+
+    }
+
+    public ObjectNode defaultSplitOutput(List<String> args, final int timestamp,
+                                          final String currency, final double amount) {
+
+        ObjectNode successNode = mapper.createObjectNode();
+        successNode.put("timestamp", timestamp);
+        successNode.put("description", "Split payment of " +
+                                                String.format("%.2f", amount) + " " + currency);
+        successNode.put("currency", currency);
+        successNode.put("amount", amount / args.size());
+
+        ArrayNode involvedAccounts = mapper.createArrayNode();
+        for (String arg : args) {
+            involvedAccounts.add(arg);
+        }
+
+        successNode.set("involvedAccounts", involvedAccounts);
+        return successNode;
+    }
 
 }

@@ -12,6 +12,7 @@ import java.util.Map;
 @Data
 @NoArgsConstructor
 public class Account {
+
     private String email;
     private String currency;
     private String AccountType;
@@ -20,6 +21,8 @@ public class Account {
     private double balance;
     private double minimumBalance;
     private Map<String, Card> cards = new LinkedHashMap<>();
+    private Map<String, Double> payments = new LinkedHashMap<>();
+    private ArrayNode accountTransactions;
 
     public Account(final String email, final String currency, final String AccountType, final int timestamp) {
         this.email = email;
@@ -29,6 +32,7 @@ public class Account {
         balance = 0;
         minimumBalance = 0;
         IBAN = Utils.generateIBAN();
+        accountTransactions = new ObjectMapper().createArrayNode();
     }
 
     public void incrementFunds(final double amount) {
@@ -37,6 +41,24 @@ public class Account {
 
     public void decrementFunds(final double amount) {
         balance -= amount;
+    }
+
+    public void updatePayments(final String commerciant, final double amount) {
+
+        if (payments.containsKey(commerciant)) {
+            payments.put(commerciant, payments.get(commerciant) + amount);
+        } else {
+            payments.put(commerciant, amount);
+        }
+    }
+
+    public void addTransaction(ObjectNode transaction) {
+        ObjectNode newTransaction = transaction.deepCopy();
+        accountTransactions.add(newTransaction);
+    }
+
+    public boolean canPay(final double amount) {
+        return !(balance < amount);
     }
 
     public Card searchCardNumber(final String cardNumber) {

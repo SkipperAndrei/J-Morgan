@@ -22,6 +22,6 @@ public class PrintTransactions implements Command {
     @Override
     public void generateOutput(OutputGenerator outputGenerator) {
         outputGenerator.printTransaction(timestamp, outputGenerator.
-                                                    getUserDatabase().getEntry(email));
+                                                    getUserDatabase().getUserEntry(email));
     }
 }

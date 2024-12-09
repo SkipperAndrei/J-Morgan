@@ -12,49 +12,76 @@ public final class FactoryCommand {
     public static Command extractCommand(final CommandInput command,
                                          final ExchangeRateDatabase exchangeRateDatabase) {
 
-        switch(command.getCommand()) {
+        switch (command.getCommand()) {
 
-            case "printUsers" :
+            case "printUsers" -> {
                 return new PrintUsers(command);
+            }
 
-            case "addAccount" :
+            case "addAccount" -> {
                 return new AddAccount(command);
+            }
 
-            case "deleteAccount" :
+            case "deleteAccount" -> {
                 return new DeleteAccount(command);
+            }
 
-            case "createCard" :
+            case "createCard" -> {
                 return new CreateCard(command);
+            }
 
-            case "createOneTimeCard" :
+            case "createOneTimeCard" -> {
                 return new CreateOneTimeCard(command);
+            }
 
-            case "deleteCard" :
+            case "deleteCard" -> {
                 return new DeleteCard(command);
+            }
 
-            case "setMinimumBalance" :
+            case "setMinimumBalance" -> {
                 return new SetMinimumBalance(command);
+            }
 
-            case "addFunds" :
+            case "addFunds" -> {
                 return new AddFunds(command);
+            }
 
-            case "payOnline" :
+            case "payOnline" -> {
                 return new PayOnline(command, exchangeRateDatabase);
+            }
 
-            case "sendMoney" :
+            case "sendMoney" -> {
                 return new SendMoney(command, exchangeRateDatabase);
+            }
 
-            case "setAlias" :
+            case "splitPayment" -> {
+                return new SplitPayment(command, exchangeRateDatabase);
+            }
+
+            case "setAlias" -> {
                 return new SetAlias(command);
+            }
 
-            case "checkCardStatus" :
+            case "checkCardStatus" -> {
                 return new CheckCardStatus(command);
+            }
 
-            case "printTransactions" :
+            case "printTransactions" -> {
                 return new PrintTransactions(command);
+            }
 
-            default :
+            case "changeInterestRate" -> {
+                return new ChangeInterestRate(command);
+            }
+
+            case "addInterest" -> {
+                return new AddInterest(command);
+            }
+
+            default -> {
                 return null;
+            }
+
         }
     }
 }

@@ -57,12 +57,16 @@ public class SendMoney implements Command {
             return;
         }
 
-        if (exchangeRateDatabase.addUnknownExchange(senderAcc.getCurrency(), receiverAcc.getCurrency())) {
-            DefaultWeightedEdge edge = exchangeRateDatabase.getExchangeGraph().
-                                        getEdge(senderAcc.getCurrency(), receiverAcc.getCurrency());
-            amount *= exchangeRateDatabase.getExchangeGraph().getEdgeWeight(edge);
-            executeOrError(senderAcc, receiverAcc);
-        }
+//        if (exchangeRateDatabase.addUnknownExchange(senderAcc.getCurrency(), receiverAcc.getCurrency())) {
+//            DefaultWeightedEdge edge = exchangeRateDatabase.getExchangeGraph().
+//                                        getEdge(senderAcc.getCurrency(), receiverAcc.getCurrency());
+//            amount *= exchangeRateDatabase.getExchangeGraph().getEdgeWeight(edge);
+//            executeOrError(senderAcc, receiverAcc);
+//        }
+
+        amount *= exchangeRateDatabase.getExchangeRate(senderAcc.getCurrency(), receiverAcc.getCurrency());
+        executeOrError(senderAcc, receiverAcc);
+
     }
 
     public void checkReceiver(UserDatabase userDatabase, Account senderAcc) {
@@ -85,8 +89,8 @@ public class SendMoney implements Command {
     @Override
     public void executeCommand(UserDatabase userDatabase) {
 
-        if (userDatabase.getEntry(email).getUserAccounts().containsKey(account)) {
-            senderCurrency = userDatabase.getEntry(email).getUserAccounts().get(account).getCurrency();
+        if (userDatabase.getUserEntry(email).getUserAccounts().containsKey(account)) {
+            senderCurrency = userDatabase.getUserEntry(email).getUserAccounts().get(account).getCurrency();
             checkReceiver(userDatabase,
                           userDatabase.getDatabase().get(email).getUserAccounts().get(account));
             return;
@@ -106,14 +110,20 @@ public class SendMoney implements Command {
                 sendMoneyNode.put("receiverIBAN", receiver);
                 sendMoneyNode.put("amount", originalAmount + " " + senderCurrency);
                 sendMoneyNode.put("transferType", "sent");
-                outputGenerator.getUserDatabase().getEntry(email).addTransaction(sendMoneyNode);
+                outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(sendMoneyNode);
+
+                Account acc = outputGenerator.getUserDatabase().getUserEntry(email).getUserAccounts().get(account);
+                outputGenerator.tryToAddTransaction(acc, sendMoneyNode);
                 return;
 
             case INSUFFICIENT_FUNDS:
                 ObjectNode noFundsNode = outputGenerator.getMapper().createObjectNode();
                 noFundsNode.put("timestamp", timestamp);
                 noFundsNode.put("description", "Insufficient funds");
-                outputGenerator.getUserDatabase().getEntry(email).addTransaction(noFundsNode);
+                outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(noFundsNode);
+
+                Account insufficientAcc = outputGenerator.getUserDatabase().getUserEntry(email).getUserAccounts().get(account);
+                outputGenerator.tryToAddTransaction(insufficientAcc, noFundsNode);
                 return;
 
             default :

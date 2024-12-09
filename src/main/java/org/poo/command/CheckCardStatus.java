@@ -14,6 +14,7 @@ public class CheckCardStatus implements Command {
     private int timestamp;
     private String previousStatus;
     private String email;
+    private String IBAN;
     private Card card = null;
 
     public CheckCardStatus(CommandInput command) {
@@ -34,6 +35,7 @@ public class CheckCardStatus implements Command {
             for (Account acc : user.getUserAccounts().values()) {
 
                 if (acc.getCards().containsKey(cardNumber)) {
+                    IBAN = acc.getIBAN();
                     email = acc.getEmail();
                     card = acc.getCards().get(cardNumber);
                     checkStatus(acc, acc.getCards().get(cardNumber));
@@ -52,7 +54,9 @@ public class CheckCardStatus implements Command {
                     ObjectNode warningNode = outputGenerator.getMapper().createObjectNode();
                     warningNode.put("timestamp", timestamp);
                     warningNode.put("description", "You are warned, stop spending");
-                    outputGenerator.getUserDatabase().getEntry(email).addTransaction(warningNode);
+                    outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(warningNode);
+                    Account acc = outputGenerator.getUserDatabase().getUserEntry(email).getUserAccounts().get(IBAN);
+                    outputGenerator.tryToAddTransaction(acc, warningNode);
                     return;
 
                 case "frozen" :
@@ -64,14 +68,18 @@ public class CheckCardStatus implements Command {
                     frozenNode.put("description", "You have reached the minimum amount of " +
                             "funds, the card will be frozen");
 
-                    outputGenerator.getUserDatabase().getEntry(email).addTransaction(frozenNode);
+                    outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(frozenNode);
+//                    outputGenerator.getUserDatabase().getEntry(email).
+//                            getUserAccounts().get(IBAN).addTransaction(frozenNode);
+                    Account frozenAccount = outputGenerator.getUserDatabase().getUserEntry(email).getUserAccounts().get(IBAN);
+                    outputGenerator.tryToAddTransaction(frozenAccount, frozenNode);
                     return;
 
                 default :
                     return;
             }
         } catch (NullPointerException ex) {
-            outputGenerator.errorPayment(timestamp, "Card not found", "checkCardStatus");
+            outputGenerator.errorSetting(timestamp, "Card not found", "checkCardStatus");
         }
 
     }

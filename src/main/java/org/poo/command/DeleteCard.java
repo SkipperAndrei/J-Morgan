@@ -25,7 +25,7 @@ public class DeleteCard implements Command {
     @Override
     public void executeCommand(UserDatabase userDatabase) {
         try {
-            for (Account ac : userDatabase.getEntry(email).getUserAccounts().values()) {
+            for (Account ac : userDatabase.getUserEntry(email).getUserAccounts().values()) {
 
                 Card card = ac.getCards().get(cardNumber);
 
@@ -52,8 +52,11 @@ public class DeleteCard implements Command {
             deleteCardNode.put("cardHolder", email);
             deleteCardNode.put("account", account);
         } else {
-            deleteCardNode.put("description", "The card has not been destroyed");
+            deleteCardNode.put("description", "Card not found");
         }
-        outputGenerator.getUserDatabase().getEntry(email).addTransaction(deleteCardNode);
+        outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(deleteCardNode);
+        Account acc = outputGenerator.getUserDatabase().getUserEntry(email).
+                        getUserAccounts().get(account);
+        outputGenerator.tryToAddTransaction(acc, deleteCardNode);
     }
 }

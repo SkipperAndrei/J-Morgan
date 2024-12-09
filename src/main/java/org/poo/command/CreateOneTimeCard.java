@@ -1,6 +1,7 @@
 package org.poo.command;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.poo.account.Account;
 import org.poo.card.Card;
 import org.poo.card.OneTimeCard;
 import org.poo.database.UserDatabase;
@@ -27,10 +28,10 @@ public class CreateOneTimeCard implements Command {
     @Override
     public void executeCommand(UserDatabase userDatabase) {
 
-        if (userDatabase.getEntry(email).getUserAccounts().containsKey(account)) {
+        if (userDatabase.getUserEntry(email).getUserAccounts().containsKey(account)) {
             Card card = new OneTimeCard();
             cardNumber = card.getCardNumber();
-            userDatabase.getEntry(email).addCard(account, card);
+            userDatabase.getUserEntry(email).addCard(account, card);
             return;
         }
 
@@ -52,6 +53,8 @@ public class CreateOneTimeCard implements Command {
             oneTimeNode.put("description", "Card not created");
         }
 
-        outputGenerator.getUserDatabase().getEntry(email).addTransaction(oneTimeNode);
+        outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(oneTimeNode);
+        Account acc = outputGenerator.getUserDatabase().getUserEntry(email).getUserAccounts().get(account);
+        outputGenerator.tryToAddTransaction(acc, oneTimeNode);
     }
 }

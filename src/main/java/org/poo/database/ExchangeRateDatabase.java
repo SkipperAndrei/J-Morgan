@@ -62,6 +62,14 @@ public final class ExchangeRateDatabase {
         }
     }
 
+    public double getExchangeRate(String from, String to) {
 
+        boolean possible = addUnknownExchange(from, to);
+        if (!possible) {
+            throw new NullPointerException("Can't convert currency");
+        }
+        DefaultWeightedEdge edge = exchangeGraph.getEdge(from, to);
+        return exchangeGraph.getEdgeWeight(edge);
+    }
 
 }
