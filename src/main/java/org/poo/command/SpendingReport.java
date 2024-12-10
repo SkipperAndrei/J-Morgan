@@ -9,9 +9,9 @@ import org.poo.output.OutputGenerator;
 
 public class SpendingReport implements Command {
 
-    private final static int SUCCESS = 0;
-    private final static int SAVING_ACC = -1;
-    private final static int UNKNOWN_ACC = -2;
+    private static final  int SUCCESS = 0;
+    private static final  int SAVING_ACC = -1;
+    private static final  int UNKNOWN_ACC = -2;
 
     private int startTimestamp;
     private int endTimestamp;
@@ -20,7 +20,7 @@ public class SpendingReport implements Command {
     private int timestamp;
     private int actionCode = SUCCESS;
 
-    public SpendingReport(CommandInput command) {
+    public SpendingReport(final CommandInput command) {
         startTimestamp = command.getStartTimestamp();
         endTimestamp = command.getEndTimestamp();
         account = command.getAccount();
@@ -28,7 +28,7 @@ public class SpendingReport implements Command {
     }
 
     @Override
-    public void executeCommand(UserDatabase userDatabase) {
+    public void executeCommand(final UserDatabase userDatabase) {
 
         email = userDatabase.getMailEntry(account);
 
@@ -41,7 +41,6 @@ public class SpendingReport implements Command {
             Account acc = userDatabase.getUserEntry(email).getUserAccounts().get(account);
             ((SavingAccount) acc).getInterestRate();
             actionCode = SAVING_ACC;
-            return;
         } catch (ClassCastException | NullPointerException e) {
             return;
         }
@@ -49,7 +48,7 @@ public class SpendingReport implements Command {
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
 
         switch (actionCode) {
 
@@ -57,7 +56,8 @@ public class SpendingReport implements Command {
                 ObjectNode savingAccNode = outputGenerator.getMapper().createObjectNode();
                 savingAccNode.put("command", "spendingsReport");
                 ObjectNode errorNode = outputGenerator.getMapper().createObjectNode();
-                errorNode.put("error", "This kind of report is not supported for a saving account");
+                errorNode.put("error", "This kind of report is not supported "
+                            + "for a saving account");
                 savingAccNode.set("output", errorNode);
                 savingAccNode.put("timestamp", timestamp);
                 outputGenerator.getOutput().add(savingAccNode);
@@ -72,8 +72,8 @@ public class SpendingReport implements Command {
                                 email, account, timestamp);
                 return;
 
-            default :
-                return;
+            default:
+                break;
         }
     }
 }

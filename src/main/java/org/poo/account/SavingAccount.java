@@ -2,6 +2,9 @@ package org.poo.account;
 
 import lombok.Data;
 
+/**
+ * This class will contain only objects that are Saving accounts
+ */
 @Data
 public class SavingAccount extends Account {
 

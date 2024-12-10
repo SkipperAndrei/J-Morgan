@@ -1,7 +1,6 @@
 package org.poo.command;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.jgrapht.graph.DefaultWeightedEdge;
 import org.poo.account.Account;
 import org.poo.database.ExchangeRateDatabase;
 import org.poo.database.UserDatabase;
@@ -11,11 +10,10 @@ import org.poo.user.User;
 
 public class SendMoney implements Command {
 
-    private final static int WRONG_OWNER = -1;
-    private final static int NON_EXISTENT_ACC = -2;
-    private final static int INSUFFICIENT_FUNDS = -3;
-    private final static int SAVINGS_ACC = -4;
-    private final static int SUCCESS = 0;
+    private static final int WRONG_OWNER = -1;
+    private static final int NON_EXISTENT_ACC = -2;
+    private static final int INSUFFICIENT_FUNDS = -3;
+    private static final int SUCCESS = 0;
 
     private String email;
     private String emailReceiver;
@@ -29,7 +27,7 @@ public class SendMoney implements Command {
     private ExchangeRateDatabase exchangeRateDatabase;
     private int actionCode = WRONG_OWNER;
 
-    public SendMoney(CommandInput command, ExchangeRateDatabase exchangeRateDatabase) {
+    public SendMoney(final CommandInput command, final ExchangeRateDatabase exchangeRateDatabase) {
 
         email = command.getEmail();
         account = command.getAccount();
@@ -58,12 +56,14 @@ public class SendMoney implements Command {
             return;
         }
 
-        amount *= exchangeRateDatabase.getExchangeRate(senderAcc.getCurrency(), receiverAcc.getCurrency());
+        amount *= exchangeRateDatabase.getExchangeRate(senderAcc.getCurrency(),
+                                                        receiverAcc.getCurrency());
+
         executeOrError(senderAcc, receiverAcc);
 
     }
 
-    public void checkReceiver(UserDatabase userDatabase, Account senderAcc) {
+    public void checkReceiver(final UserDatabase userDatabase, final Account senderAcc) {
 
         for (User user : userDatabase.getDatabase().values()) {
 
@@ -81,7 +81,7 @@ public class SendMoney implements Command {
     }
 
     @Override
-    public void executeCommand(UserDatabase userDatabase) {
+    public void executeCommand(final UserDatabase userDatabase) {
 
         if (userDatabase.getUserEntry(email).getUserAccounts().containsKey(account)) {
             senderCurrency = userDatabase.getUserEntry(email).getUserAccounts().get(account).getCurrency();
@@ -93,34 +93,37 @@ public class SendMoney implements Command {
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
 
         switch (actionCode) {
             case SUCCESS:
-                ObjectNode sendMoneyNode = outputGenerator.getMapper().createObjectNode();
+                ObjectNode sendNode = outputGenerator.getMapper().createObjectNode();
 
-                sendMoneyNode.put("timestamp", timestamp);
-                sendMoneyNode.put("description", description);
-                sendMoneyNode.put("senderIBAN", account);
-                sendMoneyNode.put("receiverIBAN", receiver);
-                sendMoneyNode.put("amount", originalAmount + " " + senderCurrency);
-                sendMoneyNode.put("transferType", "sent");
+                sendNode.put("timestamp", timestamp);
+                sendNode.put("description", description);
+                sendNode.put("senderIBAN", account);
+                sendNode.put("receiverIBAN", receiver);
+                sendNode.put("amount", originalAmount + " " + senderCurrency);
+                sendNode.put("transferType", "sent");
 
-                outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(sendMoneyNode);
+                outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(sendNode);
 
-                ObjectNode receivedMoneyNode = sendMoneyNode.deepCopy();
+                ObjectNode receivedMoneyNode = sendNode.deepCopy();
                 Account sentAcc = outputGenerator.getUserDatabase().
                                 getUserEntry(email).getUserAccounts().get(account);
 
-                outputGenerator.tryToAddTransaction(sentAcc, sendMoneyNode);
+                outputGenerator.tryToAddTransaction(sentAcc, sendNode);
                 receivedMoneyNode.put("transferType", "received");
 
                 emailReceiver = outputGenerator.getUserDatabase().getMailEntry(receiver);
                 Account receivedAcc = outputGenerator.getUserDatabase().
                                     getUserEntry(emailReceiver).getUserAccounts().get(receiver);
+
                 receivedMoneyNode.put("amount", amount + " " + receivedAcc.getCurrency());
 
-                outputGenerator.getUserDatabase().getUserEntry(emailReceiver).addTransaction(receivedMoneyNode);
+                outputGenerator.getUserDatabase().getUserEntry(emailReceiver).
+                                addTransaction(receivedMoneyNode);
+
                 outputGenerator.tryToAddTransaction(receivedAcc, receivedMoneyNode);
                 return;
 
@@ -130,7 +133,9 @@ public class SendMoney implements Command {
                 noFundsNode.put("description", "Insufficient funds");
                 outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(noFundsNode);
 
-                Account insufficientAcc = outputGenerator.getUserDatabase().getUserEntry(email).getUserAccounts().get(account);
+                Account insufficientAcc = outputGenerator.getUserDatabase().
+                                            getUserEntry(email).getUserAccounts().get(account);
+
                 outputGenerator.tryToAddTransaction(insufficientAcc, noFundsNode);
                 return;
 

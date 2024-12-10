@@ -14,28 +14,28 @@ public class CheckCardStatus implements Command {
     private int timestamp;
     private String previousStatus;
     private String email;
-    private String IBAN;
+    private String iban;
     private Card card = null;
 
-    public CheckCardStatus(CommandInput command) {
+    public CheckCardStatus(final CommandInput command) {
         cardNumber = command.getCardNumber();
         timestamp = command.getTimestamp();
     }
 
-    public void checkStatus(Account acc, Card card) {
-        previousStatus = card.getStatus().toString();
-        card.changeCardStatus(acc);
+    public void checkStatus(final Account acc, final Card checkedCard) {
+        previousStatus = checkedCard.getStatus().toString();
+        checkedCard.changeCardStatus(acc);
     }
 
     @Override
-    public void executeCommand(UserDatabase userDatabase) {
+    public void executeCommand(final UserDatabase userDatabase) {
 
         for (User user : userDatabase.getDatabase().values()) {
 
             for (Account acc : user.getUserAccounts().values()) {
 
                 if (acc.getCards().containsKey(cardNumber)) {
-                    IBAN = acc.getIban();
+                    iban = acc.getIban();
                     email = acc.getEmail();
                     card = acc.getCards().get(cardNumber);
                     checkStatus(acc, acc.getCards().get(cardNumber));
@@ -45,34 +45,40 @@ public class CheckCardStatus implements Command {
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
 
         try {
+
             switch (card.getStatus().toString()) {
 
                 case "warning" :
+
                     ObjectNode warningNode = outputGenerator.getMapper().createObjectNode();
                     warningNode.put("timestamp", timestamp);
                     warningNode.put("description", "You are warned, stop spending");
-                    outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(warningNode);
-                    Account acc = outputGenerator.getUserDatabase().getUserEntry(email).getUserAccounts().get(IBAN);
+
+                    outputGenerator.getUserDatabase().getUserEntry(email).
+                                    addTransaction(warningNode);
+
+                    Account acc = outputGenerator.getUserDatabase().getUserEntry(email).
+                                    getUserAccounts().get(iban);
+
                     outputGenerator.tryToAddTransaction(acc, warningNode);
                     return;
 
                 case "frozen" :
-                    ObjectNode frozenNode = outputGenerator.getMapper().createObjectNode();
+                    ObjectNode frozNode = outputGenerator.getMapper().createObjectNode();
                     if (previousStatus.equals("frozen")) {
                         return;
                     }
-                    frozenNode.put("timestamp", timestamp);
-                    frozenNode.put("description", "You have reached the minimum amount of " +
-                            "funds, the card will be frozen");
+                    frozNode.put("timestamp", timestamp);
+                    frozNode.put("description", "You have reached the minimum amount of "
+                                    + "funds, the card will be frozen");
 
-                    outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(frozenNode);
-//                    outputGenerator.getUserDatabase().getEntry(email).
-//                            getUserAccounts().get(IBAN).addTransaction(frozenNode);
-                    Account frozenAccount = outputGenerator.getUserDatabase().getUserEntry(email).getUserAccounts().get(IBAN);
-                    outputGenerator.tryToAddTransaction(frozenAccount, frozenNode);
+                    outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(frozNode);
+                    Account frozenAccount = outputGenerator.getUserDatabase().getUserEntry(email).
+                                            getUserAccounts().get(iban);
+                    outputGenerator.tryToAddTransaction(frozenAccount, frozNode);
                     return;
 
                 default :

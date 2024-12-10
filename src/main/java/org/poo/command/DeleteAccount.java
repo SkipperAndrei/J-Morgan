@@ -13,17 +13,16 @@ public class DeleteAccount implements Command {
     private boolean error = false;
 
 
-    public DeleteAccount(CommandInput command) {
+    public DeleteAccount(final CommandInput command) {
         email = command.getEmail();
         account = command.getAccount();
         timestamp = command.getTimestamp();
     }
 
     @Override
-    public void executeCommand(UserDatabase userDatabase) {
+    public void executeCommand(final UserDatabase userDatabase) {
 
         try {
-            // userDatabase.getEntry(email).getUserAccounts().remove(account);
             if (userDatabase.getUserEntry(email).getUserAccounts().get(account).getBalance() != 0) {
                 error = true;
             } else {
@@ -37,7 +36,7 @@ public class DeleteAccount implements Command {
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
         User user = outputGenerator.getUserDatabase().getUserEntry(email);
         outputGenerator.deleteAccount(timestamp, error, user);
     }

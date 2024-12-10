@@ -10,17 +10,15 @@ public class SetAlias implements Command {
     private String email;
     private String account;
     private String alias;
-    private int timestamp;
 
-    public SetAlias(CommandInput command) {
+    public SetAlias(final CommandInput command) {
         email = command.getEmail();
         account = command.getAccount();
         alias = command.getAlias();
-        timestamp = command.getTimestamp();
     }
 
     @Override
-    public void executeCommand(UserDatabase userDatabase) {
+    public void executeCommand(final UserDatabase userDatabase) {
 
         try {
             if (userDatabase.getDatabase().get(email).getUserAccounts().containsKey(account)) {
@@ -33,7 +31,7 @@ public class SetAlias implements Command {
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
         return;
     }
 }

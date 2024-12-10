@@ -15,9 +15,7 @@ public class PayOnline implements Command {
     private static final int FROZEN_CARD = -2;
     private static final int INSUFFICIENT_FUNDS = -3;
     private static final int UNKNOWN_CARD = -4;
-    private static final int SAVING_ACCOUNT = -5;
     private static final int POSSIBLE_TRANSACTION = 0;
-    private static final int POSSIBLE_CARD_CHANGE = 1;
 
     private String cardNumber;
     private double originalAmount;
@@ -25,14 +23,15 @@ public class PayOnline implements Command {
     private String currency;
     private int timestamp;
     private String description;
-    private String IBAN;
+    private String iban;
     private String commerciant;
     private String email;
     private int actionCode = UNKNOWN_CARD;
     private boolean changeCard = false;
     private final ExchangeRateDatabase exchangeRateDatabase;
 
-    public PayOnline(CommandInput command, ExchangeRateDatabase exchangeRateDatabase) {
+    public PayOnline(final CommandInput command, final ExchangeRateDatabase exchangeRateDatabase) {
+
         cardNumber = command.getCardNumber();
         amount = command.getAmount();
         currency = command.getCurrency();
@@ -42,10 +41,11 @@ public class PayOnline implements Command {
         email = command.getEmail();
         originalAmount = amount;
         this.exchangeRateDatabase = exchangeRateDatabase;
+
     }
 
 
-    public int paymentCheck(Account acc, Card card) {
+    public int paymentCheck(final Account acc, final Card card) {
 
         if (amount > acc.getBalance()) {
             return INSUFFICIENT_FUNDS;
@@ -54,15 +54,15 @@ public class PayOnline implements Command {
         acc.setBalance(acc.getBalance() - amount);
 
         try {
-            ((OneTimeCard)card).getExpired();
+            ((OneTimeCard) card).getExpired();
             changeCard = true;
         } catch (ClassCastException e) {
-            ;
+            return POSSIBLE_TRANSACTION;
         }
         return POSSIBLE_TRANSACTION;
     }
 
-    public int cardCheck(Account acc) {
+    public int cardCheck(final Account acc) {
 
         Card card = acc.getCards().get(cardNumber);
 
@@ -74,7 +74,7 @@ public class PayOnline implements Command {
 
     }
 
-    public int currencyCheck(Account acc) {
+    public int currencyCheck(final Account acc) {
 
         if (acc.getCurrency().equals(currency)) {
             return cardCheck(acc);
@@ -90,12 +90,12 @@ public class PayOnline implements Command {
     }
 
     @Override
-    public void executeCommand(UserDatabase userDatabase) {
+    public void executeCommand(final UserDatabase userDatabase) {
 
         for (Account acc : userDatabase.getUserEntry(email).getUserAccounts().values()) {
 
             if (acc.getCards().containsKey(cardNumber)) {
-                IBAN = acc.getIban();
+                iban = acc.getIban();
                 actionCode = currencyCheck(acc);
             }
         }
@@ -103,7 +103,7 @@ public class PayOnline implements Command {
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
 
         switch (actionCode) {
 
@@ -119,7 +119,9 @@ public class PayOnline implements Command {
                 errorNode.put("description", "Insufficient funds");
                 outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(errorNode);
 
-                Account acc = outputGenerator.getUserDatabase().getUserEntry(email).getUserAccounts().get(IBAN);
+                Account acc = outputGenerator.getUserDatabase().getUserEntry(email).
+                                getUserAccounts().get(iban);
+
                 outputGenerator.tryToAddTransaction(acc, errorNode);
                 return;
 
@@ -130,7 +132,9 @@ public class PayOnline implements Command {
                 frozenNode.put("description", "The card is frozen");
                 outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(frozenNode);
 
-                Account affectedAcc = outputGenerator.getUserDatabase().getUserEntry(email).getUserAccounts().get(IBAN);
+                Account affectedAcc = outputGenerator.getUserDatabase().getUserEntry(email).
+                                    getUserAccounts().get(iban);
+
                 outputGenerator.tryToAddTransaction(affectedAcc, frozenNode);
                 return;
 
@@ -142,7 +146,8 @@ public class PayOnline implements Command {
                 paymentNode.put("amount", amount);
                 paymentNode.put("commerciant", commerciant);
 
-                Account transAcc = outputGenerator.getUserDatabase().getUserEntry(email).getUserAccounts().get(IBAN);
+                Account transAcc = outputGenerator.getUserDatabase().getUserEntry(email).
+                                getUserAccounts().get(iban);
 
                 outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(paymentNode);
                 outputGenerator.tryToAddTransaction(transAcc, paymentNode);
@@ -155,13 +160,13 @@ public class PayOnline implements Command {
 
         if (changeCard) {
             Account affectedAcc = outputGenerator.getUserDatabase().getUserEntry(email).
-                                getUserAccounts().get(IBAN);
+                                getUserAccounts().get(iban);
 
             Card affectedCard = affectedAcc.getCards().get(cardNumber);
             ObjectNode affectedCardNode = ((OneTimeCard) affectedCard).updateCardNumber(timestamp,
                                 "The card has been destroyed", true);
             affectedCardNode.put("cardHolder", email);
-            affectedCardNode.put("account", IBAN);
+            affectedCardNode.put("account", iban);
             affectedAcc.getCards().remove(cardNumber);
             affectedAcc.getCards().put(affectedCard.getCardNumber(), affectedCard);
 

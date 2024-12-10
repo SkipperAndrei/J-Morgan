@@ -10,7 +10,11 @@ import org.poo.database.UserDatabase;
 import org.poo.user.User;
 import lombok.Data;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
 
 @Data
 public final class OutputGenerator {
@@ -19,7 +23,9 @@ public final class OutputGenerator {
     private ArrayNode output;
     private UserDatabase userDatabase;
 
-    public OutputGenerator(ObjectMapper mapper, ArrayNode output, UserDatabase userDatabase) {
+    public OutputGenerator(final ObjectMapper mapper, final ArrayNode output,
+                           final UserDatabase userDatabase) {
+
         this.mapper = mapper;
         this.output = output;
         this.userDatabase = userDatabase;
@@ -68,15 +74,6 @@ public final class OutputGenerator {
         output.add(deleteNode);
     }
 
-    public void successPayment(final int timestamp, final double amount, final String commerciant) {
-        ObjectNode paymentNode = mapper.createObjectNode();
-        paymentNode.put("timestamp", timestamp);
-        paymentNode.put("description", "Card payment");
-        paymentNode.put("amount", amount);
-        paymentNode.put("commerciant", commerciant);
-        output.add(paymentNode);
-    }
-
     public void errorSetting(final int timestamp, final String description, final String command) {
         ObjectNode errorNode = mapper.createObjectNode();
         errorNode.put("command", command);
@@ -91,7 +88,7 @@ public final class OutputGenerator {
         output.add(errorNode);
     }
 
-    public void printTransaction(final int timestamp, User user) {
+    public void printTransaction(final int timestamp, final User user) {
         ObjectNode transactionNode = mapper.createObjectNode();
 
         transactionNode.put("command", "printTransactions");
@@ -106,7 +103,7 @@ public final class OutputGenerator {
         output.add(transactionNode);
     }
 
-    public boolean tryToAddTransaction(Account acc, ObjectNode transaction) {
+    public boolean tryToAddTransaction(final Account acc, final ObjectNode transaction) {
 
         try {
             ((SavingAccount) acc).getInterestRate();
@@ -120,13 +117,13 @@ public final class OutputGenerator {
     }
 
 
-    public ObjectNode defaultSplitOutput(List<String> args, final int timestamp,
-                                          final String currency, final double amount) {
+    public ObjectNode defaultSplitOutput(final List<String> args, final int timestamp,
+                                         final String currency, final double amount) {
 
         ObjectNode successNode = mapper.createObjectNode();
         successNode.put("timestamp", timestamp);
-        successNode.put("description", "Split payment of " +
-                                                String.format("%.2f", amount) + " " + currency);
+        successNode.put("description", "Split payment of "
+                        + String.format("%.2f", amount) + " " + currency);
         successNode.put("currency", currency);
         successNode.put("amount", amount / args.size());
 
@@ -212,13 +209,15 @@ public final class OutputGenerator {
 
                 payments.add(transactionNode);
                 Double amount = transactionNode.get("amount").asDouble();
-                Double previousMoney = commerciants.get(transactionNode.get("commerciant").asText());
+                Double prevMoney = commerciants.get(transactionNode.get("commerciant").asText());
 
-                if (previousMoney == null) {
+                if (prevMoney == null) {
                     commerciants.put(transactionNode.get("commerciant").asText(), amount);
                 } else {
-                    commerciants.put(transactionNode.get("commerciant").asText(), previousMoney + amount);
+                    commerciants.put(transactionNode.get("commerciant").asText(),
+                                    prevMoney + amount);
                 }
+
             }
         }
 
@@ -233,7 +232,6 @@ public final class OutputGenerator {
         }
 
         outputNode.set("commerciants", commerciantArrayNode);
-
         reportNode.set("output", outputNode);
         reportNode.put("timestamp", timestamp);
         output.add(reportNode);

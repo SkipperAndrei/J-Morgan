@@ -13,14 +13,14 @@ public class AddFunds implements Command {
     private double amount;
     private int timestamp;
 
-    public AddFunds(CommandInput command) {
+    public AddFunds(final CommandInput command) {
         account = command.getAccount();
         amount = command.getAmount();
         timestamp = command.getTimestamp();
     }
 
     @Override
-    public void executeCommand(UserDatabase userDatabase) {
+    public void executeCommand(final UserDatabase userDatabase) {
 
         for (User usr: userDatabase.getDatabase().values()) {
             if (usr.getUserAccounts().containsKey(account)) {
@@ -31,7 +31,7 @@ public class AddFunds implements Command {
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
         return;
     }
 }

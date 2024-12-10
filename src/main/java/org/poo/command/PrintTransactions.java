@@ -9,18 +9,18 @@ public class PrintTransactions implements Command {
     private String email;
     private int timestamp;
 
-    public PrintTransactions(CommandInput command) {
+    public PrintTransactions(final CommandInput command) {
         email = command.getEmail();
         timestamp = command.getTimestamp();
     }
 
     @Override
-    public void executeCommand(UserDatabase userDatabase) {
+    public void executeCommand(final UserDatabase userDatabase) {
         return;
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
         outputGenerator.printTransaction(timestamp, outputGenerator.
                                                     getUserDatabase().getUserEntry(email));
     }

@@ -10,6 +10,7 @@ import org.poo.output.OutputGenerator;
 
 @Data
 public class AddAccount implements Command {
+
     private String email;
     private String currency;
     private String accountType;
@@ -18,7 +19,7 @@ public class AddAccount implements Command {
     private double interestRate;
     private String newIBAN;
 
-    public AddAccount(CommandInput command) {
+    public AddAccount(final CommandInput command) {
         email = command.getEmail();
         currency = command.getCurrency();
         timestamp = command.getTimestamp();
@@ -28,7 +29,7 @@ public class AddAccount implements Command {
     }
 
     @Override
-    public void executeCommand(UserDatabase userDB) {
+    public void executeCommand(final UserDatabase userDB) {
         Account newAccount;
         if (accountType.equals("classic")) {
             newAccount = new Account(email, currency, accountType, timestamp);
@@ -41,7 +42,7 @@ public class AddAccount implements Command {
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
 
         ObjectNode newAccountNode = outputGenerator.getMapper().createObjectNode();
         newAccountNode.put("timestamp", timestamp);

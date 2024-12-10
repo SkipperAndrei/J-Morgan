@@ -1,6 +1,5 @@
 package org.poo.command;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import lombok.Data;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
@@ -11,17 +10,17 @@ public class PrintUsers implements Command {
 
     private int timestamp;
 
-    public PrintUsers(CommandInput command) {
+    public PrintUsers(final CommandInput command) {
         timestamp = command.getTimestamp();
     }
 
     @Override
-    public void executeCommand(UserDatabase userDatabase) {
+    public void executeCommand(final UserDatabase userDatabase) {
         return;
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
         outputGenerator.addUsers(timestamp);
     }
 }

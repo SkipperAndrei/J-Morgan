@@ -15,19 +15,17 @@ public class CreateCard implements Command {
     private String cardNumber;
     private String cardHolder;
     private String account;
-    private String description;
     private int timestamp;
     private int actionCode = SUCCESS;
 
-    public CreateCard(CommandInput command) {
+    public CreateCard(final CommandInput command) {
         cardHolder = command.getEmail();
         account = command.getAccount();
-        description = command.getDescription();
         timestamp = command.getTimestamp();
     }
 
     @Override
-    public void executeCommand(UserDatabase userDatabase) {
+    public void executeCommand(final UserDatabase userDatabase) {
 
         if (userDatabase.getUserEntry(cardHolder).getUserAccounts().containsKey(account)) {
             Card card = new Card();
@@ -40,7 +38,7 @@ public class CreateCard implements Command {
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
 
         ObjectNode createCardNode = outputGenerator.getMapper().createObjectNode();
         createCardNode.put("timestamp", timestamp);

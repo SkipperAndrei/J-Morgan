@@ -10,9 +10,9 @@ import org.poo.user.User;
 
 public class AddInterest implements Command {
 
-    private final static int SUCCESS = 0;
-    private final static int CLASSIC_ACC = -1;
-    private final static int NOT_FOUND = -2;
+    private static final int SUCCESS = 0;
+    private static final int CLASSIC_ACC = -1;
+    private static final int NOT_FOUND = -2;
 
     private String email;
     private String account;
@@ -20,12 +20,12 @@ public class AddInterest implements Command {
     private int actionCode = NOT_FOUND;
 
 
-    public AddInterest(CommandInput command) {
+    public AddInterest(final CommandInput command) {
         account = command.getAccount();
         timestamp = command.getTimestamp();
     }
 
-    public void checkAccount(Account acc) {
+    public void checkAccount(final Account acc) {
 
         try {
             acc.incrementFunds(acc.getBalance() * ((SavingAccount) acc).getInterestRate());
@@ -36,7 +36,7 @@ public class AddInterest implements Command {
     }
 
     @Override
-    public void executeCommand(UserDatabase userDatabase) {
+    public void executeCommand(final UserDatabase userDatabase) {
         for (User user : userDatabase.getDatabase().values()) {
 
             if (user.getUserAccounts().containsKey(account)) {
@@ -48,9 +48,9 @@ public class AddInterest implements Command {
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
 
-        switch(actionCode) {
+        switch (actionCode) {
 
             case SUCCESS:
 
@@ -65,7 +65,8 @@ public class AddInterest implements Command {
 
             case CLASSIC_ACC:
 
-                outputGenerator.errorSetting(timestamp, "This is not a savings account", "addInterest");
+                outputGenerator.errorSetting(timestamp, "This is not a savings account",
+                                    "addInterest");
                 break;
 
             case NOT_FOUND:

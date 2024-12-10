@@ -1,22 +1,19 @@
 package org.poo.command;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.jgrapht.graph.DefaultWeightedEdge;
 import org.poo.account.Account;
-import org.poo.account.SavingAccount;
 import org.poo.database.ExchangeRateDatabase;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
 import org.poo.output.OutputGenerator;
-import org.poo.user.User;
 
 import java.util.List;
 import java.util.ListIterator;
 
 public class SplitPayment implements Command {
 
-    private final static int SUCCESS = 0;
-    private final static int FAILURE = -1;
+    private static final int SUCCESS = 0;
+    private static final int FAILURE = -1;
 
     private List<String> args;
     private double amountPerAccount;
@@ -25,11 +22,12 @@ public class SplitPayment implements Command {
     private String badAccount;
     private int timestamp;
     private int actionCode = SUCCESS;
-
     private ExchangeRateDatabase exchangeRateDatabase;
 
 
-    public SplitPayment(CommandInput command, ExchangeRateDatabase exchangeRateDatabase) {
+    public SplitPayment(final CommandInput command,
+                        final ExchangeRateDatabase exchangeRateDatabase) {
+
         args = command.getAccounts();
         amount = command.getAmount();
         amountPerAccount = amount / args.size();
@@ -38,16 +36,16 @@ public class SplitPayment implements Command {
         this.exchangeRateDatabase = exchangeRateDatabase;
     }
 
-    public void makePayment(UserDatabase userDatabase, String IBAN) {
-        String email = userDatabase.getMailEntry(IBAN);
-        Account acc = userDatabase.getUserEntry(email).getUserAccounts().get(IBAN);
+    public void makePayment(final UserDatabase userDatabase, final String iban) {
+        String email = userDatabase.getMailEntry(iban);
+        Account acc = userDatabase.getUserEntry(email).getUserAccounts().get(iban);
         double amountToPay = amountPerAccount;
 
         amountToPay *= exchangeRateDatabase.getExchangeRate(currency, acc.getCurrency());
-        userDatabase.getUserEntry(email).getUserAccounts().get(IBAN).decrementFunds(amountToPay);
+        userDatabase.getUserEntry(email).getUserAccounts().get(iban).decrementFunds(amountToPay);
     }
 
-    public boolean checkAccount(UserDatabase userDatabase, String arg) {
+    public boolean checkAccount(final UserDatabase userDatabase, final String arg) {
 
         String userEmail = userDatabase.getMailEntry(arg);
         Account acc = userDatabase.getUserEntry(userEmail).getUserAccounts().get(arg);
@@ -59,16 +57,17 @@ public class SplitPayment implements Command {
         try {
             double amountToPay = amountPerAccount;
             amountToPay *= exchangeRateDatabase.getExchangeRate(currency, acc.getCurrency());
+
             return acc.canPay(amountToPay);
+
         } catch (NullPointerException e) {
             return false;
         }
 
     }
 
-
     @Override
-    public void executeCommand(UserDatabase userDatabase) {
+    public void executeCommand(final UserDatabase userDatabase) {
 
         ListIterator<String> argsIterator = args.listIterator(args.size());
 
@@ -93,17 +92,16 @@ public class SplitPayment implements Command {
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
 
         ObjectNode successNode = outputGenerator.defaultSplitOutput(args, timestamp,
                                 currency, amount);
 
-        for (String Iban : args) {
+        for (String iban : args) {
             ObjectNode userSuccessNode = successNode.deepCopy();
-            String email = outputGenerator.getUserDatabase().getMailEntry(Iban);
+            String email = outputGenerator.getUserDatabase().getMailEntry(iban);
             Account acc = outputGenerator.getUserDatabase().getUserEntry(email).
-                    getUserAccounts().get(Iban);
-            // double rate = exchangeRateDatabase.getExchangeRate(currency, acc.getCurrency());
+                        getUserAccounts().get(iban);
 
             userSuccessNode.put("amount", amountPerAccount);
 

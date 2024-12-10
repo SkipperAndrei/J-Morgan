@@ -8,13 +8,11 @@ import lombok.Data;
 
 import java.util.HashSet;
 
-
-
 @Data
 public final class ExchangeRateDatabase {
 
     private static ExchangeRateDatabase instance;
-    DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> exchangeGraph;
+    private DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> exchangeGraph;
 
     private ExchangeRateDatabase() {
         exchangeGraph = new DefaultDirectedWeightedGraph<>(DefaultWeightedEdge.class);
@@ -27,7 +25,7 @@ public final class ExchangeRateDatabase {
         return instance;
     }
 
-    public void addNewExchange(String from, String to, double rate) {
+    public void addNewExchange(final String from, final String to, final double rate) {
         exchangeGraph.addVertex(from);
         exchangeGraph.addVertex(to);
         exchangeGraph.setEdgeWeight(exchangeGraph.addEdge(from, to), rate);
@@ -38,18 +36,21 @@ public final class ExchangeRateDatabase {
         exchangeGraph.removeAllVertices(new HashSet<>(exchangeGraph.vertexSet()));
     }
 
-    public boolean addUnknownExchange(String from, String to) {
+    public boolean addUnknownExchange(final String from, final String to) {
 
         if (exchangeGraph.containsEdge(from, to)) {
             return true;
         }
 
-        DijkstraShortestPath<String, DefaultWeightedEdge> djikstra = new DijkstraShortestPath<>(exchangeGraph);
-        GraphPath<String, DefaultWeightedEdge> path = djikstra.getPath(from, to);
+        DijkstraShortestPath<String, DefaultWeightedEdge> dijkstra =
+                                        new DijkstraShortestPath<>(exchangeGraph);
+
+        GraphPath<String, DefaultWeightedEdge> path = dijkstra.getPath(from, to);
 
         try {
-            if (path.getEdgeList().size() == 1)
+            if (path.getEdgeList().size() == 1) {
                 return true;
+            }
 
             double startingRate = 1;
             for (DefaultWeightedEdge edge : path.getEdgeList()) {
@@ -62,12 +63,14 @@ public final class ExchangeRateDatabase {
         }
     }
 
-    public double getExchangeRate(String from, String to) {
+    public double getExchangeRate(final String from, final String to) {
 
         boolean possible = addUnknownExchange(from, to);
+
         if (!possible) {
             throw new NullPointerException("Can't convert currency");
         }
+
         DefaultWeightedEdge edge = exchangeGraph.getEdge(from, to);
         return exchangeGraph.getEdgeWeight(edge);
     }

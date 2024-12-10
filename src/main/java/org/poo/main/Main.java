@@ -83,7 +83,6 @@ public final class Main {
         ObjectInput inputData = objectMapper.readValue(file, ObjectInput.class);
 
         ArrayNode output = objectMapper.createArrayNode();
-        
         UserDatabase userDB = UserDatabase.getInstance();
         ExchangeRateDatabase exchangeDB = ExchangeRateDatabase.getInstance();
         OutputGenerator generator = new OutputGenerator(objectMapper, output, userDB);

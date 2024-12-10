@@ -19,14 +19,15 @@ public class User {
     private Map<String, Account> userAliasAccounts = new LinkedHashMap<>();
     private ArrayNode userTransactions;
 
-    public User(UserInput userData) {
+    public User(final UserInput userData) {
+
         this.userData.setFirstName(userData.getFirstName());
         this.userData.setLastName(userData.getLastName());
         this.userData.setEmail(userData.getEmail());
         userTransactions = new ObjectMapper().createArrayNode();
     }
 
-    public void addAccount(Account account) {
+    public void addAccount(final Account account) {
 
         if (!account.getEmail().equals(userData.getEmail())) {
             return;
@@ -35,19 +36,19 @@ public class User {
         userAccounts.put(account.getIban(), account);
     }
 
-    public void addAccountAlias(Account account, String alias) {
+    public void addAccountAlias(final Account account, final String alias) {
         userAliasAccounts.put(alias, account);
     }
 
-    public void addCard(String IBAN, Card card) {
-        userAccounts.get(IBAN).getCards().put(card.getCardNumber(), card);
+    public void addCard(final String iban, final Card card) {
+        userAccounts.get(iban).getCards().put(card.getCardNumber(), card);
     }
 
-    public void addTransaction(ObjectNode transaction) {
+    public void addTransaction(final ObjectNode transaction) {
         userTransactions.add(transaction);
     }
 
-    public ObjectNode userToJson(ObjectMapper mapper) {
+    public ObjectNode userToJson(final ObjectMapper mapper) {
 
         ObjectNode userNode = mapper.createObjectNode();
 
@@ -55,13 +56,13 @@ public class User {
         userNode.put("lastName", userData.getLastName());
         userNode.put("email", userData.getEmail());
 
-        ArrayNode userAccounts = mapper.createArrayNode();
+        ArrayNode accounts = mapper.createArrayNode();
 
         for (Account acc : this.userAccounts.values()) {
-            userAccounts.add(acc.accountToJson(mapper));
+            accounts.add(acc.accountToJson(mapper));
         }
 
-        userNode.set("accounts", userAccounts);
+        userNode.set("accounts", accounts);
         return userNode;
     }
 

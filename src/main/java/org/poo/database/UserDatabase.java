@@ -25,29 +25,29 @@ public final class UserDatabase {
         return instance;
     }
 
-    public void addUserEntry(String userEmail, User user) {
+    public void addUserEntry(final String userEmail, final User user) {
         if (!database.containsKey(userEmail)) {
             database.put(userEmail, user);
         }
     }
 
-    public void removeUserEntry(String userEmail) {
+    public void removeUserEntry(final String userEmail) {
         database.remove(userEmail);
     }
 
-    public User getUserEntry(String userEmail) {
+    public User getUserEntry(final String userEmail) {
         return database.get(userEmail);
     }
 
-    public void addMailEntry(String IBAN, String userEmail) {
-        mailDatabase.put(IBAN, userEmail);
+    public void addMailEntry(final String iban, final String userEmail) {
+        mailDatabase.put(iban, userEmail);
     }
 
-    public void removeMailEntry(String IBAN) {
-        mailDatabase.remove(IBAN);
+    public void removeMailEntry(final String iban) {
+        mailDatabase.remove(iban);
     }
 
-    public String getMailEntry(String IBAN) {
-        return mailDatabase.get(IBAN);
+    public String getMailEntry(final String iban) {
+        return mailDatabase.get(iban);
     }
 }

@@ -9,6 +9,10 @@ import org.poo.utils.Utils;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * This class will hold information about the user accounts
+ * Can be of two types : classic and saving account
+ */
 @Data
 @NoArgsConstructor
 public class Account {
@@ -35,23 +39,46 @@ public class Account {
         accountTransactions = new ObjectMapper().createArrayNode();
     }
 
+    /**
+     * This function will increment the balance of the account
+     * @param amount The amount
+     */
     public void incrementFunds(final double amount) {
         balance += amount;
     }
 
+    /**
+     * This function will decrement the balance of the account
+     * Requires checking if the amount is bigger than the current balance before calling
+     * @param amount The amount
+     */
     public void decrementFunds(final double amount) {
         balance -= amount;
     }
 
-    public void addTransaction(ObjectNode transaction) {
+    /**
+     * This function adds a new transaction involving the account
+     * @param transaction The transaction
+     */
+    public void addTransaction(final ObjectNode transaction) {
         ObjectNode newTransaction = transaction.deepCopy();
         accountTransactions.add(newTransaction);
     }
 
+    /**
+     * This function will check if the account has enough money in order to pay
+     * @param amount The amount required to be paid
+     * @return
+     */
     public boolean canPay(final double amount) {
         return !(balance < amount);
     }
 
+    /**
+     * This function maps the contents of the account in JSON format
+     * @param mapper
+     * @return The mapped JSON node
+     */
     public ObjectNode accountToJson(final ObjectMapper mapper) {
         ObjectNode accountNode = mapper.createObjectNode();
 
@@ -68,6 +95,5 @@ public class Account {
         accountNode.set("cards", creditCards);
         return accountNode;
     }
-
 
 }

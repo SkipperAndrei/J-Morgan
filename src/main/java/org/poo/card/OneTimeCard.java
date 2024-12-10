@@ -5,6 +5,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
 import org.poo.utils.Utils;
 
+/**
+ * This class extends the Card class as it implements the logic
+ * of the One-Time Pay
+ */
 @Data
 public class OneTimeCard extends Card {
 
@@ -15,7 +19,15 @@ public class OneTimeCard extends Card {
         expired = 0;
     }
 
-    public ObjectNode updateCardNumber(final int timestamp, final String description, final boolean change) {
+    /**
+     * This function maps the change of the card number after one payment in a JSON node
+     * @param timestamp
+     * @param description
+     * @param change This marks if the payment happened
+     * @return The mapped JSON node
+     */
+    public ObjectNode updateCardNumber(final int timestamp, final String description,
+                                       final boolean change) {
 
         ObjectNode cardNode = new ObjectMapper().createObjectNode();
 
@@ -24,6 +36,7 @@ public class OneTimeCard extends Card {
         cardNode.put("card", super.getCardNumber());
 
         if (change) {
+            // if payment happened, change it's card number
             super.setCardNumber(Utils.generateCardNumber());
         }
 

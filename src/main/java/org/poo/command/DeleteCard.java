@@ -16,14 +16,14 @@ public class DeleteCard implements Command {
     private String account;
     private boolean found = false;
 
-    public DeleteCard(CommandInput command) {
+    public DeleteCard(final CommandInput command) {
         email = command.getEmail();
         cardNumber = command.getCardNumber();
         timestamp = command.getTimestamp();
     }
 
     @Override
-    public void executeCommand(UserDatabase userDatabase) {
+    public void executeCommand(final UserDatabase userDatabase) {
         try {
             for (Account ac : userDatabase.getUserEntry(email).getUserAccounts().values()) {
 
@@ -42,7 +42,7 @@ public class DeleteCard implements Command {
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
 
         ObjectNode deleteCardNode = outputGenerator.getMapper().createObjectNode();
         deleteCardNode.put("timestamp", timestamp);
