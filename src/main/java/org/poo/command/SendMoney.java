@@ -18,6 +18,7 @@ public class SendMoney implements Command {
     private final static int SUCCESS = 0;
 
     private String email;
+    private String emailReceiver;
     private String account;
     private String receiver;
     private double originalAmount;
@@ -56,13 +57,6 @@ public class SendMoney implements Command {
             executeOrError(senderAcc, receiverAcc);
             return;
         }
-
-//        if (exchangeRateDatabase.addUnknownExchange(senderAcc.getCurrency(), receiverAcc.getCurrency())) {
-//            DefaultWeightedEdge edge = exchangeRateDatabase.getExchangeGraph().
-//                                        getEdge(senderAcc.getCurrency(), receiverAcc.getCurrency());
-//            amount *= exchangeRateDatabase.getExchangeGraph().getEdgeWeight(edge);
-//            executeOrError(senderAcc, receiverAcc);
-//        }
 
         amount *= exchangeRateDatabase.getExchangeRate(senderAcc.getCurrency(), receiverAcc.getCurrency());
         executeOrError(senderAcc, receiverAcc);
@@ -104,16 +98,30 @@ public class SendMoney implements Command {
         switch (actionCode) {
             case SUCCESS:
                 ObjectNode sendMoneyNode = outputGenerator.getMapper().createObjectNode();
+
                 sendMoneyNode.put("timestamp", timestamp);
                 sendMoneyNode.put("description", description);
                 sendMoneyNode.put("senderIBAN", account);
                 sendMoneyNode.put("receiverIBAN", receiver);
                 sendMoneyNode.put("amount", originalAmount + " " + senderCurrency);
                 sendMoneyNode.put("transferType", "sent");
+
                 outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(sendMoneyNode);
 
-                Account acc = outputGenerator.getUserDatabase().getUserEntry(email).getUserAccounts().get(account);
-                outputGenerator.tryToAddTransaction(acc, sendMoneyNode);
+                ObjectNode receivedMoneyNode = sendMoneyNode.deepCopy();
+                Account sentAcc = outputGenerator.getUserDatabase().
+                                getUserEntry(email).getUserAccounts().get(account);
+
+                outputGenerator.tryToAddTransaction(sentAcc, sendMoneyNode);
+                receivedMoneyNode.put("transferType", "received");
+
+                emailReceiver = outputGenerator.getUserDatabase().getMailEntry(receiver);
+                Account receivedAcc = outputGenerator.getUserDatabase().
+                                    getUserEntry(emailReceiver).getUserAccounts().get(receiver);
+                receivedMoneyNode.put("amount", amount + " " + receivedAcc.getCurrency());
+
+                outputGenerator.getUserDatabase().getUserEntry(emailReceiver).addTransaction(receivedMoneyNode);
+                outputGenerator.tryToAddTransaction(receivedAcc, receivedMoneyNode);
                 return;
 
             case INSUFFICIENT_FUNDS:

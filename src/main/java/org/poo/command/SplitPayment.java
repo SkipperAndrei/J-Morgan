@@ -109,7 +109,7 @@ public class SplitPayment implements Command {
 
             if (actionCode == FAILURE) {
                 userSuccessNode.put("error", "Account " + badAccount +
-                                    " has insufficient funds for a split payment");
+                                    " has insufficient funds for a split payment.");
 
             }
 

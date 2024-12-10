@@ -31,8 +31,8 @@ public class DeleteCard implements Command {
 
                 if (card != null) {
                     userDatabase.getDatabase().get(email).getUserAccounts().
-                                get(ac.getIBAN()).getCards().remove(card.getCardNumber());
-                    account = ac.getIBAN();
+                                get(ac.getIban()).getCards().remove(card.getCardNumber());
+                    account = ac.getIban();
                     found = true;
                 }
             }

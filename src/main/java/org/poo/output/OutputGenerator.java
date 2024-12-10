@@ -6,13 +6,11 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.account.Account;
 import org.poo.account.SavingAccount;
-import org.poo.command.SplitPayment;
 import org.poo.database.UserDatabase;
 import org.poo.user.User;
 import lombok.Data;
 
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 @Data
 public final class OutputGenerator {
@@ -41,7 +39,8 @@ public final class OutputGenerator {
         output.add(usersNode);
     }
 
-    public void deleteAccount(final int timestamp, final boolean error) {
+    public void deleteAccount(final int timestamp, final boolean error, final User user) {
+
         ObjectNode deleteNode = mapper.createObjectNode();
         deleteNode.put("command", "deleteAccount");
 
@@ -56,6 +55,15 @@ public final class OutputGenerator {
         infoNode.put("timestamp", timestamp);
         deleteNode.set("output", infoNode);
         deleteNode.put("timestamp", timestamp);
+
+        ObjectNode transactionInfoNode = infoNode.deepCopy();
+
+        if (transactionInfoNode.has("error")) {
+            transactionInfoNode.remove("error");
+            transactionInfoNode.put("description", "Account couldn't be deleted - there are funds remaining");
+        }
+
+        user.addTransaction(transactionInfoNode);
 
         output.add(deleteNode);
     }
@@ -98,17 +106,19 @@ public final class OutputGenerator {
         output.add(transactionNode);
     }
 
-    public void tryToAddTransaction(Account acc, ObjectNode transaction) {
+    public boolean tryToAddTransaction(Account acc, ObjectNode transaction) {
 
         try {
             ((SavingAccount) acc).getInterestRate();
-            return;
+            return false;
         } catch (ClassCastException e) {
             userDatabase.getUserEntry(acc.getEmail()).getUserAccounts().
-                        get(acc.getIBAN()).addTransaction(transaction);
+                        get(acc.getIban()).addTransaction(transaction);
+            return true;
         }
 
     }
+
 
     public ObjectNode defaultSplitOutput(List<String> args, final int timestamp,
                                           final String currency, final double amount) {
@@ -157,6 +167,7 @@ public final class OutputGenerator {
             if (transactionNode.get("timestamp").asInt() < startTimestamp) {
                 continue;
             }
+
             transactions.add(transactionNode);
         }
 
@@ -166,4 +177,68 @@ public final class OutputGenerator {
         reportNode.put("timestamp", timestamp);
         output.add(reportNode);
     }
+
+    public void generateSpendingReport(final int startTimestamp, final int endTimestamp,
+                                       final String email, final String account, final int timestamp) {
+
+        ObjectNode reportNode = mapper.createObjectNode();
+        reportNode.put("command", "spendingsReport");
+
+        Account acc = userDatabase.getUserEntry(email).getUserAccounts().get(account);
+
+        ObjectNode outputNode = mapper.createObjectNode();
+        outputNode.put("IBAN", account);
+        outputNode.put("balance", acc.getBalance());
+        outputNode.put("currency", acc.getCurrency());
+
+        ArrayNode payments = mapper.createArrayNode();
+
+        Iterator<JsonNode> jsonIterator = acc.getAccountTransactions().elements();
+        Map<String, Double> commerciants = new TreeMap<>();
+
+        while (jsonIterator.hasNext()) {
+
+            ObjectNode transactionNode = (ObjectNode) jsonIterator.next();
+
+            if (transactionNode.get("timestamp").asInt() > endTimestamp) {
+                break;
+            }
+
+            if (transactionNode.get("timestamp").asInt() < startTimestamp) {
+                continue;
+            }
+
+            if (transactionNode.has("commerciant")) {
+
+                payments.add(transactionNode);
+                Double amount = transactionNode.get("amount").asDouble();
+                Double previousMoney = commerciants.get(transactionNode.get("commerciant").asText());
+
+                if (previousMoney == null) {
+                    commerciants.put(transactionNode.get("commerciant").asText(), amount);
+                } else {
+                    commerciants.put(transactionNode.get("commerciant").asText(), previousMoney + amount);
+                }
+            }
+        }
+
+        outputNode.set("transactions", payments);
+        ArrayNode commerciantArrayNode = mapper.createArrayNode();
+
+        for (Map.Entry<String, Double> entry : commerciants.entrySet()) {
+            ObjectNode commerciantNode = mapper.createObjectNode();
+            commerciantNode.put("commerciant", entry.getKey());
+            commerciantNode.put("total", entry.getValue());
+            commerciantArrayNode.add(commerciantNode);
+        }
+
+        outputNode.set("commerciants", commerciantArrayNode);
+
+        reportNode.set("output", outputNode);
+        reportNode.put("timestamp", timestamp);
+        output.add(reportNode);
+
+    }
+
 }
+

@@ -3,6 +3,7 @@ package org.poo.command;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
 import org.poo.output.OutputGenerator;
+import org.poo.user.User;
 
 public class DeleteAccount implements Command {
 
@@ -37,6 +38,7 @@ public class DeleteAccount implements Command {
 
     @Override
     public void generateOutput(OutputGenerator outputGenerator) {
-        outputGenerator.deleteAccount(timestamp, error);
+        User user = outputGenerator.getUserDatabase().getUserEntry(email);
+        outputGenerator.deleteAccount(timestamp, error, user);
     }
 }

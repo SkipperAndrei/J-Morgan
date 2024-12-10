@@ -15,23 +15,23 @@ public class Account {
 
     private String email;
     private String currency;
-    private String AccountType;
+    private String accountType;
     private int timestamp;
-    private String IBAN;
+    private String iban;
     private double balance;
     private double minimumBalance;
     private Map<String, Card> cards = new LinkedHashMap<>();
-    private Map<String, Double> payments = new LinkedHashMap<>();
     private ArrayNode accountTransactions;
 
-    public Account(final String email, final String currency, final String AccountType, final int timestamp) {
+    public Account(final String email, final String currency,
+                   final String accountType, final int timestamp) {
         this.email = email;
         this.currency = currency;
-        this.AccountType = AccountType;
+        this.accountType = accountType;
         this.timestamp = timestamp;
         balance = 0;
         minimumBalance = 0;
-        IBAN = Utils.generateIBAN();
+        iban = Utils.generateIBAN();
         accountTransactions = new ObjectMapper().createArrayNode();
     }
 
@@ -43,15 +43,6 @@ public class Account {
         balance -= amount;
     }
 
-    public void updatePayments(final String commerciant, final double amount) {
-
-        if (payments.containsKey(commerciant)) {
-            payments.put(commerciant, payments.get(commerciant) + amount);
-        } else {
-            payments.put(commerciant, amount);
-        }
-    }
-
     public void addTransaction(ObjectNode transaction) {
         ObjectNode newTransaction = transaction.deepCopy();
         accountTransactions.add(newTransaction);
@@ -61,22 +52,13 @@ public class Account {
         return !(balance < amount);
     }
 
-    public Card searchCardNumber(final String cardNumber) {
-        for (Card card : cards.values()) {
-            if (card.cardNumber.equals(cardNumber)) {
-                return card;
-            }
-        }
-        return null;
-    }
-
-    public ObjectNode accountToJson(ObjectMapper mapper) {
+    public ObjectNode accountToJson(final ObjectMapper mapper) {
         ObjectNode accountNode = mapper.createObjectNode();
 
-        accountNode.put("IBAN", IBAN);
+        accountNode.put("IBAN", iban);
         accountNode.put("balance", balance);
         accountNode.put("currency", currency);
-        accountNode.put("type", AccountType);
+        accountNode.put("type", accountType);
 
         ArrayNode creditCards = mapper.createArrayNode();
         for (Card card : cards.values()) {

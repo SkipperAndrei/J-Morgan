@@ -20,7 +20,6 @@ public class CreateCard implements Command {
     private int actionCode = SUCCESS;
 
     public CreateCard(CommandInput command) {
-        // cardNumber = command.getCardNumber();
         cardHolder = command.getEmail();
         account = command.getAccount();
         description = command.getDescription();
@@ -29,8 +28,6 @@ public class CreateCard implements Command {
 
     @Override
     public void executeCommand(UserDatabase userDatabase) {
-
-        //TODO
 
         if (userDatabase.getUserEntry(cardHolder).getUserAccounts().containsKey(account)) {
             Card card = new Card();

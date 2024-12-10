@@ -29,6 +29,9 @@ public class Report implements Command {
 
     @Override
     public void generateOutput(OutputGenerator outputGenerator) {
+        if (email == null) {
+            outputGenerator.errorSetting(timestamp, "Account not found", "report");
+        }
         outputGenerator.generateReport(startTimestamp, endTimestamp, email, account, timestamp);
     }
 }

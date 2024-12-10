@@ -100,21 +100,9 @@ public final class Main {
             exchangeDB.addNewExchange(exchange.getTo(), exchange.getFrom(), 1 / exchange.getRate());
         }
 
-        // DEBUG
-
-//        for (DefaultWeightedEdge edge : exchangeDB.getExchangeGraph().edgeSet()) {
-//            String source = exchangeDB.getExchangeGraph().getEdgeSource(edge);
-//            String target = exchangeDB.getExchangeGraph().getEdgeTarget(edge);
-//            double weight = exchangeDB.getExchangeGraph().getEdgeWeight(edge);
-//
-//            System.out.println("From " + source + " to " + target + ": " + weight);
-//        }
-
-
         for (CommandInput command : inputData.getCommands()) {
             Command comm = FactoryCommand.extractCommand(command, exchangeDB);
             try {
-                // Try block because not all commands are implemented
                 comm.executeCommand(userDB);
                 comm.generateOutput(generator);
             } catch (NullPointerException ex) {
@@ -125,6 +113,7 @@ public final class Main {
         userDB.getDatabase().clear();
         exchangeDB.resetExchangeDatabase();
         Utils.resetRandom();
+
         ObjectWriter objectWriter = objectMapper.writerWithDefaultPrettyPrinter();
         objectWriter.writeValue(new File(filePath2), output);
     }

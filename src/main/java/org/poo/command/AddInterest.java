@@ -65,17 +65,7 @@ public class AddInterest implements Command {
 
             case CLASSIC_ACC:
 
-                ObjectNode classicAccNode = outputGenerator.getMapper().createObjectNode();
-                classicAccNode.put("command", "addInterest");
-
-                ObjectNode errorAccNode = outputGenerator.getMapper().createObjectNode();
-
-                errorAccNode.put("timestamp", timestamp);
-                errorAccNode.put("description", "This is not a savings account");
-                classicAccNode.set("output", errorAccNode);
-
-                classicAccNode.put("timestamp", timestamp);
-                outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(classicAccNode);
+                outputGenerator.errorSetting(timestamp, "This is not a savings account", "addInterest");
                 break;
 
             case NOT_FOUND:

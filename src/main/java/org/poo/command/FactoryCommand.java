@@ -82,6 +82,10 @@ public final class FactoryCommand {
                 return new Report(command);
             }
 
+            case "spendingsReport" -> {
+                return new SpendingReport(command);
+            }
+
             default -> {
                 return null;
             }

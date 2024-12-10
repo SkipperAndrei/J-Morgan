@@ -35,7 +35,7 @@ public class CheckCardStatus implements Command {
             for (Account acc : user.getUserAccounts().values()) {
 
                 if (acc.getCards().containsKey(cardNumber)) {
-                    IBAN = acc.getIBAN();
+                    IBAN = acc.getIban();
                     email = acc.getEmail();
                     card = acc.getCards().get(cardNumber);
                     checkStatus(acc, acc.getCards().get(cardNumber));

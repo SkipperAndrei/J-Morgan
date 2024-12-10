@@ -35,13 +35,14 @@ public class AddAccount implements Command {
         } else {
             newAccount = new SavingAccount(email, currency, accountType, timestamp, interestRate);
         }
-        newIBAN = newAccount.getIBAN();
+        newIBAN = newAccount.getIban();
         userDB.getUserEntry(email).addAccount(newAccount);
         userDB.addMailEntry(newIBAN, email);
     }
 
     @Override
     public void generateOutput(OutputGenerator outputGenerator) {
+
         ObjectNode newAccountNode = outputGenerator.getMapper().createObjectNode();
         newAccountNode.put("timestamp", timestamp);
         newAccountNode.put("description", "New account created");

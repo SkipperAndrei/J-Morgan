@@ -10,8 +10,8 @@ import lombok.Data;
 @Data
 public class Card {
 
-    public String cardNumber;
-    public StringBuilder status;
+    private String cardNumber;
+    private StringBuilder status;
 
     public Card() {
         cardNumber = Utils.generateCardNumber();

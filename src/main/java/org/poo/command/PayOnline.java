@@ -1,7 +1,6 @@
 package org.poo.command;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.jgrapht.graph.DefaultWeightedEdge;
 import org.poo.account.Account;
 import org.poo.card.Card;
 import org.poo.card.OneTimeCard;
@@ -9,7 +8,6 @@ import org.poo.database.ExchangeRateDatabase;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
 import org.poo.output.OutputGenerator;
-import org.poo.utils.Utils;
 
 public class PayOnline implements Command {
 
@@ -19,6 +17,7 @@ public class PayOnline implements Command {
     private static final int UNKNOWN_CARD = -4;
     private static final int SAVING_ACCOUNT = -5;
     private static final int POSSIBLE_TRANSACTION = 0;
+    private static final int POSSIBLE_CARD_CHANGE = 1;
 
     private String cardNumber;
     private double originalAmount;
@@ -30,6 +29,7 @@ public class PayOnline implements Command {
     private String commerciant;
     private String email;
     private int actionCode = UNKNOWN_CARD;
+    private boolean changeCard = false;
     private final ExchangeRateDatabase exchangeRateDatabase;
 
     public PayOnline(CommandInput command, ExchangeRateDatabase exchangeRateDatabase) {
@@ -54,14 +54,11 @@ public class PayOnline implements Command {
         acc.setBalance(acc.getBalance() - amount);
 
         try {
-            // TODO change this later
             ((OneTimeCard)card).getExpired();
-            card.setCardNumber(Utils.generateCardNumber());
-            card.changeCardStatus(acc);
+            changeCard = true;
         } catch (ClassCastException e) {
-            card.changeCardStatus(acc);
+            ;
         }
-
         return POSSIBLE_TRANSACTION;
     }
 
@@ -83,7 +80,6 @@ public class PayOnline implements Command {
             return cardCheck(acc);
         }
 
-
         try {
             amount *= exchangeRateDatabase.getExchangeRate(currency, acc.getCurrency());
             return cardCheck(acc);
@@ -99,14 +95,13 @@ public class PayOnline implements Command {
         for (Account acc : userDatabase.getUserEntry(email).getUserAccounts().values()) {
 
             if (acc.getCards().containsKey(cardNumber)) {
-                IBAN = acc.getIBAN();
+                IBAN = acc.getIban();
                 actionCode = currencyCheck(acc);
             }
         }
 
     }
 
-    // This method will be changed when we get to print Transactions
     @Override
     public void generateOutput(OutputGenerator outputGenerator) {
 
@@ -151,13 +146,32 @@ public class PayOnline implements Command {
 
                 outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(paymentNode);
                 outputGenerator.tryToAddTransaction(transAcc, paymentNode);
-                outputGenerator.getUserDatabase().getUserEntry(email).getUserAccounts().
-                                get(IBAN).updatePayments(commerciant, amount);
-                return;
+                break;
 
             default :
                 return;
 
+        }
+
+        if (changeCard) {
+            Account affectedAcc = outputGenerator.getUserDatabase().getUserEntry(email).
+                                getUserAccounts().get(IBAN);
+
+            Card affectedCard = affectedAcc.getCards().get(cardNumber);
+            ObjectNode affectedCardNode = ((OneTimeCard) affectedCard).updateCardNumber(timestamp,
+                                "The card has been destroyed", true);
+            affectedCardNode.put("cardHolder", email);
+            affectedCardNode.put("account", IBAN);
+            affectedAcc.getCards().remove(cardNumber);
+            affectedAcc.getCards().put(affectedCard.getCardNumber(), affectedCard);
+
+            outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(affectedCardNode);
+
+            ObjectNode createdCardNode = affectedCardNode.deepCopy();
+            createdCardNode.put("description", "New card created");
+            createdCardNode.put("card", affectedCard.getCardNumber());
+
+            outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(createdCardNode);
         }
 
     }

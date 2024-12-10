@@ -7,7 +7,6 @@ import org.poo.account.Account;
 import org.poo.card.Card;
 import org.poo.fileio.UserInput;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -33,7 +32,7 @@ public class User {
             return;
         }
 
-        userAccounts.put(account.getIBAN(), account);
+        userAccounts.put(account.getIban(), account);
     }
 
     public void addAccountAlias(Account account, String alias) {
