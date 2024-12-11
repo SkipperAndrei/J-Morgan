@@ -2,10 +2,10 @@ package org.poo.command;
 
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
-import org.poo.output.OutputGenerator;
+import org.poo.utils.OutputGenerator;
 import org.poo.user.User;
 
-public class SetMinimumBalance implements Command {
+public final class SetMinimumBalance implements Command {
 
     private String account;
     private double amount;

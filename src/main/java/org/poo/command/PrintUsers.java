@@ -3,10 +3,10 @@ package org.poo.command;
 import lombok.Data;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
-import org.poo.output.OutputGenerator;
+import org.poo.utils.OutputGenerator;
 
 @Data
-public class PrintUsers implements Command {
+public final class PrintUsers implements Command {
 
     private int timestamp;
 

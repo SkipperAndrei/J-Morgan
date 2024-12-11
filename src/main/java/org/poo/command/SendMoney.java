@@ -5,15 +5,10 @@ import org.poo.account.Account;
 import org.poo.database.ExchangeRateDatabase;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
-import org.poo.output.OutputGenerator;
+import org.poo.utils.OutputGenerator;
 import org.poo.user.User;
 
-public class SendMoney implements Command {
-
-    private static final int WRONG_OWNER = -1;
-    private static final int NON_EXISTENT_ACC = -2;
-    private static final int INSUFFICIENT_FUNDS = -3;
-    private static final int SUCCESS = 0;
+public final class SendMoney implements Command {
 
     private String email;
     private String emailReceiver;
@@ -25,7 +20,7 @@ public class SendMoney implements Command {
     private int timestamp;
     private String senderCurrency;
     private ExchangeRateDatabase exchangeRateDatabase;
-    private int actionCode = WRONG_OWNER;
+    private CommandConstants actionCode;
 
     public SendMoney(final CommandInput command, final ExchangeRateDatabase exchangeRateDatabase) {
 
@@ -39,16 +34,30 @@ public class SendMoney implements Command {
         this.exchangeRateDatabase = exchangeRateDatabase;
     }
 
+    /**
+     * This function checks if the sender has enough funds to pay
+     * If the sender has enough the payment will happen
+     * If not, an error code will be signaled
+     * @param senderAcc The sender account
+     * @param receiverAcc The receiver account
+     */
     public void executeOrError(final Account senderAcc, final Account receiverAcc) {
+
         if (senderAcc.getBalance() < originalAmount) {
-            actionCode = INSUFFICIENT_FUNDS;
+            actionCode = CommandConstants.INSUFFICIENT_FUNDS;
             return;
         }
+
         senderAcc.decrementFunds(originalAmount);
         receiverAcc.incrementFunds(amount);
-        actionCode = SUCCESS;
+        actionCode = CommandConstants.SUCCESS;
     }
 
+    /**
+     * This function will convert the amount to be paid to the sender account's currency
+     * @param senderAcc The sender account
+     * @param receiverAcc The receiver account necessary for the execution of the command
+     */
     public void checkAmount(final Account senderAcc, final Account receiverAcc) {
 
         if (senderAcc.getCurrency().equals(receiverAcc.getCurrency())) {
@@ -63,6 +72,11 @@ public class SendMoney implements Command {
 
     }
 
+    /**
+     * This function will check if the receiver account of the "Send Money" command is valid
+     * @param userDatabase The database that will be queried
+     * @param senderAcc The sender account
+     */
     public void checkReceiver(final UserDatabase userDatabase, final Account senderAcc) {
 
         for (User user : userDatabase.getDatabase().values()) {
@@ -74,9 +88,10 @@ public class SendMoney implements Command {
 
             if (user.getUserAliasAccounts().containsKey(receiver)) {
                 checkAmount(senderAcc, user.getUserAliasAccounts().get(receiver));
+                return;
             }
         }
-        actionCode = NON_EXISTENT_ACC;
+        actionCode = CommandConstants.NOT_FOUND;
 
     }
 
@@ -84,7 +99,9 @@ public class SendMoney implements Command {
     public void executeCommand(final UserDatabase userDatabase) {
 
         if (userDatabase.getUserEntry(email).getUserAccounts().containsKey(account)) {
-            senderCurrency = userDatabase.getUserEntry(email).getUserAccounts().get(account).getCurrency();
+            senderCurrency = userDatabase.getUserEntry(email).getUserAccounts().
+                            get(account).getCurrency();
+
             checkReceiver(userDatabase,
                           userDatabase.getDatabase().get(email).getUserAccounts().get(account));
             return;

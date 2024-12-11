@@ -7,26 +7,18 @@ import org.poo.card.OneTimeCard;
 import org.poo.database.ExchangeRateDatabase;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
-import org.poo.output.OutputGenerator;
+import org.poo.utils.OutputGenerator;
 
-public class PayOnline implements Command {
-
-    private static final int UNKNOWN_CURRENCY = -1;
-    private static final int FROZEN_CARD = -2;
-    private static final int INSUFFICIENT_FUNDS = -3;
-    private static final int UNKNOWN_CARD = -4;
-    private static final int POSSIBLE_TRANSACTION = 0;
+public final class PayOnline implements Command {
 
     private String cardNumber;
-    private double originalAmount;
     private double amount;
     private String currency;
     private int timestamp;
-    private String description;
     private String iban;
     private String commerciant;
     private String email;
-    private int actionCode = UNKNOWN_CARD;
+    private CommandConstants actionCode = CommandConstants.UNKNOWN_CARD;
     private boolean changeCard = false;
     private final ExchangeRateDatabase exchangeRateDatabase;
 
@@ -36,19 +28,25 @@ public class PayOnline implements Command {
         amount = command.getAmount();
         currency = command.getCurrency();
         timestamp = command.getTimestamp();
-        description = command.getDescription();
         commerciant = command.getCommerciant();
         email = command.getEmail();
-        originalAmount = amount;
         this.exchangeRateDatabase = exchangeRateDatabase;
 
     }
 
-
-    public int paymentCheck(final Account acc, final Card card) {
+    /**
+     * This function checks if the account has enough funds to make the payment.
+     * If the payment was done with a One-time card,
+     * it sets the flag to generate another card number.
+     * This new card number will be generated in the "generateOutput" function.
+     * @param acc The affected account
+     * @param card The card used to make the transaction
+     * @return A signal code
+     */
+    public CommandConstants paymentCheck(final Account acc, final Card card) {
 
         if (amount > acc.getBalance()) {
-            return INSUFFICIENT_FUNDS;
+            return CommandConstants.INSUFFICIENT_FUNDS;
         }
 
         acc.setBalance(acc.getBalance() - amount);
@@ -57,24 +55,35 @@ public class PayOnline implements Command {
             ((OneTimeCard) card).getExpired();
             changeCard = true;
         } catch (ClassCastException e) {
-            return POSSIBLE_TRANSACTION;
+            return CommandConstants.SUCCESS;
         }
-        return POSSIBLE_TRANSACTION;
+        return CommandConstants.SUCCESS;
     }
 
-    public int cardCheck(final Account acc) {
+    /**
+     * This function checks if the card used to make the payment is frozen or not
+     * @param acc The affected account
+     * @return A signal code
+     */
+    public CommandConstants cardCheck(final Account acc) {
 
         Card card = acc.getCards().get(cardNumber);
 
         if (card.getStatus().toString().equals("frozen")) {
-            return FROZEN_CARD;
+            return CommandConstants.FROZEN_CARD;
         }
 
         return paymentCheck(acc, card);
 
     }
 
-    public int currencyCheck(final Account acc) {
+    /**
+     * This function makes the conversion of the account currency
+     * The currency that is converted to is the one utilized in the payment
+     * @param acc The affected account
+     * @return A signal code
+     */
+    public CommandConstants currencyCheck(final Account acc) {
 
         if (acc.getCurrency().equals(currency)) {
             return cardCheck(acc);
@@ -84,7 +93,7 @@ public class PayOnline implements Command {
             amount *= exchangeRateDatabase.getExchangeRate(currency, acc.getCurrency());
             return cardCheck(acc);
         } catch (NullPointerException e) {
-            return UNKNOWN_CURRENCY;
+            return CommandConstants.UNKNOWN_CURRENCY;
         }
 
     }
@@ -107,7 +116,7 @@ public class PayOnline implements Command {
 
         switch (actionCode) {
 
-            case UNKNOWN_CARD :
+            case UNKNOWN_CARD:
 
                 outputGenerator.errorSetting(timestamp, "Card not found", "payOnline");
                 return;
@@ -138,7 +147,7 @@ public class PayOnline implements Command {
                 outputGenerator.tryToAddTransaction(affectedAcc, frozenNode);
                 return;
 
-            case POSSIBLE_TRANSACTION:
+            case SUCCESS:
 
                 ObjectNode paymentNode = outputGenerator.getMapper().createObjectNode();
                 paymentNode.put("timestamp", timestamp);

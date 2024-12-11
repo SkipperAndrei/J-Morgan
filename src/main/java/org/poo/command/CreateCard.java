@@ -5,18 +5,15 @@ import org.poo.account.Account;
 import org.poo.card.Card;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
-import org.poo.output.OutputGenerator;
+import org.poo.utils.OutputGenerator;
 
-public class CreateCard implements Command {
-
-    private static final int SUCCESS = 0;
-    private static final int FAILURE = -1;
+public final class CreateCard implements Command {
 
     private String cardNumber;
     private String cardHolder;
     private String account;
     private int timestamp;
-    private int actionCode = SUCCESS;
+    private CommandConstants actionCode = CommandConstants.SUCCESS;
 
     public CreateCard(final CommandInput command) {
         cardHolder = command.getEmail();
@@ -34,7 +31,7 @@ public class CreateCard implements Command {
             return;
         }
 
-        actionCode = FAILURE;
+        actionCode = CommandConstants.NOT_FOUND;
     }
 
     @Override
@@ -51,7 +48,7 @@ public class CreateCard implements Command {
                 createCardNode.put("account", account);
                 break;
 
-            case FAILURE:
+            case NOT_FOUND:
                 createCardNode.put("description", "Couldn't create card");
                 break;
 

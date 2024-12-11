@@ -3,9 +3,9 @@ package org.poo.command;
 import org.poo.account.Account;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
-import org.poo.output.OutputGenerator;
+import org.poo.utils.OutputGenerator;
 
-public class SetAlias implements Command {
+public final class SetAlias implements Command {
 
     private String email;
     private String account;

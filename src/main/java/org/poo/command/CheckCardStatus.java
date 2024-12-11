@@ -5,10 +5,10 @@ import org.poo.account.Account;
 import org.poo.card.Card;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
-import org.poo.output.OutputGenerator;
+import org.poo.utils.OutputGenerator;
 import org.poo.user.User;
 
-public class CheckCardStatus implements Command {
+public final class CheckCardStatus implements Command {
 
     private String cardNumber;
     private int timestamp;
@@ -22,6 +22,12 @@ public class CheckCardStatus implements Command {
         timestamp = command.getTimestamp();
     }
 
+    /**
+     * This function will retain the previous status of the card and
+     * change the current status of the card if necessary
+     * @param acc The account that the card is associated with
+     * @param checkedCard The affected card
+     */
     public void checkStatus(final Account acc, final Card checkedCard) {
         previousStatus = checkedCard.getStatus().toString();
         checkedCard.changeCardStatus(acc);
@@ -85,6 +91,8 @@ public class CheckCardStatus implements Command {
                     return;
             }
         } catch (NullPointerException ex) {
+
+            // Set an error in case the card wasn't found while iterating through the accounts
             outputGenerator.errorSetting(timestamp, "Card not found", "checkCardStatus");
         }
 

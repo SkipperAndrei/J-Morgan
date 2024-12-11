@@ -5,15 +5,12 @@ import org.poo.account.Account;
 import org.poo.database.ExchangeRateDatabase;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
-import org.poo.output.OutputGenerator;
+import org.poo.utils.OutputGenerator;
 
 import java.util.List;
 import java.util.ListIterator;
 
-public class SplitPayment implements Command {
-
-    private static final int SUCCESS = 0;
-    private static final int FAILURE = -1;
+public final class SplitPayment implements Command {
 
     private List<String> args;
     private double amountPerAccount;
@@ -21,7 +18,7 @@ public class SplitPayment implements Command {
     private String currency;
     private String badAccount;
     private int timestamp;
-    private int actionCode = SUCCESS;
+    private CommandConstants actionCode = CommandConstants.SUCCESS;
     private ExchangeRateDatabase exchangeRateDatabase;
 
 
@@ -36,6 +33,12 @@ public class SplitPayment implements Command {
         this.exchangeRateDatabase = exchangeRateDatabase;
     }
 
+    /**
+     * This function, that assumes that balance checking was done before calling, will
+     * extract the necessary funds required to make the payment.
+     * @param userDatabase The database that will be queried
+     * @param iban The Iban of the account
+     */
     public void makePayment(final UserDatabase userDatabase, final String iban) {
         String email = userDatabase.getMailEntry(iban);
         Account acc = userDatabase.getUserEntry(email).getUserAccounts().get(iban);
@@ -45,6 +48,12 @@ public class SplitPayment implements Command {
         userDatabase.getUserEntry(email).getUserAccounts().get(iban).decrementFunds(amountToPay);
     }
 
+    /**
+     * This function will check if an account, identified by it's Iban, has enough funds to pay.
+     * @param userDatabase The database that will be queried to get the account
+     * @param arg The Iban of the account
+     * @return True, if the account has enough funds, False otherwise
+     */
     public boolean checkAccount(final UserDatabase userDatabase, final String arg) {
 
         String userEmail = userDatabase.getMailEntry(arg);
@@ -78,7 +87,7 @@ public class SplitPayment implements Command {
 
             if (!valid) {
                 badAccount = arg;
-                actionCode = FAILURE;
+                actionCode = CommandConstants.INSUFFICIENT_FUNDS;
                 return;
             }
         }
@@ -105,9 +114,9 @@ public class SplitPayment implements Command {
 
             userSuccessNode.put("amount", amountPerAccount);
 
-            if (actionCode == FAILURE) {
-                userSuccessNode.put("error", "Account " + badAccount +
-                                    " has insufficient funds for a split payment.");
+            if (actionCode == CommandConstants.INSUFFICIENT_FUNDS) {
+                userSuccessNode.put("error", "Account " + badAccount
+                                    + " has insufficient funds for a split payment.");
 
             }
 

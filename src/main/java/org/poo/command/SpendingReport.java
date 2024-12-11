@@ -5,9 +5,9 @@ import org.poo.account.Account;
 import org.poo.account.SavingAccount;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
-import org.poo.output.OutputGenerator;
+import org.poo.utils.OutputGenerator;
 
-public class SpendingReport implements Command {
+public final class SpendingReport implements Command {
 
     private static final  int SUCCESS = 0;
     private static final  int SAVING_ACC = -1;
@@ -18,7 +18,7 @@ public class SpendingReport implements Command {
     private String account;
     private String email;
     private int timestamp;
-    private int actionCode = SUCCESS;
+    private CommandConstants actionCode = CommandConstants.SUCCESS;
 
     public SpendingReport(final CommandInput command) {
         startTimestamp = command.getStartTimestamp();
@@ -33,14 +33,14 @@ public class SpendingReport implements Command {
         email = userDatabase.getMailEntry(account);
 
         if (email == null) {
-            actionCode = UNKNOWN_ACC;
+            actionCode = CommandConstants.NOT_FOUND;
             return;
         }
 
         try {
             Account acc = userDatabase.getUserEntry(email).getUserAccounts().get(account);
             ((SavingAccount) acc).getInterestRate();
-            actionCode = SAVING_ACC;
+            actionCode = CommandConstants.SAVING_ACC;
         } catch (ClassCastException | NullPointerException e) {
             return;
         }
@@ -63,7 +63,7 @@ public class SpendingReport implements Command {
                 outputGenerator.getOutput().add(savingAccNode);
                 return;
 
-            case UNKNOWN_ACC:
+            case NOT_FOUND:
                 outputGenerator.errorSetting(timestamp, "Account not found", "spendingsReport");
                 return;
 

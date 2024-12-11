@@ -5,20 +5,16 @@ import org.poo.account.Account;
 import org.poo.account.SavingAccount;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
-import org.poo.output.OutputGenerator;
+import org.poo.utils.OutputGenerator;
 import org.poo.user.User;
 
-public class ChangeInterestRate implements Command {
-
-    private static final int SUCCESS = 0;
-    private static final int CLASSIC_ACC = -1;
-    private static final int NOT_FOUND = -2;
+public final class ChangeInterestRate implements Command {
 
     private String account;
     private double interestRate;
     private int timestamp;
     private String email;
-    private int actionCode = NOT_FOUND;
+    private CommandConstants actionCode = CommandConstants.NOT_FOUND;
 
     public ChangeInterestRate(final CommandInput command) {
         account = command.getAccount();
@@ -26,14 +22,21 @@ public class ChangeInterestRate implements Command {
         timestamp = command.getTimestamp();
     }
 
+    /**
+     * This function checks if the account is a savings type
+     * If it is, it will change the interest rate
+     * If it isn't it will send an error signal
+     * @param acc The account
+     */
     public void checkAccount(final Account acc) {
 
         try {
             ((SavingAccount) acc).setInterestRate(interestRate);
-            actionCode = SUCCESS;
+            actionCode = CommandConstants.SUCCESS;
         } catch (ClassCastException e) {
-            actionCode = CLASSIC_ACC;
+            actionCode = CommandConstants.CLASSIC_ACC;
         }
+
     }
 
     @Override

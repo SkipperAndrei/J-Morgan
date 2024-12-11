@@ -2,9 +2,9 @@ package org.poo.command;
 
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
-import org.poo.output.OutputGenerator;
+import org.poo.utils.OutputGenerator;
 
-public class Report implements Command {
+public final class Report implements Command {
 
     private int startTimestamp;
     private int endTimestamp;

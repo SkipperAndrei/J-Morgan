@@ -2,14 +2,15 @@ package org.poo.command;
 
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
-import org.poo.output.OutputGenerator;
+import org.poo.utils.OutputGenerator;
 
-public class PrintTransactions implements Command {
+public final class PrintTransactions implements Command {
 
     private String email;
     private int timestamp;
 
     public PrintTransactions(final CommandInput command) {
+
         email = command.getEmail();
         timestamp = command.getTimestamp();
     }

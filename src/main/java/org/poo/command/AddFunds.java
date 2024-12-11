@@ -2,12 +2,12 @@ package org.poo.command;
 
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
-import org.poo.output.OutputGenerator;
+import org.poo.utils.OutputGenerator;
 import lombok.Data;
 import org.poo.user.User;
 
 @Data
-public class AddFunds implements Command {
+public final class AddFunds implements Command {
 
     private String account;
     private double amount;

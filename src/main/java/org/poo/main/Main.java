@@ -13,7 +13,7 @@ import org.poo.fileio.CommandInput;
 import org.poo.fileio.ExchangeInput;
 import org.poo.fileio.ObjectInput;
 import org.poo.fileio.UserInput;
-import org.poo.output.OutputGenerator;
+import org.poo.utils.OutputGenerator;
 import org.poo.user.User;
 import org.poo.utils.Utils;
 
@@ -99,17 +99,20 @@ public final class Main {
             exchangeDB.addNewExchange(exchange.getTo(), exchange.getFrom(), 1 / exchange.getRate());
         }
 
+        // Iterate through the commands and execute them in a single-threaded context
         for (CommandInput command : inputData.getCommands()) {
             Command comm = FactoryCommand.extractCommand(command, exchangeDB);
+
             try {
                 comm.executeCommand(userDB);
                 comm.generateOutput(generator);
             } catch (NullPointerException ex) {
                 continue;
             }
+
         }
 
-        userDB.getDatabase().clear();
+        userDB.clearDatabase();
         exchangeDB.resetExchangeDatabase();
         Utils.resetRandom();
 

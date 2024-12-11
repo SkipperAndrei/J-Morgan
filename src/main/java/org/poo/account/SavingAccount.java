@@ -4,6 +4,7 @@ import lombok.Data;
 
 /**
  * This class will contain only objects that are Saving accounts
+ * This type of Account will only have Interest Rate related transactions
  */
 @Data
 public class SavingAccount extends Account {

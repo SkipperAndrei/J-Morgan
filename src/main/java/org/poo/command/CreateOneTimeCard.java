@@ -6,18 +6,15 @@ import org.poo.card.Card;
 import org.poo.card.OneTimeCard;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
-import org.poo.output.OutputGenerator;
+import org.poo.utils.OutputGenerator;
 
-public class CreateOneTimeCard implements Command {
-
-    private static final int SUCCESS = 0;
-    private static final int FAILURE = 1;
+public final class CreateOneTimeCard implements Command {
 
     private int timestamp;
     private String account;
     private String email;
     private String cardNumber;
-    private int actionCode = SUCCESS;
+    private CommandConstants actionCode = CommandConstants.SUCCESS;
 
     public CreateOneTimeCard(final CommandInput command) {
         account = command.getAccount();
@@ -35,7 +32,7 @@ public class CreateOneTimeCard implements Command {
             return;
         }
 
-        actionCode = FAILURE;
+        actionCode = CommandConstants.NOT_FOUND;
     }
 
     @Override
@@ -44,7 +41,7 @@ public class CreateOneTimeCard implements Command {
         ObjectNode oneTimeNode = outputGenerator.getMapper().createObjectNode();
         oneTimeNode.put("timestamp", timestamp);
 
-        if (actionCode == SUCCESS) {
+        if (actionCode == CommandConstants.SUCCESS) {
             oneTimeNode.put("description", "New card created");
             oneTimeNode.put("card", cardNumber);
             oneTimeNode.put("cardHolder", email);

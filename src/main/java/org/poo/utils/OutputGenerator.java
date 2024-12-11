@@ -1,4 +1,4 @@
-package org.poo.output;
+package org.poo.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,7 +15,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-
+/**
+ * This class will handle JSON output generation
+ */
 @Data
 public final class OutputGenerator {
 
@@ -31,6 +33,10 @@ public final class OutputGenerator {
         this.userDatabase = userDatabase;
     }
 
+    /**
+     * This function will add all the users mapped as JSON nodes to output file.
+     * @param timestamp The moment the command was queried
+     */
     public void addUsers(final int timestamp) {
 
         ObjectNode usersNode = mapper.createObjectNode();
@@ -40,11 +46,18 @@ public final class OutputGenerator {
         for (User user : userDatabase.getDatabase().values()) {
             users.add(user.userToJson(mapper));
         }
+
         usersNode.set("output", users);
         usersNode.put("timestamp", timestamp);
         output.add(usersNode);
     }
 
+    /**
+     * This function generates the output for the "delete account" query.
+     * @param timestamp The timestamp of the query
+     * @param error If an error happened
+     * @param user The user whose account needs to be deleted
+     */
     public void deleteAccount(final int timestamp, final boolean error, final User user) {
 
         ObjectNode deleteNode = mapper.createObjectNode();
@@ -53,7 +66,8 @@ public final class OutputGenerator {
         ObjectNode infoNode = mapper.createObjectNode();
 
         if (error) {
-            infoNode.put("error", "Account couldn't be deleted - see org.poo.transactions for details");
+            infoNode.put("error", "Account couldn't be deleted - "
+                        + "see org.poo.transactions for details");
         } else {
             infoNode.put("success", "Account deleted");
         }
@@ -66,7 +80,8 @@ public final class OutputGenerator {
 
         if (transactionInfoNode.has("error")) {
             transactionInfoNode.remove("error");
-            transactionInfoNode.put("description", "Account couldn't be deleted - there are funds remaining");
+            transactionInfoNode.put("description", "Account couldn't be deleted - "
+                                    + "there are funds remaining");
         }
 
         user.addTransaction(transactionInfoNode);
@@ -74,7 +89,14 @@ public final class OutputGenerator {
         output.add(deleteNode);
     }
 
+    /**
+     * This function generates output for queries that encountered errors.
+     * @param timestamp The timestamp of the query
+     * @param description Description of the error
+     * @param command The query type
+     */
     public void errorSetting(final int timestamp, final String description, final String command) {
+
         ObjectNode errorNode = mapper.createObjectNode();
         errorNode.put("command", command);
 
@@ -88,6 +110,11 @@ public final class OutputGenerator {
         output.add(errorNode);
     }
 
+    /**
+     * This function generates output for the "print transactions" command.
+     * @param timestamp The timestamp of the query
+     * @param user The user whose transactions will be printed
+     */
     public void printTransaction(final int timestamp, final User user) {
         ObjectNode transactionNode = mapper.createObjectNode();
 
@@ -103,6 +130,13 @@ public final class OutputGenerator {
         output.add(transactionNode);
     }
 
+    /**
+     * This function will try to add the transaction to an account.
+     * If the account is a savings account it won't add it.
+     * @param acc The account
+     * @param transaction The transaction
+     * @return True, if it was added, False otherwise
+     */
     public boolean tryToAddTransaction(final Account acc, final ObjectNode transaction) {
 
         try {
@@ -116,14 +150,23 @@ public final class OutputGenerator {
 
     }
 
-
+    /**
+     * This function generates the output for the "Split payment" query.
+     * @param args The list of Ibans
+     * @param timestamp The timestamp of the query
+     * @param currency The currency used in the transaction
+     * @param amount The amount to be payed
+     * @return The mapped JSON node
+     */
     public ObjectNode defaultSplitOutput(final List<String> args, final int timestamp,
                                          final String currency, final double amount) {
 
         ObjectNode successNode = mapper.createObjectNode();
+
         successNode.put("timestamp", timestamp);
         successNode.put("description", "Split payment of "
                         + String.format("%.2f", amount) + " " + currency);
+
         successNode.put("currency", currency);
         successNode.put("amount", amount / args.size());
 
@@ -136,6 +179,16 @@ public final class OutputGenerator {
         return successNode;
     }
 
+    /**
+     * This function generates the output for the "report" query.
+     * The function iterates through all transaction associated to the account.
+     * It maps in the output only the ones that are in the queried interval.
+     * @param startTimestamp The start of the timestamp interval
+     * @param endTimestamp The end of the timestamp interval
+     * @param email The email of the user
+     * @param account The Iban of the account
+     * @param timestamp The timestamp of the "report" query
+     */
     public void generateReport(final int startTimestamp, final int endTimestamp,
                                final String email, final String account, final int timestamp) {
 
@@ -175,16 +228,28 @@ public final class OutputGenerator {
         output.add(reportNode);
     }
 
+    /**
+     * This function generates the output for the "spendings report" query.
+     * If the query was issued on a savings iban it will generate an error message.
+     * Same as "report" query, the function iterates through the transactions.
+     * It keeps the ones that are the result of "pay online".
+     * It also keeps track of the commerciants and the amount payed to them.
+     * @param startTimestamp The beginning of the interval
+     * @param endTimestamp The end of the interval
+     * @param email The email of the user
+     * @param iban The iban of the account
+     * @param timestamp The timestamp of the query
+     */
     public void generateSpendingReport(final int startTimestamp, final int endTimestamp,
-                                       final String email, final String account, final int timestamp) {
+                                       final String email, final String iban, final int timestamp) {
 
         ObjectNode reportNode = mapper.createObjectNode();
         reportNode.put("command", "spendingsReport");
 
-        Account acc = userDatabase.getUserEntry(email).getUserAccounts().get(account);
+        Account acc = userDatabase.getUserEntry(email).getUserAccounts().get(iban);
 
         ObjectNode outputNode = mapper.createObjectNode();
-        outputNode.put("IBAN", account);
+        outputNode.put("IBAN", iban);
         outputNode.put("balance", acc.getBalance());
         outputNode.put("currency", acc.getCurrency());
 

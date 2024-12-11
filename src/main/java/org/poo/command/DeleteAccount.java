@@ -2,10 +2,10 @@ package org.poo.command;
 
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
-import org.poo.output.OutputGenerator;
+import org.poo.utils.OutputGenerator;
 import org.poo.user.User;
 
-public class DeleteAccount implements Command {
+public final class DeleteAccount implements Command {
 
     private String email;
     private String account;
@@ -26,6 +26,7 @@ public class DeleteAccount implements Command {
             if (userDatabase.getUserEntry(email).getUserAccounts().get(account).getBalance() != 0) {
                 error = true;
             } else {
+                userDatabase.getUserEntry(email).getUserAccounts().get(account).getCards().clear();
                 userDatabase.getUserEntry(email).getUserAccounts().remove(account);
                 userDatabase.removeMailEntry(account);
             }
