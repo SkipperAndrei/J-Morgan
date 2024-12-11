@@ -5,52 +5,57 @@ import org.poo.account.Account;
 import org.poo.account.SavingAccount;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
-import org.poo.output.OutputGenerator;
+import org.poo.utils.OutputGenerator;
 import org.poo.user.User;
 
-public class AddInterest implements Command {
-
-    private final static int SUCCESS = 0;
-    private final static int CLASSIC_ACC = -1;
-    private final static int NOT_FOUND = -2;
+public final class AddInterest implements Command {
 
     private String email;
     private String account;
     private int timestamp;
-    private int actionCode = NOT_FOUND;
+    private CommandConstants actionCode = CommandConstants.NOT_FOUND;
 
-
-    public AddInterest(CommandInput command) {
+    public AddInterest(final CommandInput command) {
         account = command.getAccount();
         timestamp = command.getTimestamp();
     }
 
-    public void checkAccount(Account acc) {
+    /**
+     * This function will check if the account is a savings or a classic acc
+     * If the account is a savings account, it will increase the balance with the interest rate
+     * Also, if it's a savings accont, it will send a success signal
+     * If it's a saving account it will send an error signal
+     * @param acc The account queried
+     */
+    public void checkAccount(final Account acc) {
 
         try {
             acc.incrementFunds(acc.getBalance() * ((SavingAccount) acc).getInterestRate());
-            actionCode = SUCCESS;
+            actionCode = CommandConstants.SUCCESS;
         } catch (ClassCastException e) {
-            actionCode = CLASSIC_ACC;
+            actionCode = CommandConstants.CLASSIC_ACC;
         }
     }
 
     @Override
-    public void executeCommand(UserDatabase userDatabase) {
+    public void executeCommand(final UserDatabase userDatabase) {
+
         for (User user : userDatabase.getDatabase().values()) {
 
             if (user.getUserAccounts().containsKey(account)) {
+
                 email = user.getUserData().getEmail();
                 checkAccount(user.getUserAccounts().get(account));
                 return;
             }
         }
+
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
 
-        switch(actionCode) {
+        switch (actionCode) {
 
             case SUCCESS:
 
@@ -65,17 +70,8 @@ public class AddInterest implements Command {
 
             case CLASSIC_ACC:
 
-                ObjectNode classicAccNode = outputGenerator.getMapper().createObjectNode();
-                classicAccNode.put("command", "addInterest");
-
-                ObjectNode errorAccNode = outputGenerator.getMapper().createObjectNode();
-
-                errorAccNode.put("timestamp", timestamp);
-                errorAccNode.put("description", "This is not a savings account");
-                classicAccNode.set("output", errorAccNode);
-
-                classicAccNode.put("timestamp", timestamp);
-                outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(classicAccNode);
+                outputGenerator.errorSetting(timestamp, "This is not a savings account",
+                                    "addInterest");
                 break;
 
             case NOT_FOUND:

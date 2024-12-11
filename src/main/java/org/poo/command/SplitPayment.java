@@ -1,22 +1,16 @@
 package org.poo.command;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.jgrapht.graph.DefaultWeightedEdge;
 import org.poo.account.Account;
-import org.poo.account.SavingAccount;
 import org.poo.database.ExchangeRateDatabase;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
-import org.poo.output.OutputGenerator;
-import org.poo.user.User;
+import org.poo.utils.OutputGenerator;
 
 import java.util.List;
 import java.util.ListIterator;
 
-public class SplitPayment implements Command {
-
-    private final static int SUCCESS = 0;
-    private final static int FAILURE = -1;
+public final class SplitPayment implements Command {
 
     private List<String> args;
     private double amountPerAccount;
@@ -24,12 +18,13 @@ public class SplitPayment implements Command {
     private String currency;
     private String badAccount;
     private int timestamp;
-    private int actionCode = SUCCESS;
-
+    private CommandConstants actionCode = CommandConstants.SUCCESS;
     private ExchangeRateDatabase exchangeRateDatabase;
 
 
-    public SplitPayment(CommandInput command, ExchangeRateDatabase exchangeRateDatabase) {
+    public SplitPayment(final CommandInput command,
+                        final ExchangeRateDatabase exchangeRateDatabase) {
+
         args = command.getAccounts();
         amount = command.getAmount();
         amountPerAccount = amount / args.size();
@@ -38,16 +33,28 @@ public class SplitPayment implements Command {
         this.exchangeRateDatabase = exchangeRateDatabase;
     }
 
-    public void makePayment(UserDatabase userDatabase, String IBAN) {
-        String email = userDatabase.getMailEntry(IBAN);
-        Account acc = userDatabase.getUserEntry(email).getUserAccounts().get(IBAN);
+    /**
+     * This function, that assumes that balance checking was done before calling, will
+     * extract the necessary funds required to make the payment.
+     * @param userDatabase The database that will be queried
+     * @param iban The Iban of the account
+     */
+    public void makePayment(final UserDatabase userDatabase, final String iban) {
+        String email = userDatabase.getMailEntry(iban);
+        Account acc = userDatabase.getUserEntry(email).getUserAccounts().get(iban);
         double amountToPay = amountPerAccount;
 
         amountToPay *= exchangeRateDatabase.getExchangeRate(currency, acc.getCurrency());
-        userDatabase.getUserEntry(email).getUserAccounts().get(IBAN).decrementFunds(amountToPay);
+        userDatabase.getUserEntry(email).getUserAccounts().get(iban).decrementFunds(amountToPay);
     }
 
-    public boolean checkAccount(UserDatabase userDatabase, String arg) {
+    /**
+     * This function will check if an account, identified by it's Iban, has enough funds to pay.
+     * @param userDatabase The database that will be queried to get the account
+     * @param arg The Iban of the account
+     * @return True, if the account has enough funds, False otherwise
+     */
+    public boolean checkAccount(final UserDatabase userDatabase, final String arg) {
 
         String userEmail = userDatabase.getMailEntry(arg);
         Account acc = userDatabase.getUserEntry(userEmail).getUserAccounts().get(arg);
@@ -59,16 +66,17 @@ public class SplitPayment implements Command {
         try {
             double amountToPay = amountPerAccount;
             amountToPay *= exchangeRateDatabase.getExchangeRate(currency, acc.getCurrency());
+
             return acc.canPay(amountToPay);
+
         } catch (NullPointerException e) {
             return false;
         }
 
     }
 
-
     @Override
-    public void executeCommand(UserDatabase userDatabase) {
+    public void executeCommand(final UserDatabase userDatabase) {
 
         ListIterator<String> argsIterator = args.listIterator(args.size());
 
@@ -79,7 +87,7 @@ public class SplitPayment implements Command {
 
             if (!valid) {
                 badAccount = arg;
-                actionCode = FAILURE;
+                actionCode = CommandConstants.INSUFFICIENT_FUNDS;
                 return;
             }
         }
@@ -93,23 +101,22 @@ public class SplitPayment implements Command {
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
 
         ObjectNode successNode = outputGenerator.defaultSplitOutput(args, timestamp,
                                 currency, amount);
 
-        for (String Iban : args) {
+        for (String iban : args) {
             ObjectNode userSuccessNode = successNode.deepCopy();
-            String email = outputGenerator.getUserDatabase().getMailEntry(Iban);
+            String email = outputGenerator.getUserDatabase().getMailEntry(iban);
             Account acc = outputGenerator.getUserDatabase().getUserEntry(email).
-                    getUserAccounts().get(Iban);
-            // double rate = exchangeRateDatabase.getExchangeRate(currency, acc.getCurrency());
+                        getUserAccounts().get(iban);
 
             userSuccessNode.put("amount", amountPerAccount);
 
-            if (actionCode == FAILURE) {
-                userSuccessNode.put("error", "Account " + badAccount +
-                                    " has insufficient funds for a split payment");
+            if (actionCode == CommandConstants.INSUFFICIENT_FUNDS) {
+                userSuccessNode.put("error", "Account " + badAccount
+                                    + " has insufficient funds for a split payment.");
 
             }
 

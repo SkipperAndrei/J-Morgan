@@ -1,11 +1,10 @@
 package org.poo.command;
 
-import org.poo.account.Account;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
-import org.poo.output.OutputGenerator;
+import org.poo.utils.OutputGenerator;
 
-public class Report implements Command {
+public final class Report implements Command {
 
     private int startTimestamp;
     private int endTimestamp;
@@ -13,7 +12,7 @@ public class Report implements Command {
     private int timestamp;
     private String email;
 
-    public Report(CommandInput command) {
+    public Report(final CommandInput command) {
         startTimestamp = command.getStartTimestamp();
         endTimestamp = command.getEndTimestamp();
         account = command.getAccount();
@@ -21,14 +20,16 @@ public class Report implements Command {
     }
 
     @Override
-    public void executeCommand(UserDatabase userDatabase) {
-        // System.out.println("Sunt aici");
+    public void executeCommand(final UserDatabase userDatabase) {
         email = userDatabase.getMailEntry(account);
         return;
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
+        if (email == null) {
+            outputGenerator.errorSetting(timestamp, "Account not found", "report");
+        }
         outputGenerator.generateReport(startTimestamp, endTimestamp, email, account, timestamp);
     }
 }

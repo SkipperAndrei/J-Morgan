@@ -6,27 +6,24 @@ import org.poo.card.Card;
 import org.poo.card.OneTimeCard;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
-import org.poo.output.OutputGenerator;
+import org.poo.utils.OutputGenerator;
 
-public class CreateOneTimeCard implements Command {
-
-    private final static int SUCCESS = 0;
-    private final static int FAILURE = 1;
+public final class CreateOneTimeCard implements Command {
 
     private int timestamp;
     private String account;
     private String email;
     private String cardNumber;
-    private int actionCode = SUCCESS;
+    private CommandConstants actionCode = CommandConstants.SUCCESS;
 
-    public CreateOneTimeCard(CommandInput command) {
+    public CreateOneTimeCard(final CommandInput command) {
         account = command.getAccount();
         email = command.getEmail();
         timestamp = command.getTimestamp();
     }
 
     @Override
-    public void executeCommand(UserDatabase userDatabase) {
+    public void executeCommand(final UserDatabase userDatabase) {
 
         if (userDatabase.getUserEntry(email).getUserAccounts().containsKey(account)) {
             Card card = new OneTimeCard();
@@ -35,16 +32,16 @@ public class CreateOneTimeCard implements Command {
             return;
         }
 
-        actionCode = FAILURE;
+        actionCode = CommandConstants.NOT_FOUND;
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
 
         ObjectNode oneTimeNode = outputGenerator.getMapper().createObjectNode();
         oneTimeNode.put("timestamp", timestamp);
 
-        if (actionCode == SUCCESS) {
+        if (actionCode == CommandConstants.SUCCESS) {
             oneTimeNode.put("description", "New card created");
             oneTimeNode.put("card", cardNumber);
             oneTimeNode.put("cardHolder", email);
@@ -54,7 +51,9 @@ public class CreateOneTimeCard implements Command {
         }
 
         outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(oneTimeNode);
-        Account acc = outputGenerator.getUserDatabase().getUserEntry(email).getUserAccounts().get(account);
+        Account acc = outputGenerator.getUserDatabase().getUserEntry(email).
+                        getUserAccounts().get(account);
+
         outputGenerator.tryToAddTransaction(acc, oneTimeNode);
     }
 }

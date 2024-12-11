@@ -1,23 +1,17 @@
 package org.poo.command;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.jgrapht.graph.DefaultWeightedEdge;
 import org.poo.account.Account;
 import org.poo.database.ExchangeRateDatabase;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
-import org.poo.output.OutputGenerator;
+import org.poo.utils.OutputGenerator;
 import org.poo.user.User;
 
-public class SendMoney implements Command {
-
-    private final static int WRONG_OWNER = -1;
-    private final static int NON_EXISTENT_ACC = -2;
-    private final static int INSUFFICIENT_FUNDS = -3;
-    private final static int SAVINGS_ACC = -4;
-    private final static int SUCCESS = 0;
+public final class SendMoney implements Command {
 
     private String email;
+    private String emailReceiver;
     private String account;
     private String receiver;
     private double originalAmount;
@@ -26,9 +20,9 @@ public class SendMoney implements Command {
     private int timestamp;
     private String senderCurrency;
     private ExchangeRateDatabase exchangeRateDatabase;
-    private int actionCode = WRONG_OWNER;
+    private CommandConstants actionCode;
 
-    public SendMoney(CommandInput command, ExchangeRateDatabase exchangeRateDatabase) {
+    public SendMoney(final CommandInput command, final ExchangeRateDatabase exchangeRateDatabase) {
 
         email = command.getEmail();
         account = command.getAccount();
@@ -40,16 +34,30 @@ public class SendMoney implements Command {
         this.exchangeRateDatabase = exchangeRateDatabase;
     }
 
+    /**
+     * This function checks if the sender has enough funds to pay
+     * If the sender has enough the payment will happen
+     * If not, an error code will be signaled
+     * @param senderAcc The sender account
+     * @param receiverAcc The receiver account
+     */
     public void executeOrError(final Account senderAcc, final Account receiverAcc) {
+
         if (senderAcc.getBalance() < originalAmount) {
-            actionCode = INSUFFICIENT_FUNDS;
+            actionCode = CommandConstants.INSUFFICIENT_FUNDS;
             return;
         }
+
         senderAcc.decrementFunds(originalAmount);
         receiverAcc.incrementFunds(amount);
-        actionCode = SUCCESS;
+        actionCode = CommandConstants.SUCCESS;
     }
 
+    /**
+     * This function will convert the amount to be paid to the sender account's currency
+     * @param senderAcc The sender account
+     * @param receiverAcc The receiver account necessary for the execution of the command
+     */
     public void checkAmount(final Account senderAcc, final Account receiverAcc) {
 
         if (senderAcc.getCurrency().equals(receiverAcc.getCurrency())) {
@@ -57,19 +65,19 @@ public class SendMoney implements Command {
             return;
         }
 
-//        if (exchangeRateDatabase.addUnknownExchange(senderAcc.getCurrency(), receiverAcc.getCurrency())) {
-//            DefaultWeightedEdge edge = exchangeRateDatabase.getExchangeGraph().
-//                                        getEdge(senderAcc.getCurrency(), receiverAcc.getCurrency());
-//            amount *= exchangeRateDatabase.getExchangeGraph().getEdgeWeight(edge);
-//            executeOrError(senderAcc, receiverAcc);
-//        }
+        amount *= exchangeRateDatabase.getExchangeRate(senderAcc.getCurrency(),
+                                                        receiverAcc.getCurrency());
 
-        amount *= exchangeRateDatabase.getExchangeRate(senderAcc.getCurrency(), receiverAcc.getCurrency());
         executeOrError(senderAcc, receiverAcc);
 
     }
 
-    public void checkReceiver(UserDatabase userDatabase, Account senderAcc) {
+    /**
+     * This function will check if the receiver account of the "Send Money" command is valid
+     * @param userDatabase The database that will be queried
+     * @param senderAcc The sender account
+     */
+    public void checkReceiver(final UserDatabase userDatabase, final Account senderAcc) {
 
         for (User user : userDatabase.getDatabase().values()) {
 
@@ -80,17 +88,20 @@ public class SendMoney implements Command {
 
             if (user.getUserAliasAccounts().containsKey(receiver)) {
                 checkAmount(senderAcc, user.getUserAliasAccounts().get(receiver));
+                return;
             }
         }
-        actionCode = NON_EXISTENT_ACC;
+        actionCode = CommandConstants.NOT_FOUND;
 
     }
 
     @Override
-    public void executeCommand(UserDatabase userDatabase) {
+    public void executeCommand(final UserDatabase userDatabase) {
 
         if (userDatabase.getUserEntry(email).getUserAccounts().containsKey(account)) {
-            senderCurrency = userDatabase.getUserEntry(email).getUserAccounts().get(account).getCurrency();
+            senderCurrency = userDatabase.getUserEntry(email).getUserAccounts().
+                            get(account).getCurrency();
+
             checkReceiver(userDatabase,
                           userDatabase.getDatabase().get(email).getUserAccounts().get(account));
             return;
@@ -99,21 +110,38 @@ public class SendMoney implements Command {
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
 
         switch (actionCode) {
             case SUCCESS:
-                ObjectNode sendMoneyNode = outputGenerator.getMapper().createObjectNode();
-                sendMoneyNode.put("timestamp", timestamp);
-                sendMoneyNode.put("description", description);
-                sendMoneyNode.put("senderIBAN", account);
-                sendMoneyNode.put("receiverIBAN", receiver);
-                sendMoneyNode.put("amount", originalAmount + " " + senderCurrency);
-                sendMoneyNode.put("transferType", "sent");
-                outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(sendMoneyNode);
+                ObjectNode sendNode = outputGenerator.getMapper().createObjectNode();
 
-                Account acc = outputGenerator.getUserDatabase().getUserEntry(email).getUserAccounts().get(account);
-                outputGenerator.tryToAddTransaction(acc, sendMoneyNode);
+                sendNode.put("timestamp", timestamp);
+                sendNode.put("description", description);
+                sendNode.put("senderIBAN", account);
+                sendNode.put("receiverIBAN", receiver);
+                sendNode.put("amount", originalAmount + " " + senderCurrency);
+                sendNode.put("transferType", "sent");
+
+                outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(sendNode);
+
+                ObjectNode receivedMoneyNode = sendNode.deepCopy();
+                Account sentAcc = outputGenerator.getUserDatabase().
+                                getUserEntry(email).getUserAccounts().get(account);
+
+                outputGenerator.tryToAddTransaction(sentAcc, sendNode);
+                receivedMoneyNode.put("transferType", "received");
+
+                emailReceiver = outputGenerator.getUserDatabase().getMailEntry(receiver);
+                Account receivedAcc = outputGenerator.getUserDatabase().
+                                    getUserEntry(emailReceiver).getUserAccounts().get(receiver);
+
+                receivedMoneyNode.put("amount", amount + " " + receivedAcc.getCurrency());
+
+                outputGenerator.getUserDatabase().getUserEntry(emailReceiver).
+                                addTransaction(receivedMoneyNode);
+
+                outputGenerator.tryToAddTransaction(receivedAcc, receivedMoneyNode);
                 return;
 
             case INSUFFICIENT_FUNDS:
@@ -122,7 +150,9 @@ public class SendMoney implements Command {
                 noFundsNode.put("description", "Insufficient funds");
                 outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(noFundsNode);
 
-                Account insufficientAcc = outputGenerator.getUserDatabase().getUserEntry(email).getUserAccounts().get(account);
+                Account insufficientAcc = outputGenerator.getUserDatabase().
+                                            getUserEntry(email).getUserAccounts().get(account);
+
                 outputGenerator.tryToAddTransaction(insufficientAcc, noFundsNode);
                 return;
 

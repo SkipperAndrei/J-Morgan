@@ -9,6 +9,13 @@ public final class FactoryCommand {
         throw new UnsupportedOperationException("This is a utility class");
     }
 
+    /**
+     * This function will generate an instance of a class that implements the Command interface
+     * The generation will be based on the type of command that is required
+     * @param command The command object that contains all the information necessary to execute it
+     * @param exchangeRateDatabase required in commands that handle payments
+     * @return The instance of the class that implements the query
+     */
     public static Command extractCommand(final CommandInput command,
                                          final ExchangeRateDatabase exchangeRateDatabase) {
 
@@ -80,6 +87,10 @@ public final class FactoryCommand {
 
             case "report" -> {
                 return new Report(command);
+            }
+
+            case "spendingsReport" -> {
+                return new SpendingReport(command);
             }
 
             default -> {

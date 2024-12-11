@@ -7,25 +7,40 @@ import org.poo.account.Account;
 import org.poo.utils.Utils;
 import lombok.Data;
 
+/**
+ * This class will contain card information
+ */
 @Data
 public class Card {
 
-    public String cardNumber;
-    public StringBuilder status;
+    private static final int MAX_DIFFERENCE = 30;
+
+    private String cardNumber;
+    private StringBuilder status;
 
     public Card() {
         cardNumber = Utils.generateCardNumber();
         status = new StringBuilder("active");
     }
 
-    public void customSetStatus(String status) {
-        this.status.setLength(0);
-        this.status.append(status);
+    /**
+     * Change the status of the card
+     * @param stat Can only be "active", "warning" or "frozen"
+     */
+    public void customSetStatus(final String stat) {
+        status.setLength(0);
+        status.append(stat);
     }
 
-    public void changeCardStatus(Account acc) {
+    /**
+     * Function to check if the status should be changed
+     * If the status is "frozen", it can't be changed
+     * @param acc Account that the card is associated with
+     */
+    public void changeCardStatus(final Account acc) {
 
-        if (acc.getBalance() - acc.getMinimumBalance() <= 30) {
+        if (acc.getBalance() - acc.getMinimumBalance() <= MAX_DIFFERENCE
+                        && !status.toString().equals("frozen")) {
             customSetStatus("warning");
         }
 
@@ -34,7 +49,12 @@ public class Card {
         }
     }
 
-    public ObjectNode cardToJson(ObjectMapper mapper) {
+    /**
+     * Function that maps the contents of a card to a JSON node
+     * @param mapper
+     * @return The mapped JSON node
+     */
+    public ObjectNode cardToJson(final ObjectMapper mapper) {
 
         ObjectNode cardNode = mapper.createObjectNode();
         cardNode.put("cardNumber", cardNumber);

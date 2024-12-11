@@ -7,48 +7,78 @@ import org.poo.account.Account;
 import org.poo.card.Card;
 import org.poo.fileio.UserInput;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import lombok.Data;
 
 @Data
-public class User {
+public final class User {
     private UserInput userData = new UserInput();
     private Map<String, Account> userAccounts = new LinkedHashMap<>();
     private Map<String, Account> userAliasAccounts = new LinkedHashMap<>();
     private ArrayNode userTransactions;
 
-    public User(UserInput userData) {
+    public User(final UserInput userData) {
+
         this.userData.setFirstName(userData.getFirstName());
         this.userData.setLastName(userData.getLastName());
         this.userData.setEmail(userData.getEmail());
         userTransactions = new ObjectMapper().createArrayNode();
     }
 
-    public void addAccount(Account account) {
+    /**
+     * This function adds a new account by iban if
+     * the account email corresponds with the user email
+     * @param account The new account
+     */
+    public void addAccount(final Account account) {
 
         if (!account.getEmail().equals(userData.getEmail())) {
             return;
         }
 
-        userAccounts.put(account.getIBAN(), account);
+        userAccounts.put(account.getIban(), account);
     }
 
-    public void addAccountAlias(Account account, String alias) {
+    /**
+     * This function adds a new account by alias if
+     * the account email corresponds with the user email
+     * @param account The account that will be associated with the alias
+     * @param alias The alias of the account, used when receiving money
+     */
+    public void addAccountAlias(final Account account, final String alias) {
+
+        if (!account.getEmail().equals(userData.getEmail())) {
+            return;
+        }
+
         userAliasAccounts.put(alias, account);
     }
 
-    public void addCard(String IBAN, Card card) {
-        userAccounts.get(IBAN).getCards().put(card.getCardNumber(), card);
+    /**
+     * This function will add a new card on the user's account
+     * @param iban The iban of the account
+     * @param card The new card
+     */
+    public void addCard(final String iban, final Card card) {
+        userAccounts.get(iban).getCards().put(card.getCardNumber(), card);
     }
 
-    public void addTransaction(ObjectNode transaction) {
+    /**
+     * This function will add a new transaction, as a JSON node, in the transaction list
+     * @param transaction The mapped transaction
+     */
+    public void addTransaction(final ObjectNode transaction) {
         userTransactions.add(transaction);
     }
 
-    public ObjectNode userToJson(ObjectMapper mapper) {
+    /**
+     * This function maps the contents of a user object to a JSON node
+     * @param mapper Mapper used to create the new node
+     * @return The mapped JSON node
+     */
+    public ObjectNode userToJson(final ObjectMapper mapper) {
 
         ObjectNode userNode = mapper.createObjectNode();
 
@@ -56,13 +86,13 @@ public class User {
         userNode.put("lastName", userData.getLastName());
         userNode.put("email", userData.getEmail());
 
-        ArrayNode userAccounts = mapper.createArrayNode();
+        ArrayNode accounts = mapper.createArrayNode();
 
         for (Account acc : this.userAccounts.values()) {
-            userAccounts.add(acc.accountToJson(mapper));
+            accounts.add(acc.accountToJson(mapper));
         }
 
-        userNode.set("accounts", userAccounts);
+        userNode.set("accounts", accounts);
         return userNode;
     }
 

@@ -13,7 +13,7 @@ import org.poo.fileio.CommandInput;
 import org.poo.fileio.ExchangeInput;
 import org.poo.fileio.ObjectInput;
 import org.poo.fileio.UserInput;
-import org.poo.output.OutputGenerator;
+import org.poo.utils.OutputGenerator;
 import org.poo.user.User;
 import org.poo.utils.Utils;
 
@@ -83,7 +83,6 @@ public final class Main {
         ObjectInput inputData = objectMapper.readValue(file, ObjectInput.class);
 
         ArrayNode output = objectMapper.createArrayNode();
-        
         UserDatabase userDB = UserDatabase.getInstance();
         ExchangeRateDatabase exchangeDB = ExchangeRateDatabase.getInstance();
         OutputGenerator generator = new OutputGenerator(objectMapper, output, userDB);
@@ -100,31 +99,23 @@ public final class Main {
             exchangeDB.addNewExchange(exchange.getTo(), exchange.getFrom(), 1 / exchange.getRate());
         }
 
-        // DEBUG
-
-//        for (DefaultWeightedEdge edge : exchangeDB.getExchangeGraph().edgeSet()) {
-//            String source = exchangeDB.getExchangeGraph().getEdgeSource(edge);
-//            String target = exchangeDB.getExchangeGraph().getEdgeTarget(edge);
-//            double weight = exchangeDB.getExchangeGraph().getEdgeWeight(edge);
-//
-//            System.out.println("From " + source + " to " + target + ": " + weight);
-//        }
-
-
+        // Iterate through the commands and execute them in a single-threaded context
         for (CommandInput command : inputData.getCommands()) {
             Command comm = FactoryCommand.extractCommand(command, exchangeDB);
+
             try {
-                // Try block because not all commands are implemented
                 comm.executeCommand(userDB);
                 comm.generateOutput(generator);
             } catch (NullPointerException ex) {
                 continue;
             }
+
         }
 
-        userDB.getDatabase().clear();
+        userDB.clearDatabase();
         exchangeDB.resetExchangeDatabase();
         Utils.resetRandom();
+
         ObjectWriter objectWriter = objectMapper.writerWithDefaultPrettyPrinter();
         objectWriter.writeValue(new File(filePath2), output);
     }

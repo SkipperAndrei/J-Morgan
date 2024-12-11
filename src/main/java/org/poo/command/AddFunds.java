@@ -2,25 +2,25 @@ package org.poo.command;
 
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
-import org.poo.output.OutputGenerator;
+import org.poo.utils.OutputGenerator;
 import lombok.Data;
 import org.poo.user.User;
 
 @Data
-public class AddFunds implements Command {
+public final class AddFunds implements Command {
 
     private String account;
     private double amount;
     private int timestamp;
 
-    public AddFunds(CommandInput command) {
+    public AddFunds(final CommandInput command) {
         account = command.getAccount();
         amount = command.getAmount();
         timestamp = command.getTimestamp();
     }
 
     @Override
-    public void executeCommand(UserDatabase userDatabase) {
+    public void executeCommand(final UserDatabase userDatabase) {
 
         for (User usr: userDatabase.getDatabase().values()) {
             if (usr.getUserAccounts().containsKey(account)) {
@@ -31,7 +31,7 @@ public class AddFunds implements Command {
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
         return;
     }
 }

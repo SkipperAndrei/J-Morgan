@@ -6,6 +6,10 @@ import java.util.Map;
 
 import lombok.Data;
 
+/**
+ * This class represents the place where user information is held.
+ * Since all users are held in the same place, this database will be unique
+ */
 @Data
 public final class UserDatabase {
 
@@ -18,6 +22,11 @@ public final class UserDatabase {
         mailDatabase = new LinkedHashMap<>();
     }
 
+    /**
+     * Function that gets the unique instance of the user database.
+     * If there isn't an instance previously defined, it creates it.
+     * @return
+     */
     public static UserDatabase getInstance() {
         if (instance == null) {
             instance = new UserDatabase();
@@ -25,29 +34,64 @@ public final class UserDatabase {
         return instance;
     }
 
-    public void addUserEntry(String userEmail, User user) {
+    /**
+     * This function adds a new pair email-user
+     * @param userEmail The user's email
+     * @param user The user
+     */
+    public void addUserEntry(final String userEmail, final User user) {
         if (!database.containsKey(userEmail)) {
             database.put(userEmail, user);
         }
     }
 
-    public void removeUserEntry(String userEmail) {
+    /**
+     * This method removes a pair email-user
+     * @param userEmail
+     */
+    public void removeUserEntry(final String userEmail) {
         database.remove(userEmail);
     }
 
-    public User getUserEntry(String userEmail) {
+    /**
+     * This function gets an user based on it's email
+     * @param userEmail
+     * @return The user
+     */
+    public User getUserEntry(final String userEmail) {
         return database.get(userEmail);
     }
 
-    public void addMailEntry(String IBAN, String userEmail) {
-        mailDatabase.put(IBAN, userEmail);
+    /**
+     * This method adds a new pair iban-email
+     * @param iban of the account
+     * @param userEmail of the user that owns the account
+     */
+    public void addMailEntry(final String iban, final String userEmail) {
+        mailDatabase.put(iban, userEmail);
     }
 
-    public void removeMailEntry(String IBAN) {
-        mailDatabase.remove(IBAN);
+    /**
+     * This method removes the pair iban-email associated with the iban got as the parameter
+     * @param iban
+     */
+    public void removeMailEntry(final String iban) {
+        mailDatabase.remove(iban);
     }
 
-    public String getMailEntry(String IBAN) {
-        return mailDatabase.get(IBAN);
+    /**
+     * This method retrieves the email of the owner of an account based on the iban of the account
+     * @param iban
+     * @return
+     */
+    public String getMailEntry(final String iban) {
+        return mailDatabase.get(iban);
+    }
+
+    /**
+     * This method will be called when the database needs to be cleared
+     */
+    public void clearDatabase() {
+        database.clear();
     }
 }

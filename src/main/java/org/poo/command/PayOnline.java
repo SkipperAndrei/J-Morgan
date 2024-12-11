@@ -1,118 +1,122 @@
 package org.poo.command;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.jgrapht.graph.DefaultWeightedEdge;
 import org.poo.account.Account;
 import org.poo.card.Card;
 import org.poo.card.OneTimeCard;
 import org.poo.database.ExchangeRateDatabase;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
-import org.poo.output.OutputGenerator;
-import org.poo.utils.Utils;
+import org.poo.utils.OutputGenerator;
 
-public class PayOnline implements Command {
-
-    private static final int UNKNOWN_CURRENCY = -1;
-    private static final int FROZEN_CARD = -2;
-    private static final int INSUFFICIENT_FUNDS = -3;
-    private static final int UNKNOWN_CARD = -4;
-    private static final int SAVING_ACCOUNT = -5;
-    private static final int POSSIBLE_TRANSACTION = 0;
+public final class PayOnline implements Command {
 
     private String cardNumber;
-    private double originalAmount;
     private double amount;
     private String currency;
     private int timestamp;
-    private String description;
-    private String IBAN;
+    private String iban;
     private String commerciant;
     private String email;
-    private int actionCode = UNKNOWN_CARD;
+    private CommandConstants actionCode = CommandConstants.UNKNOWN_CARD;
+    private boolean changeCard = false;
     private final ExchangeRateDatabase exchangeRateDatabase;
 
-    public PayOnline(CommandInput command, ExchangeRateDatabase exchangeRateDatabase) {
+    public PayOnline(final CommandInput command, final ExchangeRateDatabase exchangeRateDatabase) {
+
         cardNumber = command.getCardNumber();
         amount = command.getAmount();
         currency = command.getCurrency();
         timestamp = command.getTimestamp();
-        description = command.getDescription();
         commerciant = command.getCommerciant();
         email = command.getEmail();
-        originalAmount = amount;
         this.exchangeRateDatabase = exchangeRateDatabase;
+
     }
 
-
-    public int paymentCheck(Account acc, Card card) {
+    /**
+     * This function checks if the account has enough funds to make the payment.
+     * If the payment was done with a One-time card,
+     * it sets the flag to generate another card number.
+     * This new card number will be generated in the "generateOutput" function.
+     * @param acc The affected account
+     * @param card The card used to make the transaction
+     * @return A signal code
+     */
+    public CommandConstants paymentCheck(final Account acc, final Card card) {
 
         if (amount > acc.getBalance()) {
-            return INSUFFICIENT_FUNDS;
+            return CommandConstants.INSUFFICIENT_FUNDS;
         }
 
         acc.setBalance(acc.getBalance() - amount);
 
         try {
-            // TODO change this later
-            ((OneTimeCard)card).getExpired();
-            card.setCardNumber(Utils.generateCardNumber());
-            card.changeCardStatus(acc);
+            ((OneTimeCard) card).getExpired();
+            changeCard = true;
         } catch (ClassCastException e) {
-            card.changeCardStatus(acc);
+            return CommandConstants.SUCCESS;
         }
-
-        return POSSIBLE_TRANSACTION;
+        return CommandConstants.SUCCESS;
     }
 
-    public int cardCheck(Account acc) {
+    /**
+     * This function checks if the card used to make the payment is frozen or not
+     * @param acc The affected account
+     * @return A signal code
+     */
+    public CommandConstants cardCheck(final Account acc) {
 
         Card card = acc.getCards().get(cardNumber);
 
         if (card.getStatus().toString().equals("frozen")) {
-            return FROZEN_CARD;
+            return CommandConstants.FROZEN_CARD;
         }
 
         return paymentCheck(acc, card);
 
     }
 
-    public int currencyCheck(Account acc) {
+    /**
+     * This function makes the conversion of the account currency
+     * The currency that is converted to is the one utilized in the payment
+     * @param acc The affected account
+     * @return A signal code
+     */
+    public CommandConstants currencyCheck(final Account acc) {
 
         if (acc.getCurrency().equals(currency)) {
             return cardCheck(acc);
         }
 
-
         try {
             amount *= exchangeRateDatabase.getExchangeRate(currency, acc.getCurrency());
             return cardCheck(acc);
         } catch (NullPointerException e) {
-            return UNKNOWN_CURRENCY;
+            return CommandConstants.UNKNOWN_CURRENCY;
         }
 
     }
 
     @Override
-    public void executeCommand(UserDatabase userDatabase) {
+    public void executeCommand(final UserDatabase userDatabase) {
 
         for (Account acc : userDatabase.getUserEntry(email).getUserAccounts().values()) {
 
             if (acc.getCards().containsKey(cardNumber)) {
-                IBAN = acc.getIBAN();
+                iban = acc.getIban();
                 actionCode = currencyCheck(acc);
             }
         }
 
     }
 
-    // This method will be changed when we get to print Transactions
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
 
         switch (actionCode) {
 
-            case UNKNOWN_CARD :
+            case UNKNOWN_CARD:
 
                 outputGenerator.errorSetting(timestamp, "Card not found", "payOnline");
                 return;
@@ -124,7 +128,9 @@ public class PayOnline implements Command {
                 errorNode.put("description", "Insufficient funds");
                 outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(errorNode);
 
-                Account acc = outputGenerator.getUserDatabase().getUserEntry(email).getUserAccounts().get(IBAN);
+                Account acc = outputGenerator.getUserDatabase().getUserEntry(email).
+                                getUserAccounts().get(iban);
+
                 outputGenerator.tryToAddTransaction(acc, errorNode);
                 return;
 
@@ -135,11 +141,13 @@ public class PayOnline implements Command {
                 frozenNode.put("description", "The card is frozen");
                 outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(frozenNode);
 
-                Account affectedAcc = outputGenerator.getUserDatabase().getUserEntry(email).getUserAccounts().get(IBAN);
+                Account affectedAcc = outputGenerator.getUserDatabase().getUserEntry(email).
+                                    getUserAccounts().get(iban);
+
                 outputGenerator.tryToAddTransaction(affectedAcc, frozenNode);
                 return;
 
-            case POSSIBLE_TRANSACTION:
+            case SUCCESS:
 
                 ObjectNode paymentNode = outputGenerator.getMapper().createObjectNode();
                 paymentNode.put("timestamp", timestamp);
@@ -147,17 +155,37 @@ public class PayOnline implements Command {
                 paymentNode.put("amount", amount);
                 paymentNode.put("commerciant", commerciant);
 
-                Account transAcc = outputGenerator.getUserDatabase().getUserEntry(email).getUserAccounts().get(IBAN);
+                Account transAcc = outputGenerator.getUserDatabase().getUserEntry(email).
+                                getUserAccounts().get(iban);
 
                 outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(paymentNode);
                 outputGenerator.tryToAddTransaction(transAcc, paymentNode);
-                outputGenerator.getUserDatabase().getUserEntry(email).getUserAccounts().
-                                get(IBAN).updatePayments(commerciant, amount);
-                return;
+                break;
 
             default :
                 return;
 
+        }
+
+        if (changeCard) {
+            Account affectedAcc = outputGenerator.getUserDatabase().getUserEntry(email).
+                                getUserAccounts().get(iban);
+
+            Card affectedCard = affectedAcc.getCards().get(cardNumber);
+            ObjectNode affectedCardNode = ((OneTimeCard) affectedCard).updateCardNumber(timestamp,
+                                "The card has been destroyed", true);
+            affectedCardNode.put("cardHolder", email);
+            affectedCardNode.put("account", iban);
+            affectedAcc.getCards().remove(cardNumber);
+            affectedAcc.getCards().put(affectedCard.getCardNumber(), affectedCard);
+
+            outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(affectedCardNode);
+
+            ObjectNode createdCardNode = affectedCardNode.deepCopy();
+            createdCardNode.put("description", "New card created");
+            createdCardNode.put("card", affectedCard.getCardNumber());
+
+            outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(createdCardNode);
         }
 
     }

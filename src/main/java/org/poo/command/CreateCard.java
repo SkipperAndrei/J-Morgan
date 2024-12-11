@@ -5,32 +5,24 @@ import org.poo.account.Account;
 import org.poo.card.Card;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
-import org.poo.output.OutputGenerator;
+import org.poo.utils.OutputGenerator;
 
-public class CreateCard implements Command {
-
-    private static final int SUCCESS = 0;
-    private static final int FAILURE = -1;
+public final class CreateCard implements Command {
 
     private String cardNumber;
     private String cardHolder;
     private String account;
-    private String description;
     private int timestamp;
-    private int actionCode = SUCCESS;
+    private CommandConstants actionCode = CommandConstants.SUCCESS;
 
-    public CreateCard(CommandInput command) {
-        // cardNumber = command.getCardNumber();
+    public CreateCard(final CommandInput command) {
         cardHolder = command.getEmail();
         account = command.getAccount();
-        description = command.getDescription();
         timestamp = command.getTimestamp();
     }
 
     @Override
-    public void executeCommand(UserDatabase userDatabase) {
-
-        //TODO
+    public void executeCommand(final UserDatabase userDatabase) {
 
         if (userDatabase.getUserEntry(cardHolder).getUserAccounts().containsKey(account)) {
             Card card = new Card();
@@ -39,11 +31,11 @@ public class CreateCard implements Command {
             return;
         }
 
-        actionCode = FAILURE;
+        actionCode = CommandConstants.NOT_FOUND;
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
 
         ObjectNode createCardNode = outputGenerator.getMapper().createObjectNode();
         createCardNode.put("timestamp", timestamp);
@@ -56,7 +48,7 @@ public class CreateCard implements Command {
                 createCardNode.put("account", account);
                 break;
 
-            case FAILURE:
+            case NOT_FOUND:
                 createCardNode.put("description", "Couldn't create card");
                 break;
 

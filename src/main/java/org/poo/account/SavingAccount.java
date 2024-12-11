@@ -1,18 +1,19 @@
 package org.poo.account;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import lombok.Data;
-import org.poo.card.Card;
 
+import lombok.Data;
+
+/**
+ * This class will contain only objects that are Saving accounts
+ * This type of Account will only have Interest Rate related transactions
+ */
 @Data
 public class SavingAccount extends Account {
 
     private double interestRate;
 
-    public SavingAccount(final String email, final String currency, final String AccountType,
+    public SavingAccount(final String email, final String currency, final String accountType,
                          final int timestamp, final double interestRate) {
-        super(email, currency, AccountType, timestamp);
+        super(email, currency, accountType, timestamp);
         this.interestRate = interestRate;
     }
 

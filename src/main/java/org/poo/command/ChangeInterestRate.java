@@ -5,39 +5,42 @@ import org.poo.account.Account;
 import org.poo.account.SavingAccount;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
-import org.poo.output.OutputGenerator;
+import org.poo.utils.OutputGenerator;
 import org.poo.user.User;
 
-public class ChangeInterestRate implements Command {
-
-    private final static int SUCCESS = 0;
-    private final static int CLASSIC_ACC = -1;
-    private final static int NOT_FOUND = -2;
+public final class ChangeInterestRate implements Command {
 
     private String account;
     private double interestRate;
     private int timestamp;
     private String email;
-    private int actionCode = NOT_FOUND;
+    private CommandConstants actionCode = CommandConstants.NOT_FOUND;
 
-    public ChangeInterestRate(CommandInput command) {
+    public ChangeInterestRate(final CommandInput command) {
         account = command.getAccount();
         interestRate = command.getInterestRate();
         timestamp = command.getTimestamp();
     }
 
-    public void checkAccount(Account acc) {
+    /**
+     * This function checks if the account is a savings type
+     * If it is, it will change the interest rate
+     * If it isn't it will send an error signal
+     * @param acc The account
+     */
+    public void checkAccount(final Account acc) {
 
         try {
             ((SavingAccount) acc).setInterestRate(interestRate);
-            actionCode = SUCCESS;
+            actionCode = CommandConstants.SUCCESS;
         } catch (ClassCastException e) {
-            actionCode = CLASSIC_ACC;
+            actionCode = CommandConstants.CLASSIC_ACC;
         }
+
     }
 
     @Override
-    public void executeCommand(UserDatabase userDatabase) {
+    public void executeCommand(final UserDatabase userDatabase) {
 
         for (User user : userDatabase.getDatabase().values()) {
 
@@ -50,14 +53,15 @@ public class ChangeInterestRate implements Command {
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
 
         switch (actionCode) {
             case SUCCESS:
 
                 ObjectNode successNode = outputGenerator.getMapper().createObjectNode();
                 successNode.put("timestamp", timestamp);
-                successNode.put("description", "Interest rate of the account changed to " + interestRate);
+                successNode.put("description", "Interest rate of the account changed to "
+                                + interestRate);
 
                 outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(successNode);
                 outputGenerator.getUserDatabase().getUserEntry(email).getUserAccounts().
@@ -66,17 +70,8 @@ public class ChangeInterestRate implements Command {
 
             case CLASSIC_ACC:
 
-                ObjectNode classicAccNode = outputGenerator.getMapper().createObjectNode();
-                classicAccNode.put("command", "changeInterestRate");
-
-                ObjectNode errorAccNode = outputGenerator.getMapper().createObjectNode();
-
-                errorAccNode.put("timestamp", timestamp);
-                errorAccNode.put("description", "This is not a savings account");
-                classicAccNode.set("output", errorAccNode);
-
-                classicAccNode.put("timestamp", timestamp);
-                outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(classicAccNode);
+                outputGenerator.errorSetting(timestamp, "This is not a savings account",
+                                    "changeInterestRate");
                 break;
 
             case NOT_FOUND:

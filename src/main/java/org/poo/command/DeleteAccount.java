@@ -2,9 +2,10 @@ package org.poo.command;
 
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
-import org.poo.output.OutputGenerator;
+import org.poo.utils.OutputGenerator;
+import org.poo.user.User;
 
-public class DeleteAccount implements Command {
+public final class DeleteAccount implements Command {
 
     private String email;
     private String account;
@@ -12,20 +13,20 @@ public class DeleteAccount implements Command {
     private boolean error = false;
 
 
-    public DeleteAccount(CommandInput command) {
+    public DeleteAccount(final CommandInput command) {
         email = command.getEmail();
         account = command.getAccount();
         timestamp = command.getTimestamp();
     }
 
     @Override
-    public void executeCommand(UserDatabase userDatabase) {
+    public void executeCommand(final UserDatabase userDatabase) {
 
         try {
-            // userDatabase.getEntry(email).getUserAccounts().remove(account);
             if (userDatabase.getUserEntry(email).getUserAccounts().get(account).getBalance() != 0) {
                 error = true;
             } else {
+                userDatabase.getUserEntry(email).getUserAccounts().get(account).getCards().clear();
                 userDatabase.getUserEntry(email).getUserAccounts().remove(account);
                 userDatabase.removeMailEntry(account);
             }
@@ -36,7 +37,8 @@ public class DeleteAccount implements Command {
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
-        outputGenerator.deleteAccount(timestamp, error);
+    public void generateOutput(final OutputGenerator outputGenerator) {
+        User user = outputGenerator.getUserDatabase().getUserEntry(email);
+        outputGenerator.deleteAccount(timestamp, error, user);
     }
 }
