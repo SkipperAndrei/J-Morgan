@@ -4,6 +4,7 @@ package org.poo.card;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.account.Account;
+import org.poo.command.CommandConstants;
 import org.poo.utils.Utils;
 import lombok.Data;
 
@@ -12,8 +13,6 @@ import lombok.Data;
  */
 @Data
 public class Card {
-
-    private static final int MAX_DIFFERENCE = 30;
 
     private String cardNumber;
     private StringBuilder status;
@@ -39,7 +38,7 @@ public class Card {
      */
     public void changeCardStatus(final Account acc) {
 
-        if (acc.getBalance() - acc.getMinimumBalance() <= MAX_DIFFERENCE
+        if (acc.getBalance() - acc.getMinimumBalance() <= CommandConstants.MAX_DIFF.getValue()
                         && !status.toString().equals("frozen")) {
             customSetStatus("warning");
         }

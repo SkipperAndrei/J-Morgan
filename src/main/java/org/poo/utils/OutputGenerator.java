@@ -247,14 +247,12 @@ public final class OutputGenerator {
         reportNode.put("command", "spendingsReport");
 
         Account acc = userDatabase.getUserEntry(email).getUserAccounts().get(iban);
-
         ObjectNode outputNode = mapper.createObjectNode();
         outputNode.put("IBAN", iban);
         outputNode.put("balance", acc.getBalance());
         outputNode.put("currency", acc.getCurrency());
 
         ArrayNode payments = mapper.createArrayNode();
-
         Iterator<JsonNode> jsonIterator = acc.getAccountTransactions().elements();
         Map<String, Double> commerciants = new TreeMap<>();
 
