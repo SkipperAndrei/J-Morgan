@@ -15,7 +15,8 @@ public enum CommandConstants {
     FROZEN_CARD(-4),
     INSUFFICIENT_FUNDS(-5),
     UNKNOWN_CARD(-6),
-    SAVING_ACC(-7);
+    SAVING_ACC(-7),
+    MAX_DIFF(30);
 
     private final int value;
 
