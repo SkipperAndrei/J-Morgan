@@ -24,15 +24,22 @@ public class Account {
     private String iban;
     private double balance;
     private double minimumBalance;
+    private AccountPlans plan = AccountPlans.STANDARD;
     private Map<String, Card> cards = new LinkedHashMap<>();
     private ArrayNode accountTransactions;
 
     public Account(final String email, final String currency,
-                   final String accountType, final int timestamp) {
+                   final String accountType, final int timestamp,
+                   final String occupation) {
         this.email = email;
         this.currency = currency;
         this.accountType = accountType;
         this.timestamp = timestamp;
+
+        if (occupation.equals("student")) {
+            plan = AccountPlans.STUDENT;
+        }
+
         balance = 0;
         minimumBalance = 0;
         iban = Utils.generateIBAN();

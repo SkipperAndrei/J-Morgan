@@ -34,9 +34,11 @@ public final class AddAccount implements Command {
         Account newAccount;
 
         if (accountType.equals("classic")) {
-            newAccount = new Account(email, currency, accountType, timestamp);
+            newAccount = new Account(email, currency, accountType, timestamp,
+                                    userDB.getUserEntry(email).getUserData().getOccupation());
         } else {
-            newAccount = new SavingAccount(email, currency, accountType, timestamp, interestRate);
+            newAccount = new SavingAccount(email, currency, accountType, timestamp, interestRate,
+                                        userDB.getUserEntry(email).getUserData().getOccupation());
         }
 
         newIban = newAccount.getIban();

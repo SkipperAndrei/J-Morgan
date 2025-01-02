@@ -93,6 +93,10 @@ public final class FactoryCommand {
                 return new SpendingReport(command);
             }
 
+            case "withdrawSavings" -> {
+                return new WithdrawSavings(command);
+            }
+
             default -> {
                 return null;
             }

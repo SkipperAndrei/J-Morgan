@@ -26,7 +26,7 @@ public final class ExchangeRateDatabase {
     /**
      * Function that gets the unique instance of the exchange rate database
      * If there isn't an instance previously defined, it creates it.
-     * @return
+     * @return The instance
      */
     public static ExchangeRateDatabase getInstance() {
         if (instance == null) {

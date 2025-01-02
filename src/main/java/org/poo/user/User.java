@@ -24,6 +24,8 @@ public final class User {
         this.userData.setFirstName(userData.getFirstName());
         this.userData.setLastName(userData.getLastName());
         this.userData.setEmail(userData.getEmail());
+        this.userData.setBirthDate(userData.getBirthDate());
+        this.userData.setOccupation(userData.getOccupation());
         userTransactions = new ObjectMapper().createArrayNode();
     }
 

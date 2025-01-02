@@ -16,6 +16,8 @@ public enum CommandConstants {
     INSUFFICIENT_FUNDS(-5),
     UNKNOWN_CARD(-6),
     SAVING_ACC(-7),
+    MINIMUM_AGE(-8),
+    ADULT_AGE(21),
     MAX_DIFF(30);
 
     private final int value;
