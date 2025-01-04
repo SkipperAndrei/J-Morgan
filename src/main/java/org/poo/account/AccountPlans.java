@@ -10,16 +10,19 @@ import org.poo.plans.StandardStrategy;
 @Getter
 public enum AccountPlans {
 
-    STANDARD("standard"),
-    STUDENT("student"),
-    SILVER("silver"),
-    GOLD("gold");
+    STANDARD("standard", 0),
+    STUDENT("student", 0),
+    SILVER("silver", 1),
+    GOLD("gold", 2);
 
     private final String value;
+    private final int priority;
     private Plan planStrategy;
 
-    AccountPlans(final String value) {
+    AccountPlans(final String value, final int priority) {
         this.value = value;
+        this.priority = priority;
+        this.planStrategy = new StandardStrategy();
     }
 
     /**

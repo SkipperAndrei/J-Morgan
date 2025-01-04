@@ -90,7 +90,7 @@ public class Account {
         ObjectNode accountNode = mapper.createObjectNode();
 
         accountNode.put("IBAN", iban);
-        accountNode.put("balance", balance);
+        accountNode.put("balance", Math.round(balance * 100.0) / 100.0);
         accountNode.put("currency", currency);
         accountNode.put("type", accountType);
 

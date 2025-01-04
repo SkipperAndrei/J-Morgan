@@ -17,6 +17,8 @@ public enum CommandConstants {
     UNKNOWN_CARD(-6),
     SAVING_ACC(-7),
     MINIMUM_AGE(-8),
+    INFERIOR_PLAN(-9),
+    EQUAL_PLAN(-10),
     ADULT_AGE(21),
     MAX_DIFF(30);
 

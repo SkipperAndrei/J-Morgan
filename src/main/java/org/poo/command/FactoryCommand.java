@@ -97,6 +97,10 @@ public final class FactoryCommand {
                 return new WithdrawSavings(command);
             }
 
+            case "upgradePlan" -> {
+                return new UpgradePlan(command);
+            }
+
             default -> {
                 return null;
             }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.account.Account;
+import org.poo.account.AccountPlans;
 import org.poo.card.Card;
 import org.poo.fileio.UserInput;
 
@@ -73,6 +74,16 @@ public final class User {
      */
     public void addTransaction(final ObjectNode transaction) {
         userTransactions.add(transaction);
+    }
+
+    /**
+     * This functions updates all the accounts to the new service plan
+     * @param newPlanType The new plan
+     */
+    public void upgradeAllPlans(final String newPlanType) {
+        for (Account account : userAccounts.values()) {
+            account.setPlan(AccountPlans.valueOf(newPlanType.toUpperCase()));
+        }
     }
 
     /**
