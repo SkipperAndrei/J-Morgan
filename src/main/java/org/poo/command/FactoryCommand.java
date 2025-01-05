@@ -97,9 +97,14 @@ public final class FactoryCommand {
                 return new WithdrawSavings(command);
             }
 
+            case "cashWithdrawal" -> {
+                return new CashWithdrawal(command);
+            }
+
             case "upgradePlan" -> {
                 return new UpgradePlan(command);
             }
+
 
             default -> {
                 return null;

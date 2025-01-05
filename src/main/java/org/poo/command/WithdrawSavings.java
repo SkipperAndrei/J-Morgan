@@ -35,14 +35,13 @@ public final class WithdrawSavings implements Command {
      * @param user The user that requested the command
      * @param savingAcc The saving account of the user
      * @param classicAcc The classic account of the user
-     * @param amount The amount to be put in the classic account
+     * @param deductedAmm The amount to be deducted from the savings account
      */
     public void handlePayment(final User user, final Account savingAcc,
-                              final Account classicAcc) {
+                              final Account classicAcc, final double deductedAmm) {
 
-        double newAmm = savingAcc.getPlan().getPlanStrategy().commissionStrategy(amount, currency);
-        savingAcc.decrementFunds(amount);
-        classicAcc.incrementFunds(newAmm);
+        savingAcc.decrementFunds(deductedAmm);
+        classicAcc.incrementFunds(amount);
     }
 
     /**
@@ -59,24 +58,25 @@ public final class WithdrawSavings implements Command {
         if (userSavingAccount.getCurrency().equals(currency)) {
 
             if (userSavingBalance < amount) {
+
                 actionCode = CommandConstants.INSUFFICIENT_FUNDS;
                 return;
             }
 
-            handlePayment(user, userSavingAccount, classicAcc);
+            handlePayment(user, userSavingAccount, classicAcc, amount);
             actionCode = CommandConstants.SUCCESS;
         } else {
 
             double rate = ExchangeRateDatabase.getInstance().
                             getExchangeRate(currency, classicAcc.getCurrency());
 
-            double newAmount = amount * rate;
-            if (userSavingBalance < newAmount) {
+            if (userSavingBalance < amount * rate) {
+
                 actionCode = CommandConstants.INSUFFICIENT_FUNDS;
                 return;
             }
 
-            handlePayment(user, userSavingAccount, classicAcc);
+            handlePayment(user, userSavingAccount, classicAcc, amount * rate);
             actionCode = CommandConstants.SUCCESS;
         }
     }
@@ -93,7 +93,6 @@ public final class WithdrawSavings implements Command {
 
             try {
                 ((SavingAccount) acc).getInterestRate();
-                continue;
             } catch (ClassCastException e) {
 
                 if (acc.getCurrency().equals(currency)) {
@@ -178,6 +177,13 @@ public final class WithdrawSavings implements Command {
                 transactionNode.put("description", "You don't have the minimum age required.");
                 transactionNode.put("timestamp", timestamp);
                 user.addTransaction(transactionNode);
+                break;
+
+            case UNKNOWN_CURRENCY:
+                transactionNode.put("description", "You do not have a classic account.");
+                transactionNode.put("timestamp", timestamp);
+                user.addTransaction(transactionNode);
+
                 break;
 
             default :

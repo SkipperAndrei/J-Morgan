@@ -19,6 +19,9 @@ public enum CommandConstants {
     MINIMUM_AGE(-8),
     INFERIOR_PLAN(-9),
     EQUAL_PLAN(-10),
+    DELETED_CARD(-11),
+    COMMERCIANT_REC(1),
+    USER_REC(2),
     ADULT_AGE(21),
     MAX_DIFF(30);
 

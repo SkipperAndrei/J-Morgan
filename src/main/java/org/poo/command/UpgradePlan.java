@@ -52,7 +52,6 @@ public class UpgradePlan implements Command {
         if (upgradeAcc.canPay(newAmount)) {
 
             upgradeAcc.decrementFunds(newAmount);
-            // double newBalance = Math.round(upgradeAcc.getBalance() * 100.0) / 100.0;
             actionCode = CommandConstants.SUCCESS;
             return;
         }

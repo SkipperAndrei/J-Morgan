@@ -151,14 +151,14 @@
     },
     {
       "commerciant": "KFC",
-      "id": 106,
+      "id": 107,
       "account": "RO28POOB5923933391234057",
       "type": "Food",
       "cashbackStrategy": "spendingThreshold"
     },
     {
       "commerciant": "Amazon",
-      "id": 126,
+      "id": 127,
       "account": "RO25POOB4386521661484930",
       "type": "Tech",
       "cashbackStrategy": "spendingThreshold"

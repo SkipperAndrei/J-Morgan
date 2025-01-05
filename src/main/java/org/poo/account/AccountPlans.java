@@ -1,10 +1,7 @@
 package org.poo.account;
 
 import lombok.Getter;
-import org.poo.plans.Plan;
-import org.poo.plans.NoCommissionStrategy;
-import org.poo.plans.SilverStrategy;
-import org.poo.plans.StandardStrategy;
+import org.poo.plans.*;
 
 
 @Getter
@@ -32,8 +29,9 @@ public enum AccountPlans {
     public Plan getPlanStrategy() {
 
         switch (value) {
-            case "student", "gold" -> planStrategy = new NoCommissionStrategy();
+            case "student" -> planStrategy = new StudentStrategy();
             case "silver" -> planStrategy = new SilverStrategy();
+            case "gold" -> planStrategy = new GoldStrategy();
             default -> planStrategy = new StandardStrategy();
         }
 

@@ -101,6 +101,10 @@ public final class ExchangeRateDatabase {
      */
     public double getExchangeRate(final String from, final String to) {
 
+        if (from.equals(to)) {
+            return 1;
+        }
+
         boolean possible = addUnknownExchange(from, to);
 
         if (!possible) {

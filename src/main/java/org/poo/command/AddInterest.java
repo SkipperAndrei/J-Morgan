@@ -13,6 +13,7 @@ public final class AddInterest implements Command {
     private String email;
     private String account;
     private int timestamp;
+    private double amountAdded;
     private CommandConstants actionCode = CommandConstants.NOT_FOUND;
 
     public AddInterest(final CommandInput command) {
@@ -30,7 +31,8 @@ public final class AddInterest implements Command {
     public void checkAccount(final Account acc) {
 
         try {
-            acc.incrementFunds(acc.getBalance() * ((SavingAccount) acc).getInterestRate());
+            amountAdded = acc.getBalance() * ((SavingAccount) acc).getInterestRate();
+            acc.incrementFunds(amountAdded);
             actionCode = CommandConstants.SUCCESS;
         } catch (ClassCastException e) {
             actionCode = CommandConstants.CLASSIC_ACC;
@@ -60,8 +62,12 @@ public final class AddInterest implements Command {
             case SUCCESS:
 
                 ObjectNode successNode = outputGenerator.getMapper().createObjectNode();
+                successNode.put("amount", amountAdded);
+                successNode.put("currency", outputGenerator.getUserDatabase().getUserEntry(email).
+                                            getUserAccounts().get(account).getCurrency());
+                successNode.put("description", "Interest rate income");
                 successNode.put("timestamp", timestamp);
-                successNode.put("description", "Added interest rate");
+
 
                 outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(successNode);
                 outputGenerator.getUserDatabase().getUserEntry(email).getUserAccounts().

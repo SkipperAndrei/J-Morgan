@@ -39,7 +39,7 @@
   "commerciants": [
     {
       "commerciant": "Amazon",
-      "id": 126,
+      "id": 127,
       "account": "RO22POOB3875162728202296",
       "type": "Tech",
       "cashbackStrategy": "spendingThreshold"
@@ -102,7 +102,7 @@
     },
     {
       "commerciant": "KFC",
-      "id": 106,
+      "id": 107,
       "account": "RO17POOB8495306331082091",
       "type": "Food",
       "cashbackStrategy": "spendingThreshold"

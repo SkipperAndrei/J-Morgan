@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.account.Account;
 import org.poo.card.Card;
 import org.poo.card.OneTimeCard;
+import org.poo.database.CommerciantDatabase;
 import org.poo.database.ExchangeRateDatabase;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
@@ -45,11 +46,18 @@ public final class PayOnline implements Command {
      */
     public CommandConstants paymentCheck(final Account acc, final Card card) {
 
-        if (amount > acc.getBalance()) {
+        double actualAmount = acc.getPlan().getPlanStrategy().
+                            commissionStrategy(amount, acc.getCurrency());
+
+        if (actualAmount > acc.getBalance()) {
             return CommandConstants.INSUFFICIENT_FUNDS;
         }
 
-        acc.setBalance(acc.getBalance() - amount);
+        // System.out.println("Timestamp " + timestamp + " user -ul " + email + " a platit " + actualAmount);
+        acc.decrementFunds(actualAmount);
+        acc.handleCommerciantPayment(commerciant, amount);
+
+        // System.out.println("Dupa plata de la timestamp " + timestamp + " user-ul " + email + " mai are " + acc.getBalance());
 
         try {
             ((OneTimeCard) card).getExpired();
@@ -172,6 +180,7 @@ public final class PayOnline implements Command {
                                 getUserAccounts().get(iban);
 
             Card affectedCard = affectedAcc.getCards().get(cardNumber);
+            affectedAcc.getDeletedOneTimeCards().add(cardNumber);
             ObjectNode affectedCardNode = ((OneTimeCard) affectedCard).updateCardNumber(timestamp,
                                 "The card has been destroyed", true);
             affectedCardNode.put("cardHolder", email);
