@@ -249,7 +249,7 @@ public final class OutputGenerator {
         Account acc = userDatabase.getUserEntry(email).getUserAccounts().get(iban);
         ObjectNode outputNode = mapper.createObjectNode();
         outputNode.put("IBAN", iban);
-        outputNode.put("balance", acc.getBalance());
+        outputNode.put("balance", Math.round(acc.getBalance() * 100.0) / 100.0);
         outputNode.put("currency", acc.getCurrency());
 
         ArrayNode payments = mapper.createArrayNode();

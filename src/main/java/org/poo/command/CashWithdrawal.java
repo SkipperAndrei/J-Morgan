@@ -114,7 +114,7 @@ public class CashWithdrawal implements Command {
 
             case INSUFFICIENT_FUNDS -> {
                 transactionNode.put("timestamp", timestamp);
-                transactionNode.put("description", "Insufficient Funds");
+                transactionNode.put("description", "Insufficient funds");
                 UserDatabase.getInstance().getUserEntry(userEmail).addTransaction(transactionNode);
                 break;
             }
@@ -128,6 +128,11 @@ public class CashWithdrawal implements Command {
             case FROZEN_CARD -> {
                 transactionNode.put("timestamp", timestamp);
                 transactionNode.put("description", "Card is frozen");
+                break;
+            }
+
+            case NOT_FOUND -> {
+                outputGenerator.errorSetting(timestamp, "User not found", "cashWithdrawal");
                 break;
             }
 

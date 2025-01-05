@@ -136,13 +136,11 @@ public class Account {
                                                 commId, plan.getPlanStrategy());
 
             cashback += spCashback / currencyRate;
+
         }
 
-//        System.out.println("Email " + email + " are " + balance);
-//        System.out.println("Cashback-ul este " + cashback);
         balance += cashback;
-
-//        System.out.println("Email " + email + " are acum " + balance);
+        balance = Math.round(balance * 100.0) / 100.0;
 
     }
 

@@ -54,6 +54,7 @@ public final class SendMoney implements Command {
         }
 
         senderAcc.decrementFunds(commSum);
+        senderAcc.setBalance(Math.round(senderAcc.getBalance() * 100.0) / 100.0);
         // System.out.println("Dupa plata de la timestamp " + timestamp + " user-ul " + email + " mai are " + senderAcc.getBalance());
 
 

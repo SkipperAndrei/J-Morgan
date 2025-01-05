@@ -8,6 +8,7 @@ import org.poo.database.CommerciantDatabase;
 import org.poo.database.ExchangeRateDatabase;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
+import org.poo.user.User;
 import org.poo.utils.OutputGenerator;
 
 public final class PayOnline implements Command {
@@ -55,6 +56,7 @@ public final class PayOnline implements Command {
 
         // System.out.println("Timestamp " + timestamp + " user -ul " + email + " a platit " + actualAmount);
         acc.decrementFunds(actualAmount);
+        acc.setBalance(Math.round(acc.getBalance() * 100.0) / 100.0);
         acc.handleCommerciantPayment(commerciant, amount);
 
         // System.out.println("Dupa plata de la timestamp " + timestamp + " user-ul " + email + " mai are " + acc.getBalance());
@@ -65,6 +67,7 @@ public final class PayOnline implements Command {
         } catch (ClassCastException e) {
             return CommandConstants.SUCCESS;
         }
+
         return CommandConstants.SUCCESS;
     }
 
@@ -109,6 +112,9 @@ public final class PayOnline implements Command {
     @Override
     public void executeCommand(final UserDatabase userDatabase) {
 
+        if (amount == 0)
+            return;
+
         for (Account acc : userDatabase.getUserEntry(email).getUserAccounts().values()) {
 
             if (acc.getCards().containsKey(cardNumber)) {
@@ -121,6 +127,11 @@ public final class PayOnline implements Command {
 
     @Override
     public void generateOutput(final OutputGenerator outputGenerator) {
+
+        if (amount == 0)
+            return;
+
+
 
         switch (actionCode) {
 
@@ -160,7 +171,7 @@ public final class PayOnline implements Command {
                 ObjectNode paymentNode = outputGenerator.getMapper().createObjectNode();
                 paymentNode.put("timestamp", timestamp);
                 paymentNode.put("description", "Card payment");
-                paymentNode.put("amount", amount);
+                paymentNode.put("amount", Math.round(amount * 100.0) / 100.0);
                 paymentNode.put("commerciant", commerciant);
 
                 Account transAcc = outputGenerator.getUserDatabase().getUserEntry(email).

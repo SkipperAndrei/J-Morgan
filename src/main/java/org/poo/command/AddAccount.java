@@ -42,6 +42,13 @@ public final class AddAccount implements Command {
         }
 
         newIban = newAccount.getIban();
+
+        if (!userDB.getUserEntry(email).getUserAccounts().isEmpty()) {
+            newAccount.setPlan(userDB.getUserEntry(email).getUserAccounts().
+                                        values().iterator().next().getPlan());
+
+        }
+
         userDB.getUserEntry(email).addAccount(newAccount);
         userDB.addMailEntry(newIban, email);
     }
