@@ -1,4 +1,5 @@
 package org.poo.account;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -12,10 +13,7 @@ import org.poo.plans.Plan;
 import org.poo.utils.CashbackTracker;
 import org.poo.utils.Utils;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This class will hold information about the user accounts
@@ -84,6 +82,30 @@ public class Account {
     public void addTransaction(final ObjectNode transaction) {
         ObjectNode newTransaction = transaction.deepCopy();
         accountTransactions.add(newTransaction);
+    }
+
+    public void addTimedTransaction(final int timestamp, final ObjectNode transaction) {
+
+        Iterator<JsonNode> jsonIterator = accountTransactions.elements();
+        int position = 0;
+
+        while (jsonIterator.hasNext()) {
+
+            ObjectNode jsonNode = (ObjectNode) jsonIterator.next();
+
+            if (jsonNode.get("timestamp").asInt() < timestamp) {
+                position += 1;
+            }
+
+            if (jsonNode.get("timestamp").asInt() > timestamp) {
+                accountTransactions.insert(position, transaction);
+                return;
+            }
+
+        }
+
+        addTransaction(transaction);
+
     }
 
     /**

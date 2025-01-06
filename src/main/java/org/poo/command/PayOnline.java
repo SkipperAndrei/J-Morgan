@@ -2,6 +2,7 @@ package org.poo.command;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.account.Account;
+import org.poo.account.AccountPlans;
 import org.poo.card.Card;
 import org.poo.card.OneTimeCard;
 import org.poo.database.CommerciantDatabase;
@@ -55,8 +56,34 @@ public final class PayOnline implements Command {
         }
 
         // System.out.println("Timestamp " + timestamp + " user -ul " + email + " a platit " + actualAmount);
+        User user = UserDatabase.getInstance().getUserEntry(email);
         acc.decrementFunds(actualAmount);
         acc.setBalance(Math.round(acc.getBalance() * 100.0) / 100.0);
+
+        if (acc.getPlan().equals(AccountPlans.SILVER)) {
+
+            if (acc.getCurrency().equals("ron") || currency.equals("RON")) {
+
+                int bigPayments = user.getBigPayments();
+                bigPayments = actualAmount >= 300 ? bigPayments + 1 : bigPayments;
+                user.setBigPayments(bigPayments);
+
+            } else {
+
+                double rate = ExchangeRateDatabase.getInstance().getExchangeRate(currency, "RON");
+                double checkedAmmount = actualAmount * rate;
+                int bigPayments = user.getBigPayments();
+                bigPayments = actualAmount >= 300 ? bigPayments + 1 : bigPayments;
+
+                user.setBigPayments(bigPayments);
+            }
+
+            if (user.getBigPayments() == 5) {
+                System.out.println("Se da upgrade my friend");
+                user.upgradeAllPlans("gold");
+            }
+        }
+
         acc.handleCommerciantPayment(commerciant, amount);
 
         // System.out.println("Dupa plata de la timestamp " + timestamp + " user-ul " + email + " mai are " + acc.getBalance());
@@ -130,8 +157,6 @@ public final class PayOnline implements Command {
 
         if (amount == 0)
             return;
-
-
 
         switch (actionCode) {
 

@@ -57,6 +57,7 @@ public final class SendMoney implements Command {
         senderAcc.setBalance(Math.round(senderAcc.getBalance() * 100.0) / 100.0);
         // System.out.println("Dupa plata de la timestamp " + timestamp + " user-ul " + email + " mai are " + senderAcc.getBalance());
 
+        // TODO: Implement auto-upgrade logic if necessary
 
         if (receiverCode.equals(CommandConstants.USER_REC)) {
             receiverAcc.incrementFunds(amount);
@@ -139,8 +140,6 @@ public final class SendMoney implements Command {
             }
 
         }
-
-
 
 
     }

@@ -150,16 +150,32 @@ public final class OutputGenerator {
 
     }
 
+    public boolean tryToAddTimestampTransaction(final int timestamp,
+                                                final Account acc, final ObjectNode transaction) {
+
+        try {
+            ((SavingAccount) acc).getInterestRate();
+            return false;
+        } catch (ClassCastException e) {
+            userDatabase.getUserEntry(acc.getEmail()).getUserAccounts().
+                    get(acc.getIban()).addTimedTransaction(timestamp, transaction);
+            return true;
+        }
+
+    }
+
     /**
      * This function generates the output for the "Split payment" query.
      * @param args The list of Ibans
      * @param timestamp The timestamp of the query
      * @param currency The currency used in the transaction
-     * @param amount The amount to be payed
+     * @param amount The amount to be paid, 0 if the split is custom
+     * @param amountsPerAccount The amount to be paid by each account, if the split is custom
      * @return The mapped JSON node
      */
     public ObjectNode defaultSplitOutput(final List<String> args, final int timestamp,
-                                         final String currency, final double amount) {
+                                         final String currency, final double amount,
+                                         final List<Double> amountsPerAccount, final String type) {
 
         ObjectNode successNode = mapper.createObjectNode();
 
@@ -167,8 +183,19 @@ public final class OutputGenerator {
         successNode.put("description", "Split payment of "
                         + String.format("%.2f", amount) + " " + currency);
 
+        successNode.put("splitPaymentType", type);
         successNode.put("currency", currency);
-        successNode.put("amount", amount / args.size());
+
+        if (type.equals("equal")) {
+            successNode.put("amount", amount / args.size());
+        } else {
+            ArrayNode amounts = mapper.createArrayNode();
+            for (Double amm : amountsPerAccount) {
+                amounts.add(amm);
+            }
+
+            successNode.set("amountForUsers", amounts);
+        }
 
         ArrayNode involvedAccounts = mapper.createArrayNode();
         for (String arg : args) {

@@ -6,31 +6,42 @@ import org.poo.database.ExchangeRateDatabase;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
 import org.poo.utils.OutputGenerator;
+import org.poo.utils.SplitTracker;
+import lombok.Data;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 
+@Data
 public final class SplitPayment implements Command {
 
     private List<String> args;
+    private List<Double> amountsPerAccount;
     private double amountPerAccount;
     private double amount;
     private String currency;
     private String badAccount;
+    private String type;
+    private Map<String, Boolean> acceptedAccounts;
     private int timestamp;
     private CommandConstants actionCode = CommandConstants.SUCCESS;
-    private ExchangeRateDatabase exchangeRateDatabase;
-
 
     public SplitPayment(final CommandInput command,
                         final ExchangeRateDatabase exchangeRateDatabase) {
 
         args = command.getAccounts();
         amount = command.getAmount();
-        amountPerAccount = amount / args.size();
+        type = command.getSplitPaymentType();
+        if (type.equals("custom")) {
+            amountsPerAccount = command.getAmountForUsers();
+        } else {
+            amountPerAccount = amount / args.size();
+        }
+        acceptedAccounts = new HashMap<>();
         currency = command.getCurrency();
         timestamp = command.getTimestamp();
-        this.exchangeRateDatabase = exchangeRateDatabase;
     }
 
     /**
@@ -44,7 +55,7 @@ public final class SplitPayment implements Command {
         Account acc = userDatabase.getUserEntry(email).getUserAccounts().get(iban);
         double amountToPay = amountPerAccount;
 
-        amountToPay *= exchangeRateDatabase.getExchangeRate(currency, acc.getCurrency());
+        amountToPay *= ExchangeRateDatabase.getInstance().getExchangeRate(currency, acc.getCurrency());
         userDatabase.getUserEntry(email).getUserAccounts().get(iban).decrementFunds(amountToPay);
     }
 
@@ -65,7 +76,7 @@ public final class SplitPayment implements Command {
 
         try {
             double amountToPay = amountPerAccount;
-            amountToPay *= exchangeRateDatabase.getExchangeRate(currency, acc.getCurrency());
+            amountToPay *= ExchangeRateDatabase.getInstance().getExchangeRate(currency, acc.getCurrency());
 
             return acc.canPay(amountToPay);
 
@@ -75,14 +86,14 @@ public final class SplitPayment implements Command {
 
     }
 
-    @Override
-    public void executeCommand(final UserDatabase userDatabase) {
+    public void finallyExecuteCommand(final UserDatabase userDatabase) {
 
-        ListIterator<String> argsIterator = args.listIterator(args.size());
+        ListIterator<String> argsIterator = args.listIterator();
 
-        while (argsIterator.hasPrevious()) {
+        while (argsIterator.hasNext()) {
 
-            String arg = argsIterator.previous();
+            // TODO: implement custom-type logic
+            String arg = argsIterator.next();
             boolean valid = checkAccount(userDatabase, arg);
 
             if (!valid) {
@@ -92,19 +103,18 @@ public final class SplitPayment implements Command {
             }
         }
 
-        argsIterator = args.listIterator(args.size());
-        while (argsIterator.hasPrevious()) {
-            String argument = argsIterator.previous();
+        argsIterator = args.listIterator();
+        while (argsIterator.hasNext()) {
+            String argument = argsIterator.next();
             makePayment(userDatabase, argument);
         }
 
     }
 
-    @Override
-    public void generateOutput(final OutputGenerator outputGenerator) {
+    public void finallyGenerateOutput(final OutputGenerator outputGenerator) {
 
         ObjectNode successNode = outputGenerator.defaultSplitOutput(args, timestamp,
-                                currency, amount);
+                currency, amount, amountsPerAccount, type);
 
         for (String iban : args) {
             ObjectNode userSuccessNode = successNode.deepCopy();
@@ -112,7 +122,9 @@ public final class SplitPayment implements Command {
             Account acc = outputGenerator.getUserDatabase().getUserEntry(email).
                         getUserAccounts().get(iban);
 
-            userSuccessNode.put("amount", amountPerAccount);
+            if (type.equals("equal")) {
+                userSuccessNode.put("amount", amountPerAccount);
+            }
 
             if (actionCode == CommandConstants.INSUFFICIENT_FUNDS) {
                 userSuccessNode.put("error", "Account " + badAccount
@@ -121,9 +133,48 @@ public final class SplitPayment implements Command {
             }
 
             outputGenerator.getUserDatabase().
-                    getUserEntry(email).addTransaction(userSuccessNode);
-            outputGenerator.tryToAddTransaction(acc, userSuccessNode);
+                    getUserEntry(email).addTimestampTransaction(timestamp, userSuccessNode);
+            outputGenerator.tryToAddTimestampTransaction(timestamp, acc, userSuccessNode);
         }
+
+    }
+
+
+    @Override
+    public void executeCommand(UserDatabase userDatabase) {
+
+        ListIterator<String> argsIterator = args.listIterator();
+
+        while (argsIterator.hasNext()) {
+
+            String Iban = argsIterator.next();
+            acceptedAccounts.put(Iban, false);
+
+            try {
+                String userEmail = userDatabase.getMailEntry(Iban);
+
+                if (userEmail == null) {
+                    throw new NullPointerException();
+                }
+
+            } catch (NullPointerException e) {
+                actionCode = CommandConstants.NOT_FOUND;
+                return;
+            }
+
+        }
+
+        SplitTracker.getInstance().getListener().add(this);
+    }
+
+    @Override
+    public void generateOutput(OutputGenerator outputGenerator) {
+
+        if (actionCode == CommandConstants.NOT_FOUND) {
+            outputGenerator.errorSetting(timestamp, "One of the accounts is invalid", "splitPayment");
+            return;
+        }
+
 
     }
 }

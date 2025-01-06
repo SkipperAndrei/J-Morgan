@@ -105,6 +105,13 @@ public final class FactoryCommand {
                 return new UpgradePlan(command);
             }
 
+            case "acceptSplitPayment" -> {
+                return new AcceptSplitPayment(command);
+            }
+
+            case "rejectSplitPayment" -> {
+                return new RejectSplitPayment(command);
+            }
 
             default -> {
                 return null;
