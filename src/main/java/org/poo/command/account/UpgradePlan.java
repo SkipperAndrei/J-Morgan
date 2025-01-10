@@ -126,23 +126,36 @@ public class UpgradePlan implements Command {
     @Override
     public void generateOutput(final OutputGenerator outputGenerator) {
 
+
         ObjectNode transactionNode = outputGenerator.getMapper().createObjectNode();
         User user = outputGenerator.getUserDatabase().getUserEntry(userEmail);
+        // Account acc = user.getUserAccounts().get(account);
 
         switch (actionCode) {
 
             case SUCCESS:
-                transactionNode.put("timestamp", timestamp);
-                transactionNode.put("description", "Upgrade plan");
+
                 transactionNode.put("accountIBAN", account);
+                transactionNode.put("description", "Upgrade plan");
                 transactionNode.put("newPlanType", newPlanType);
+                transactionNode.put("timestamp", timestamp);
                 user.addTransaction(transactionNode);
+                user.getUserAccounts().get(account).addTransaction(transactionNode);
                 return;
 
             case INSUFFICIENT_FUNDS:
                 transactionNode.put("description", "Insufficient funds");
                 transactionNode.put("timestamp", timestamp);
                 user.addTransaction(transactionNode);
+                user.getUserAccounts().get(account).addTransaction(transactionNode);
+                return;
+
+            case INFERIOR_PLAN:
+                String message = "The user already has the " + newPlanType + " plan.";
+                transactionNode.put("description", message);
+                transactionNode.put("timestamp", timestamp);
+                user.addTransaction(transactionNode);
+                user.getUserAccounts().get(account).addTransaction(transactionNode);
                 return;
 
             case NOT_FOUND:

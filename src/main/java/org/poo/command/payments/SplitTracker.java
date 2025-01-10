@@ -29,7 +29,7 @@ public final class SplitTracker {
 
     }
 
-    public SplitPayment accept(final String email) {
+    public SplitPayment accept(final String email, final String type) {
 
         User user = UserDatabase.getInstance().getUserEntry(email);
 
@@ -49,7 +49,8 @@ public final class SplitTracker {
 
                 // checking if the account is in the payment, and it hasn't already accepted
                 if (payment.getAcceptedAccounts().containsKey(acc.getIban())
-                        && payment.getAcceptedAccounts().get(acc.getIban()).equals(false)) {
+                        && payment.getAcceptedAccounts().get(acc.getIban()).equals(false)
+                        && payment.getType().equals(type)) {
 
                     payment.getAcceptedAccounts().put(acc.getIban(), true);
                     found = true;

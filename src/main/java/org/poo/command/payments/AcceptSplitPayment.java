@@ -24,7 +24,7 @@ public class AcceptSplitPayment implements Command {
     @Override
     public void executeCommand(UserDatabase userDatabase) {
 
-        payment = SplitTracker.getInstance().accept(email);
+        payment = SplitTracker.getInstance().accept(email, type);
     }
 
     @Override
