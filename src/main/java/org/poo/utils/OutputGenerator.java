@@ -5,15 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.account.Account;
+import org.poo.account.BusinessAccount;
 import org.poo.account.SavingAccount;
 import org.poo.database.UserDatabase;
 import org.poo.user.User;
 import lombok.Data;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * This class will handle JSON output generation
@@ -276,7 +274,7 @@ public final class OutputGenerator {
         Account acc = userDatabase.getUserEntry(email).getUserAccounts().get(iban);
         ObjectNode outputNode = mapper.createObjectNode();
         outputNode.put("IBAN", iban);
-        outputNode.put("balance", Math.round(acc.getBalance() * 100.0) / 100.0);
+        outputNode.put("balance", acc.getBalance());
         outputNode.put("currency", acc.getCurrency());
 
         ArrayNode payments = mapper.createArrayNode();
@@ -322,6 +320,42 @@ public final class OutputGenerator {
         }
 
         outputNode.set("commerciants", commerciantArrayNode);
+        reportNode.set("output", outputNode);
+        reportNode.put("timestamp", timestamp);
+        output.add(reportNode);
+
+    }
+
+    public void generateBusinessReport(final int startTimestamp, final int endTimestamp,
+                                       final int timestamp, final String type,
+                                       final String account, final String email) {
+
+        ObjectNode reportNode = mapper.createObjectNode();
+        reportNode.put("command", "businessReport");
+        Account acc = userDatabase.getUserEntry(email).getUserAccounts().get(account);
+
+        ObjectNode outputNode = mapper.createObjectNode();
+
+        outputNode.put("IBAN", account);
+        outputNode.put("balance", acc.getBalance());
+        outputNode.put("currency", acc.getCurrency());
+
+        BusinessAccount bussAcc = ((BusinessAccount) acc);
+        outputNode.put("spending limit", bussAcc.getSpendingLimit());
+        outputNode.put("deposit limit", bussAcc.getDepositLimit());
+        outputNode.put("statistics type", type);
+
+        ArrayNode managers = mapper.createArrayNode();
+        ArrayNode employees = mapper.createArrayNode();
+        ArrayList<Double> moneyStats = bussAcc.getStatistics(managers, employees,
+                                        startTimestamp, endTimestamp);
+
+        outputNode.set("managers", managers);
+        outputNode.set("employees", employees);
+
+        outputNode.put("total deposited", moneyStats.get(1));
+        outputNode.put("total spent", moneyStats.get(0));
+
         reportNode.set("output", outputNode);
         reportNode.put("timestamp", timestamp);
         output.add(reportNode);

@@ -145,6 +145,10 @@ public class UpgradePlan implements Command {
                 user.addTransaction(transactionNode);
                 return;
 
+            case NOT_FOUND:
+                outputGenerator.errorSetting(timestamp, "Account not found", "upgradePlan");
+                return;
+
             default:
                 return;
         }

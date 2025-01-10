@@ -62,7 +62,7 @@ public final class FactoryCommand {
             }
 
             case "splitPayment" -> {
-                return new SplitPayment(command, exchangeRateDatabase);
+                return new SplitPayment(command);
             }
 
             case "setAlias" -> {
@@ -111,6 +111,22 @@ public final class FactoryCommand {
 
             case "rejectSplitPayment" -> {
                 return new RejectSplitPayment(command);
+            }
+
+            case "addNewBusinessAssociate" -> {
+                return new AddNewBusinessAssociate(command);
+            }
+
+            case "changeSpendingLimit" -> {
+                return new ChangeSpendingLimit(command);
+            }
+
+            case "changeDepositLimit" -> {
+                return new ChangeDepositLimit(command);
+            }
+
+            case "businessReport" -> {
+                return new BusinessReport(command);
             }
 
             default -> {

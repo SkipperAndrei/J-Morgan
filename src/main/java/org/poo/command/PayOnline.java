@@ -3,6 +3,7 @@ package org.poo.command;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.account.Account;
 import org.poo.account.AccountPlans;
+import org.poo.account.BusinessAccount;
 import org.poo.card.Card;
 import org.poo.card.OneTimeCard;
 import org.poo.database.CommerciantDatabase;
@@ -51,14 +52,23 @@ public final class PayOnline implements Command {
         double actualAmount = acc.getPlan().getPlanStrategy().
                             commissionStrategy(amount, acc.getCurrency());
 
+
+
         if (actualAmount > acc.getBalance()) {
             return CommandConstants.INSUFFICIENT_FUNDS;
         }
 
-        // System.out.println("Timestamp " + timestamp + " user -ul " + email + " a platit " + actualAmount);
+        if (acc.getAccountType().equals("business")) {
+            boolean belowLimit = ((BusinessAccount) acc).checkPayment(amount, email,
+                                    commerciant, timestamp);
+
+            if (!belowLimit) {
+                return CommandConstants.NO_PERMISSION;
+            }
+        }
+
         User user = UserDatabase.getInstance().getUserEntry(email);
         acc.decrementFunds(actualAmount);
-        acc.setBalance(Math.round(acc.getBalance() * 100.0) / 100.0);
 
         if (acc.getPlan().equals(AccountPlans.SILVER)) {
 
@@ -71,9 +81,9 @@ public final class PayOnline implements Command {
             } else {
 
                 double rate = ExchangeRateDatabase.getInstance().getExchangeRate(currency, "RON");
-                double checkedAmmount = actualAmount * rate;
+                double checkedAmount = actualAmount * rate;
                 int bigPayments = user.getBigPayments();
-                bigPayments = actualAmount >= 300 ? bigPayments + 1 : bigPayments;
+                bigPayments = checkedAmount >= 300 ? bigPayments + 1 : bigPayments;
 
                 user.setBigPayments(bigPayments);
             }
@@ -85,8 +95,6 @@ public final class PayOnline implements Command {
         }
 
         acc.handleCommerciantPayment(commerciant, amount);
-
-        // System.out.println("Dupa plata de la timestamp " + timestamp + " user-ul " + email + " mai are " + acc.getBalance());
 
         try {
             ((OneTimeCard) card).getExpired();
@@ -110,6 +118,9 @@ public final class PayOnline implements Command {
         if (card.getStatus().toString().equals("frozen")) {
             return CommandConstants.FROZEN_CARD;
         }
+
+//        if (!card.getCardOwner().equals(email))
+//            return CommandConstants.UNKNOWN_CARD;
 
         return paymentCheck(acc, card);
 
@@ -191,12 +202,18 @@ public final class PayOnline implements Command {
                 outputGenerator.tryToAddTransaction(affectedAcc, frozenNode);
                 return;
 
+//            case NO_PERMISSION:
+//
+//                outputGenerator.errorSetting(timestamp,
+//                                "You are not authorized to make this transaction.", "payOnline");
+//                break;
+
             case SUCCESS:
 
                 ObjectNode paymentNode = outputGenerator.getMapper().createObjectNode();
                 paymentNode.put("timestamp", timestamp);
                 paymentNode.put("description", "Card payment");
-                paymentNode.put("amount", Math.round(amount * 100.0) / 100.0);
+                paymentNode.put("amount", amount);
                 paymentNode.put("commerciant", commerciant);
 
                 Account transAcc = outputGenerator.getUserDatabase().getUserEntry(email).

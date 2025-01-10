@@ -19,7 +19,7 @@ public final class SplitPayment implements Command {
 
     private List<String> args;
     private List<Double> amountsPerAccount;
-    private double amountPerAccount;
+    private double amountPerAccount = 0.0;
     private double amount;
     private String currency;
     private String badAccount;
@@ -28,8 +28,7 @@ public final class SplitPayment implements Command {
     private int timestamp;
     private CommandConstants actionCode = CommandConstants.SUCCESS;
 
-    public SplitPayment(final CommandInput command,
-                        final ExchangeRateDatabase exchangeRateDatabase) {
+    public SplitPayment(final CommandInput command) {
 
         args = command.getAccounts();
         amount = command.getAmount();
@@ -53,10 +52,20 @@ public final class SplitPayment implements Command {
     public void makePayment(final UserDatabase userDatabase, final String iban) {
         String email = userDatabase.getMailEntry(iban);
         Account acc = userDatabase.getUserEntry(email).getUserAccounts().get(iban);
+
         double amountToPay = amountPerAccount;
 
+        if (amountToPay == 0) {
+
+            int accIndex = args.indexOf(iban);
+            amountToPay = amountsPerAccount.get(accIndex);
+        }
+
+
         amountToPay *= ExchangeRateDatabase.getInstance().getExchangeRate(currency, acc.getCurrency());
+        amountToPay = acc.getPlan().getPlanStrategy().commissionStrategy(amountToPay, acc.getCurrency());
         userDatabase.getUserEntry(email).getUserAccounts().get(iban).decrementFunds(amountToPay);
+        // acc.setBalance(Math.round(acc.getBalance() * 100.0) / 100.0);
     }
 
     /**
@@ -71,14 +80,33 @@ public final class SplitPayment implements Command {
         Account acc = userDatabase.getUserEntry(userEmail).getUserAccounts().get(arg);
 
         if (acc.getCurrency().equals(currency)) {
-            return acc.canPay(amountPerAccount);
+
+            if (amountPerAccount > 0) {
+                return acc.canPay(acc.getPlan().getPlanStrategy().
+                                commissionStrategy(amountPerAccount, currency));
+
+            } else {
+
+                int accIndex = args.indexOf(arg);
+                return acc.canPay(acc.getPlan().getPlanStrategy().
+                                    commissionStrategy(amountsPerAccount.get(accIndex), currency));
+
+            }
         }
 
+
         try {
+
             double amountToPay = amountPerAccount;
+            if (amountPerAccount == 0) {
+
+                int accIndex = args.indexOf(arg);
+                amountToPay = amountsPerAccount.get(accIndex);
+            }
+
             amountToPay *= ExchangeRateDatabase.getInstance().getExchangeRate(currency, acc.getCurrency());
 
-            return acc.canPay(amountToPay);
+            return acc.canPay(acc.getPlan().getPlanStrategy().commissionStrategy(amountToPay, acc.getCurrency()));
 
         } catch (NullPointerException e) {
             return false;
@@ -92,7 +120,6 @@ public final class SplitPayment implements Command {
 
         while (argsIterator.hasNext()) {
 
-            // TODO: implement custom-type logic
             String arg = argsIterator.next();
             boolean valid = checkAccount(userDatabase, arg);
 
@@ -122,14 +149,18 @@ public final class SplitPayment implements Command {
             Account acc = outputGenerator.getUserDatabase().getUserEntry(email).
                         getUserAccounts().get(iban);
 
-            if (type.equals("equal")) {
-                userSuccessNode.put("amount", amountPerAccount);
-            }
+//            if (type.equals("equal")) {
+//                userSuccessNode.put("amount", amountPerAccount);
+//            }
 
             if (actionCode == CommandConstants.INSUFFICIENT_FUNDS) {
                 userSuccessNode.put("error", "Account " + badAccount
                                     + " has insufficient funds for a split payment.");
 
+            }
+
+            if (actionCode == CommandConstants.REJECTED_SPLIT) {
+                userSuccessNode.put("error", "One user rejected the payment.");
             }
 
             outputGenerator.getUserDatabase().
@@ -152,7 +183,6 @@ public final class SplitPayment implements Command {
 
             try {
                 String userEmail = userDatabase.getMailEntry(Iban);
-
                 if (userEmail == null) {
                     throw new NullPointerException();
                 }
@@ -174,7 +204,6 @@ public final class SplitPayment implements Command {
             outputGenerator.errorSetting(timestamp, "One of the accounts is invalid", "splitPayment");
             return;
         }
-
 
     }
 }

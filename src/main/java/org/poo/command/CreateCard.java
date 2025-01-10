@@ -26,6 +26,7 @@ public final class CreateCard implements Command {
 
         if (userDatabase.getUserEntry(cardHolder).getUserAccounts().containsKey(account)) {
             Card card = new Card();
+            card.setCardOwner(cardHolder);
             cardNumber = card.getCardNumber();
             userDatabase.getUserEntry(cardHolder).addCard(account, card);
             return;

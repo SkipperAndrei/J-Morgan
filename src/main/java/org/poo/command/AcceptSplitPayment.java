@@ -16,12 +16,13 @@ public class AcceptSplitPayment implements Command {
     public AcceptSplitPayment(CommandInput command) {
 
         email = command.getEmail();
-        type = command.getType();
+        type = command.getSplitPaymentType();
         timestamp = command.getTimestamp();
     }
 
     @Override
     public void executeCommand(UserDatabase userDatabase) {
+
         payment = SplitTracker.getInstance().accept(email);
     }
 

@@ -10,6 +10,7 @@ public class RejectSplitPayment implements Command {
     private String email;
     private String type;
     private int timestamp;
+    private SplitPayment payment;
 
     public RejectSplitPayment(CommandInput command) {
 
@@ -21,11 +22,15 @@ public class RejectSplitPayment implements Command {
     @Override
     public void executeCommand(UserDatabase userDatabase) {
 
-        SplitPayment payment = SplitTracker.getInstance().reject(email);
+        payment = SplitTracker.getInstance().reject(email);
     }
 
     @Override
     public void generateOutput(OutputGenerator outputGenerator) {
-        return;
+
+        if (payment == null) {
+            outputGenerator.errorSetting(timestamp, "User not found", "rejectSplitPayment");
+        }
+
     }
 }

@@ -162,7 +162,7 @@ public class Account {
         }
 
         balance += cashback;
-        balance = Math.round(balance * 100.0) / 100.0;
+        // balance = Math.round(balance * 100.0) / 100.0;
 
     }
 
@@ -175,7 +175,7 @@ public class Account {
         ObjectNode accountNode = mapper.createObjectNode();
 
         accountNode.put("IBAN", iban);
-        accountNode.put("balance", Math.round(balance * 100.0) / 100.0);
+        accountNode.put("balance", balance);
         accountNode.put("currency", currency);
         accountNode.put("type", accountType);
 

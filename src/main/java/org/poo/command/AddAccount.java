@@ -2,6 +2,7 @@ package org.poo.command;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.account.Account;
+import org.poo.account.BusinessAccount;
 import org.poo.account.SavingAccount;
 import org.poo.database.UserDatabase;
 import lombok.Data;
@@ -33,12 +34,24 @@ public final class AddAccount implements Command {
     public void executeCommand(final UserDatabase userDB) {
         Account newAccount;
 
-        if (accountType.equals("classic")) {
-            newAccount = new Account(email, currency, accountType, timestamp,
-                                    userDB.getUserEntry(email).getUserData().getOccupation());
-        } else {
-            newAccount = new SavingAccount(email, currency, accountType, timestamp, interestRate,
-                                        userDB.getUserEntry(email).getUserData().getOccupation());
+        switch (accountType) {
+            case "classic":
+                newAccount = new Account(email, currency, accountType, timestamp,
+                        userDB.getUserEntry(email).getUserData().getOccupation());
+                break;
+
+            case "savings":
+                newAccount = new SavingAccount(email, currency, accountType, timestamp, interestRate,
+                        userDB.getUserEntry(email).getUserData().getOccupation());
+                break;
+
+            case "business":
+                newAccount = new BusinessAccount(email, currency, accountType, timestamp,
+                        userDB.getUserEntry(email).getUserData().getOccupation());
+                break;
+
+            default:
+                return;
         }
 
         newIban = newAccount.getIban();

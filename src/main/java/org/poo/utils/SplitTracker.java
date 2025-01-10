@@ -43,7 +43,8 @@ public final class SplitTracker {
 
             for (Account acc : user.getUserAccounts().values()) {
 
-                if (payment.getAcceptedAccounts().containsKey(acc.getIban())) {
+                if (payment.getAcceptedAccounts().containsKey(acc.getIban())
+                        && payment.getAcceptedAccounts().get(acc.getIban()).equals(false)) {
 
                     payment.getAcceptedAccounts().put(acc.getIban(), true);
                     found = true;
@@ -100,6 +101,10 @@ public final class SplitTracker {
                 break;
             }
 
+        }
+
+        if (!found) {
+            return null;
         }
 
         assert payment != null;

@@ -2,6 +2,7 @@ package org.poo.command;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.account.Account;
+import org.poo.account.BusinessAccount;
 import org.poo.database.CommerciantDatabase;
 import org.poo.database.ExchangeRateDatabase;
 import org.poo.database.UserDatabase;
@@ -53,15 +54,23 @@ public final class SendMoney implements Command {
             return;
         }
 
+        if (senderAcc.getAccountType().equals("business")) {
+            boolean canPay = ((BusinessAccount) senderAcc).checkPayment(commSum, email,
+                                                receiverAcc.getIban(), timestamp);
+
+            if (!canPay) {
+                actionCode = CommandConstants.NO_PERMISSION;
+                return;
+            }
+        }
+
         senderAcc.decrementFunds(commSum);
-        senderAcc.setBalance(Math.round(senderAcc.getBalance() * 100.0) / 100.0);
-        // System.out.println("Dupa plata de la timestamp " + timestamp + " user-ul " + email + " mai are " + senderAcc.getBalance());
 
         // TODO: Implement auto-upgrade logic if necessary
 
         if (receiverCode.equals(CommandConstants.USER_REC)) {
             receiverAcc.incrementFunds(amount);
-            // System.out.println("Dupa primirea de la timestamp " + timestamp + " user-ul " + receiverAcc.getEmail() + " are " + receiverAcc.getBalance());
+
 
         } else {
             // System.out.println("Timestamp " + timestamp);
@@ -124,7 +133,8 @@ public final class SendMoney implements Command {
             Integer commId = CommerciantDatabase.getInstance().getCommIbanToId().get(receiver);
 
             try {
-                if (commId != null && CommerciantDatabase.getInstance().getCommerciantDb().containsKey(commId)) {
+                if (commId != null && CommerciantDatabase.getInstance().
+                                        getCommerciantDb().containsKey(commId)) {
 
                     Account send = userDatabase.getUserEntry(email).getUserAccounts().get(account);
                     receiverCode = CommandConstants.COMMERCIANT_REC;
@@ -196,6 +206,11 @@ public final class SendMoney implements Command {
 
                 outputGenerator.tryToAddTransaction(insufficientAcc, noFundsNode);
                 return;
+
+//            case NO_PERMISSION:
+//                outputGenerator.errorSetting(timestamp,
+//                                "You are not authorized to make this transaction.", "sendMoney");
+//                return;
 
             case NOT_FOUND:
                 outputGenerator.errorSetting(timestamp, "User not found", "sendMoney");

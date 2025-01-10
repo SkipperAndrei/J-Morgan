@@ -27,6 +27,7 @@ public final class CreateOneTimeCard implements Command {
 
         if (userDatabase.getUserEntry(email).getUserAccounts().containsKey(account)) {
             Card card = new OneTimeCard();
+            card.setCardOwner(email);
             cardNumber = card.getCardNumber();
             userDatabase.getUserEntry(email).addCard(account, card);
             return;

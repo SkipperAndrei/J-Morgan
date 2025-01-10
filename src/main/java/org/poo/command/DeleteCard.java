@@ -2,6 +2,7 @@ package org.poo.command;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.account.Account;
+import org.poo.account.BusinessAccount;
 import org.poo.card.Card;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
@@ -15,6 +16,7 @@ public final class DeleteCard implements Command {
     private int timestamp;
     private String account;
     private boolean found = false;
+    private CommandConstants actionCode = CommandConstants.SUCCESS;
 
     public DeleteCard(final CommandInput command) {
         email = command.getEmail();
@@ -25,26 +27,40 @@ public final class DeleteCard implements Command {
     @Override
     public void executeCommand(final UserDatabase userDatabase) {
 
-        try {
-            for (Account ac : userDatabase.getUserEntry(email).getUserAccounts().values()) {
 
-                Card card = ac.getCards().get(cardNumber);
+        for (Account ac : userDatabase.getUserEntry(email).getUserAccounts().values()) {
 
-                if (card != null) {
-                    userDatabase.getDatabase().get(email).getUserAccounts().
-                                get(ac.getIban()).getCards().remove(card.getCardNumber());
-                    account = ac.getIban();
-                    found = true;
+            Card card = ac.getCards().get(cardNumber);
+
+            if (card != null) {
+
+                if (ac.getAccountType().equals("business")) {
+                    boolean canDelete = ((BusinessAccount) ac).deleteCardCheck(card, email);
+
+                    if (!canDelete) {
+                        actionCode = CommandConstants.NO_PERMISSION;
+                        return;
+                    }
                 }
+
+                userDatabase.getDatabase().get(email).getUserAccounts().
+                                get(ac.getIban()).getCards().remove(card.getCardNumber());
+                account = ac.getIban();
+                found = true;
             }
-        } catch (Exception e) {
-            return;
         }
+
 
     }
 
     @Override
     public void generateOutput(final OutputGenerator outputGenerator) {
+
+        if (actionCode.equals(CommandConstants.NO_PERMISSION)) {
+            outputGenerator.errorSetting(timestamp,
+                    "You are not authorized to make this transaction", "deleteCard");
+            return;
+        }
 
         ObjectNode deleteCardNode = outputGenerator.getMapper().createObjectNode();
         deleteCardNode.put("timestamp", timestamp);
