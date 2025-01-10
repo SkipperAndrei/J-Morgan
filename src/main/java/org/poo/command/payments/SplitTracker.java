@@ -1,8 +1,7 @@
-package org.poo.utils;
+package org.poo.command.payments;
 
 import org.poo.account.Account;
 import org.poo.command.CommandConstants;
-import org.poo.command.SplitPayment;
 
 import java.util.ArrayList;
 import java.util.ListIterator;
@@ -33,6 +32,11 @@ public final class SplitTracker {
     public SplitPayment accept(final String email) {
 
         User user = UserDatabase.getInstance().getUserEntry(email);
+
+        if (user == null) {
+            return new SplitPayment(CommandConstants.NOT_FOUND);
+        }
+
         boolean found = false;
         ListIterator<SplitPayment> listenerIterator = listener.listIterator();
         SplitPayment payment = null;
@@ -43,6 +47,7 @@ public final class SplitTracker {
 
             for (Account acc : user.getUserAccounts().values()) {
 
+                // checking if the account is in the payment, and it hasn't already accepted
                 if (payment.getAcceptedAccounts().containsKey(acc.getIban())
                         && payment.getAcceptedAccounts().get(acc.getIban()).equals(false)) {
 
@@ -80,6 +85,11 @@ public final class SplitTracker {
     public SplitPayment reject(final String email) {
 
         User user = UserDatabase.getInstance().getUserEntry(email);
+
+        if (user == null) {
+            return null;
+        }
+
         boolean found = false;
         ListIterator<SplitPayment> listenerIterator = listener.listIterator();
         SplitPayment payment = null;
@@ -103,9 +113,6 @@ public final class SplitTracker {
 
         }
 
-        if (!found) {
-            return null;
-        }
 
         assert payment != null;
         payment.setActionCode(CommandConstants.REJECTED_SPLIT);

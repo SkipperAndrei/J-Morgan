@@ -1,17 +1,17 @@
-package org.poo.command;
+package org.poo.command.statistics;
 
+import lombok.Data;
+import org.poo.command.Command;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
 import org.poo.utils.OutputGenerator;
 
-public final class PrintTransactions implements Command {
+@Data
+public final class PrintUsers implements Command {
 
-    private String email;
     private int timestamp;
 
-    public PrintTransactions(final CommandInput command) {
-
-        email = command.getEmail();
+    public PrintUsers(final CommandInput command) {
         timestamp = command.getTimestamp();
     }
 
@@ -22,7 +22,6 @@ public final class PrintTransactions implements Command {
 
     @Override
     public void generateOutput(final OutputGenerator outputGenerator) {
-        outputGenerator.printTransaction(timestamp, outputGenerator.
-                                                    getUserDatabase().getUserEntry(email));
+        outputGenerator.addUsers(timestamp);
     }
 }

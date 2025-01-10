@@ -1,5 +1,6 @@
-package org.poo.command;
+package org.poo.command.statistics;
 
+import org.poo.command.Command;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
 import org.poo.utils.OutputGenerator;

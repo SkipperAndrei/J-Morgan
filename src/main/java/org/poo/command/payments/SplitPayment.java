@@ -1,12 +1,13 @@
-package org.poo.command;
+package org.poo.command.payments;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.account.Account;
+import org.poo.command.Command;
+import org.poo.command.CommandConstants;
 import org.poo.database.ExchangeRateDatabase;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
 import org.poo.utils.OutputGenerator;
-import org.poo.utils.SplitTracker;
 import lombok.Data;
 
 import java.util.HashMap;
@@ -27,6 +28,10 @@ public final class SplitPayment implements Command {
     private Map<String, Boolean> acceptedAccounts;
     private int timestamp;
     private CommandConstants actionCode = CommandConstants.SUCCESS;
+
+    public SplitPayment(final CommandConstants actionCode) {
+        this.actionCode = actionCode;
+    }
 
     public SplitPayment(final CommandInput command) {
 

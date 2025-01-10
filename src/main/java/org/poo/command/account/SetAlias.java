@@ -1,6 +1,7 @@
-package org.poo.command;
+package org.poo.command.account;
 
 import org.poo.account.Account;
+import org.poo.command.Command;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
 import org.poo.utils.OutputGenerator;

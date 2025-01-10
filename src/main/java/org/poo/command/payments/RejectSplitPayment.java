@@ -1,9 +1,9 @@
-package org.poo.command;
+package org.poo.command.payments;
 
+import org.poo.command.Command;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
 import org.poo.utils.OutputGenerator;
-import org.poo.utils.SplitTracker;
 
 public class RejectSplitPayment implements Command {
 
@@ -27,10 +27,19 @@ public class RejectSplitPayment implements Command {
 
     @Override
     public void generateOutput(OutputGenerator outputGenerator) {
+//
+//        if (payment == null) {
+//            outputGenerator.errorSetting(timestamp, "User not found", "rejectSplitPayment");
+//            return;
+//        }
+//
+//        payment.finallyGenerateOutput(outputGenerator);
+//
+        try {
 
-        if (payment == null) {
+            payment.finallyGenerateOutput(outputGenerator);
+        } catch (NullPointerException e) {
             outputGenerator.errorSetting(timestamp, "User not found", "rejectSplitPayment");
         }
-
     }
 }

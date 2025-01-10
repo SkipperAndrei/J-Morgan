@@ -1,8 +1,10 @@
-package org.poo.command;
+package org.poo.command.payments;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.account.Account;
 import org.poo.account.BusinessAccount;
+import org.poo.command.Command;
+import org.poo.command.CommandConstants;
 import org.poo.database.CommerciantDatabase;
 import org.poo.database.ExchangeRateDatabase;
 import org.poo.database.UserDatabase;

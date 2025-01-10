@@ -1,17 +1,15 @@
-package org.poo.command;
+package org.poo.command.statistics;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.account.Account;
 import org.poo.account.SavingAccount;
+import org.poo.command.Command;
+import org.poo.command.CommandConstants;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
 import org.poo.utils.OutputGenerator;
 
 public final class SpendingReport implements Command {
-
-    private static final  int SUCCESS = 0;
-    private static final  int SAVING_ACC = -1;
-    private static final  int UNKNOWN_ACC = -2;
 
     private int startTimestamp;
     private int endTimestamp;

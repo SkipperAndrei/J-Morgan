@@ -1,8 +1,10 @@
-package org.poo.command;
+package org.poo.command.account;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.account.Account;
 import org.poo.account.AccountPlans;
+import org.poo.command.Command;
+import org.poo.command.CommandConstants;
 import org.poo.database.ExchangeRateDatabase;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
@@ -89,12 +91,10 @@ public class UpgradePlan implements Command {
      */
     public void checkAccountPlan(final User user, final Account upgradeAcc) {
 
-        if (upgradeAcc.getPlan().getValue().equals(newPlanType)) {
-            actionCode = CommandConstants.EQUAL_PLAN;
-            return;
-        }
 
-        if (upgradeAcc.getPlan().getPriority() > AccountPlans.valueOf(newPlanType.toUpperCase()).getPriority()) {
+        if (upgradeAcc.getPlan().getPriority() >= AccountPlans.valueOf(newPlanType.toUpperCase())
+                                                .getPriority()) {
+
             actionCode = CommandConstants.INFERIOR_PLAN;
             return;
         }

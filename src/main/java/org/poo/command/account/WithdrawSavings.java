@@ -1,4 +1,4 @@
-package org.poo.command;
+package org.poo.command.account;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -8,6 +8,8 @@ import java.time.temporal.ChronoUnit;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.account.Account;
 import org.poo.account.SavingAccount;
+import org.poo.command.Command;
+import org.poo.command.CommandConstants;
 import org.poo.database.ExchangeRateDatabase;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;

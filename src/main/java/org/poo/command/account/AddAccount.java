@@ -1,9 +1,10 @@
-package org.poo.command;
+package org.poo.command.account;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.account.Account;
 import org.poo.account.BusinessAccount;
 import org.poo.account.SavingAccount;
+import org.poo.command.Command;
 import org.poo.database.UserDatabase;
 import lombok.Data;
 import org.poo.fileio.CommandInput;
@@ -56,7 +57,12 @@ public final class AddAccount implements Command {
 
         newIban = newAccount.getIban();
 
+        // System.out.println("User ul " + email + " a creat contul cu iban ul " + newIban + " la timestamp " + timestamp);
+
         if (!userDB.getUserEntry(email).getUserAccounts().isEmpty()) {
+
+            // if the user already created accounts, set the plan from one of them
+            // it doesn't matter which one, because all have the same plan
             newAccount.setPlan(userDB.getUserEntry(email).getUserAccounts().
                                         values().iterator().next().getPlan());
 
