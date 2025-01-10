@@ -1,12 +1,16 @@
 package org.poo.user;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.account.Account;
+import org.poo.account.AccountPlans;
+import org.poo.account.BusinessAccount;
 import org.poo.card.Card;
 import org.poo.fileio.UserInput;
 
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -17,6 +21,7 @@ public final class User {
     private UserInput userData = new UserInput();
     private Map<String, Account> userAccounts = new LinkedHashMap<>();
     private Map<String, Account> userAliasAccounts = new LinkedHashMap<>();
+    private int bigPayments = 0;
     private ArrayNode userTransactions;
 
     public User(final UserInput userData) {
@@ -24,6 +29,8 @@ public final class User {
         this.userData.setFirstName(userData.getFirstName());
         this.userData.setLastName(userData.getLastName());
         this.userData.setEmail(userData.getEmail());
+        this.userData.setBirthDate(userData.getBirthDate());
+        this.userData.setOccupation(userData.getOccupation());
         userTransactions = new ObjectMapper().createArrayNode();
     }
 
@@ -66,11 +73,50 @@ public final class User {
     }
 
     /**
-     * This function will add a new transaction, as a JSON node, in the transaction list
+     * This function will append a new transaction, as a JSON node, in the transaction list
      * @param transaction The mapped transaction
      */
     public void addTransaction(final ObjectNode transaction) {
         userTransactions.add(transaction);
+    }
+
+    /**
+     * This function will add a new transaction, as a JSON node, in the transaction list
+     * at a certain timestamp
+     * @param timestamp The timestamp when the transaction happened
+     * @param transaction The mapped transaction
+     */
+    public void addTimestampTransaction(final int timestamp, final ObjectNode transaction) {
+
+        Iterator<JsonNode> jsonIterator = userTransactions.elements();
+        int position = 0;
+
+        while (jsonIterator.hasNext()) {
+
+            ObjectNode jsonNode = (ObjectNode) jsonIterator.next();
+
+            if (jsonNode.get("timestamp").asInt() < timestamp) {
+                position += 1;
+            }
+
+            if (jsonNode.get("timestamp").asInt() > timestamp) {
+                userTransactions.insert(position, transaction);
+                return;
+            }
+
+        }
+
+        addTransaction(transaction);
+    }
+
+    /**
+     * This functions updates all the accounts to the new service plan
+     * @param newPlanType The new plan
+     */
+    public void upgradeAllPlans(final String newPlanType) {
+        for (Account account : userAccounts.values()) {
+            account.setPlan(AccountPlans.valueOf(newPlanType.toUpperCase()));
+        }
     }
 
     /**

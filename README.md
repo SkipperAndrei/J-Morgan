@@ -2,7 +2,7 @@
 
 #### Made by : Giurgiu Andrei-Ștefan 325CA
 
-<div align="center"><img src="https://tenor.com/en-GB/view/xrd-exrd-crypto-btc-eth-gif-23801255.gif" width="500px"></div>
+<div align="center"><img src="https://tenor.com/view/xrd-exrd-crypto-btc-eth-gif-23801255.gif" width="500px"></div>
 
 ## Project idea
 * This project is a banking application that implements basic functionalities like users, accounts, credit cards and payments

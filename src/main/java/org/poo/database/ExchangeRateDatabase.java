@@ -26,7 +26,7 @@ public final class ExchangeRateDatabase {
     /**
      * Function that gets the unique instance of the exchange rate database
      * If there isn't an instance previously defined, it creates it.
-     * @return
+     * @return The instance
      */
     public static ExchangeRateDatabase getInstance() {
         if (instance == null) {
@@ -100,6 +100,10 @@ public final class ExchangeRateDatabase {
      * @return The currency exchange rate, if possible to determine it
      */
     public double getExchangeRate(final String from, final String to) {
+
+        if (from.equals(to)) {
+            return 1;
+        }
 
         boolean possible = addUnknownExchange(from, to);
 

@@ -14,6 +14,7 @@ import lombok.Data;
 @Data
 public class Card {
 
+    private String cardOwner;
     private String cardNumber;
     private StringBuilder status;
 

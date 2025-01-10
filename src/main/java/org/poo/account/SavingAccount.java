@@ -12,8 +12,8 @@ public class SavingAccount extends Account {
     private double interestRate;
 
     public SavingAccount(final String email, final String currency, final String accountType,
-                         final int timestamp, final double interestRate) {
-        super(email, currency, accountType, timestamp);
+                         final int timestamp, final double interestRate, final String occupation) {
+        super(email, currency, accountType, timestamp, occupation);
         this.interestRate = interestRate;
     }
 

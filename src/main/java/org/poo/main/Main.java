@@ -7,12 +7,10 @@ import org.poo.checker.Checker;
 import org.poo.checker.CheckerConstants;
 import org.poo.command.Command;
 import org.poo.command.FactoryCommand;
+import org.poo.database.CommerciantDatabase;
 import org.poo.database.ExchangeRateDatabase;
 import org.poo.database.UserDatabase;
-import org.poo.fileio.CommandInput;
-import org.poo.fileio.ExchangeInput;
-import org.poo.fileio.ObjectInput;
-import org.poo.fileio.UserInput;
+import org.poo.fileio.*;
 import org.poo.utils.OutputGenerator;
 import org.poo.user.User;
 import org.poo.utils.Utils;
@@ -85,6 +83,7 @@ public final class Main {
         ArrayNode output = objectMapper.createArrayNode();
         UserDatabase userDB = UserDatabase.getInstance();
         ExchangeRateDatabase exchangeDB = ExchangeRateDatabase.getInstance();
+        CommerciantDatabase commDB = CommerciantDatabase.getInstance();
         OutputGenerator generator = new OutputGenerator(objectMapper, output, userDB);
 
         // building the user database
@@ -97,6 +96,11 @@ public final class Main {
         for (ExchangeInput exchange : inputData.getExchangeRates()) {
             exchangeDB.addNewExchange(exchange.getFrom(), exchange.getTo(), exchange.getRate());
             exchangeDB.addNewExchange(exchange.getTo(), exchange.getFrom(), 1 / exchange.getRate());
+        }
+
+        // building the commerciant database
+        for (CommerciantInput comm : inputData.getCommerciants()) {
+            commDB.addCommerciant(comm);
         }
 
         // Iterate through the commands and execute them in a single-threaded context
@@ -112,8 +116,9 @@ public final class Main {
 
         }
 
-        userDB.clearDatabase();
-        exchangeDB.resetExchangeDatabase();
+        UserDatabase.getInstance().clearDatabase();
+        ExchangeRateDatabase.getInstance().resetExchangeDatabase();
+        CommerciantDatabase.getInstance().removeAllCommerciants();
         Utils.resetRandom();
 
         ObjectWriter objectWriter = objectMapper.writerWithDefaultPrettyPrinter();

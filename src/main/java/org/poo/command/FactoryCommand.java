@@ -1,5 +1,19 @@
 package org.poo.command;
 
+import org.poo.command.account.*;
+import org.poo.command.business.AddNewBusinessAssociate;
+import org.poo.command.business.BusinessReport;
+import org.poo.command.business.ChangeDepositLimit;
+import org.poo.command.business.ChangeSpendingLimit;
+import org.poo.command.cards.CheckCardStatus;
+import org.poo.command.cards.CreateCard;
+import org.poo.command.cards.CreateOneTimeCard;
+import org.poo.command.cards.DeleteCard;
+import org.poo.command.payments.*;
+import org.poo.command.statistics.PrintTransactions;
+import org.poo.command.statistics.PrintUsers;
+import org.poo.command.statistics.Report;
+import org.poo.command.statistics.SpendingReport;
 import org.poo.database.ExchangeRateDatabase;
 import org.poo.fileio.CommandInput;
 
@@ -62,7 +76,7 @@ public final class FactoryCommand {
             }
 
             case "splitPayment" -> {
-                return new SplitPayment(command, exchangeRateDatabase);
+                return new SplitPayment(command);
             }
 
             case "setAlias" -> {
@@ -91,6 +105,42 @@ public final class FactoryCommand {
 
             case "spendingsReport" -> {
                 return new SpendingReport(command);
+            }
+
+            case "withdrawSavings" -> {
+                return new WithdrawSavings(command);
+            }
+
+            case "cashWithdrawal" -> {
+                return new CashWithdrawal(command);
+            }
+
+            case "upgradePlan" -> {
+                return new UpgradePlan(command);
+            }
+
+            case "acceptSplitPayment" -> {
+                return new AcceptSplitPayment(command);
+            }
+
+            case "rejectSplitPayment" -> {
+                return new RejectSplitPayment(command);
+            }
+
+            case "addNewBusinessAssociate" -> {
+                return new AddNewBusinessAssociate(command);
+            }
+
+            case "changeSpendingLimit" -> {
+                return new ChangeSpendingLimit(command);
+            }
+
+            case "changeDepositLimit" -> {
+                return new ChangeDepositLimit(command);
+            }
+
+            case "businessReport" -> {
+                return new BusinessReport(command);
             }
 
             default -> {
