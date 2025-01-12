@@ -23,6 +23,7 @@ public enum CommandConstants {
     REJECTED_SPLIT(-12),
     DEPOSIT_LIMIT(-13),
     NO_PERMISSION(-14),
+    ALREADY_ASSOCIATE(-15),
     COMMERCIANT_REC(1),
     USER_REC(2),
     ADULT_AGE(21),

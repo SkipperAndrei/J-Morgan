@@ -48,6 +48,7 @@ public final class SplitTracker {
             for (Account acc : user.getUserAccounts().values()) {
 
                 // checking if the account is in the payment, and it hasn't already accepted
+                // and if the
                 if (payment.getAcceptedAccounts().containsKey(acc.getIban())
                         && payment.getAcceptedAccounts().get(acc.getIban()).equals(false)
                         && payment.getType().equals(type)) {

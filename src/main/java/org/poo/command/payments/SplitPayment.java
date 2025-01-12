@@ -68,7 +68,7 @@ public final class SplitPayment implements Command {
 
 
         amountToPay *= ExchangeRateDatabase.getInstance().getExchangeRate(currency, acc.getCurrency());
-        amountToPay = acc.getPlan().getPlanStrategy().commissionStrategy(amountToPay, acc.getCurrency());
+        // amountToPay = acc.getPlan().getPlanStrategy().commissionStrategy(amountToPay, acc.getCurrency());
         userDatabase.getUserEntry(email).getUserAccounts().get(iban).decrementFunds(amountToPay);
         // acc.setBalance(Math.round(acc.getBalance() * 100.0) / 100.0);
     }
@@ -87,14 +87,16 @@ public final class SplitPayment implements Command {
         if (acc.getCurrency().equals(currency)) {
 
             if (amountPerAccount > 0) {
-                return acc.canPay(acc.getPlan().getPlanStrategy().
-                                commissionStrategy(amountPerAccount, currency));
+//                return acc.canPay(acc.getPlan().getPlanStrategy().
+//                                commissionStrategy(amountPerAccount, currency));
+                return acc.canPay(amountPerAccount);
 
             } else {
 
                 int accIndex = args.indexOf(arg);
-                return acc.canPay(acc.getPlan().getPlanStrategy().
-                                    commissionStrategy(amountsPerAccount.get(accIndex), currency));
+//                return acc.canPay(acc.getPlan().getPlanStrategy().
+//                                    commissionStrategy(amountsPerAccount.get(accIndex), currency));
+                return acc.canPay(amountsPerAccount.get(accIndex));
 
             }
         }
@@ -111,7 +113,8 @@ public final class SplitPayment implements Command {
 
             amountToPay *= ExchangeRateDatabase.getInstance().getExchangeRate(currency, acc.getCurrency());
 
-            return acc.canPay(acc.getPlan().getPlanStrategy().commissionStrategy(amountToPay, acc.getCurrency()));
+            // return acc.canPay(acc.getPlan().getPlanStrategy().commissionStrategy(amountToPay, acc.getCurrency()));
+            return acc.canPay(amountToPay);
 
         } catch (NullPointerException e) {
             return false;

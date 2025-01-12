@@ -56,9 +56,10 @@ public final class SendMoney implements Command {
             return;
         }
 
+
         if (senderAcc.getAccountType().equals("business")) {
             boolean canPay = ((BusinessAccount) senderAcc).checkPayment(commSum, email,
-                                                receiverAcc.getIban(), timestamp);
+                                                receiver, timestamp);
 
             if (!canPay) {
                 actionCode = CommandConstants.NO_PERMISSION;
@@ -66,13 +67,17 @@ public final class SendMoney implements Command {
             }
         }
 
+//        System.out.println("Timestamp " + timestamp);
+//        System.out.println("Suma fara comision " + amount);
+//        System.out.println("Suma cu comision " + commSum);
+//        System.out.println("Balance before " + senderAcc.getBalance());
+
         senderAcc.decrementFunds(commSum);
 
         // TODO: Implement auto-upgrade logic if necessary
 
         if (receiverCode.equals(CommandConstants.USER_REC)) {
             receiverAcc.incrementFunds(amount);
-
 
         } else {
             // System.out.println("Timestamp " + timestamp);
@@ -128,6 +133,7 @@ public final class SendMoney implements Command {
     public void executeCommand(final UserDatabase userDatabase) {
 
 
+
         if (userDatabase.getUserEntry(email).getUserAccounts().containsKey(account)) {
             senderCurrency = userDatabase.getUserEntry(email).getUserAccounts().
                             get(account).getCurrency();
@@ -135,6 +141,7 @@ public final class SendMoney implements Command {
             Integer commId = CommerciantDatabase.getInstance().getCommIbanToId().get(receiver);
 
             try {
+
                 if (commId != null && CommerciantDatabase.getInstance().
                                         getCommerciantDb().containsKey(commId)) {
 

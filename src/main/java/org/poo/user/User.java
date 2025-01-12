@@ -115,7 +115,12 @@ public final class User {
      */
     public void upgradeAllPlans(final String newPlanType) {
         for (Account account : userAccounts.values()) {
-            account.setPlan(AccountPlans.valueOf(newPlanType.toUpperCase()));
+
+            // This if is to check if the user is the owner of business account
+            if (account.getEmail().equals(userData.getEmail())) {
+                account.setPlan(AccountPlans.valueOf(newPlanType.toUpperCase()));
+            }
+
         }
     }
 
@@ -135,6 +140,13 @@ public final class User {
         ArrayNode accounts = mapper.createArrayNode();
 
         for (Account acc : this.userAccounts.values()) {
+
+            if (acc.getAccountType().equals("business") &&
+                        !((BusinessAccount) acc).checkOwner(userData.getEmail())) {
+
+                continue;
+            }
+
             accounts.add(acc.accountToJson(mapper));
         }
 

@@ -3,6 +3,7 @@ package org.poo.command.business;
 import org.poo.account.Account;
 import org.poo.account.BusinessAccount;
 import org.poo.command.Command;
+import org.poo.command.CommandConstants;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
 import org.poo.user.User;
@@ -14,6 +15,7 @@ public class AddNewBusinessAssociate implements Command {
     private String role;
     private String account;
     private int timestamp;
+    private CommandConstants actionCode = CommandConstants.SUCCESS;
 
     public AddNewBusinessAssociate(CommandInput command) {
         associateEmail = command.getEmail();
@@ -27,7 +29,13 @@ public class AddNewBusinessAssociate implements Command {
         User user = UserDatabase.getInstance().getUserEntry(associateEmail);
         String name = user.getUserData().getLastName() + " " + user.getUserData().getFirstName();
 
-        acc.addAssociate(associateEmail, role, name);
+        boolean canAdd = acc.addAssociate(associateEmail, role, name);
+
+        if (!canAdd) {
+            actionCode = CommandConstants.ALREADY_ASSOCIATE;
+            return;
+        }
+
         user.getUserAccounts().put(acc.getIban(), acc);
     }
 

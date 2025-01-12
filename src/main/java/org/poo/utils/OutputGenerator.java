@@ -345,16 +345,22 @@ public final class OutputGenerator {
         outputNode.put("deposit limit", bussAcc.getDepositLimit());
         outputNode.put("statistics type", type);
 
-        ArrayNode managers = mapper.createArrayNode();
-        ArrayNode employees = mapper.createArrayNode();
-        ArrayList<Double> moneyStats = bussAcc.getStatistics(managers, employees,
-                                        startTimestamp, endTimestamp);
+        if (type.equals("transaction")) {
+            ArrayNode managers = mapper.createArrayNode();
+            ArrayNode employees = mapper.createArrayNode();
+            ArrayList<Double> moneyStats = bussAcc.getStatistics(managers, employees,
+                    startTimestamp, endTimestamp);
 
-        outputNode.set("managers", managers);
-        outputNode.set("employees", employees);
+            outputNode.set("managers", managers);
+            outputNode.set("employees", employees);
 
-        outputNode.put("total deposited", moneyStats.get(1));
-        outputNode.put("total spent", moneyStats.get(0));
+            outputNode.put("total deposited", moneyStats.get(1));
+            outputNode.put("total spent", moneyStats.get(0));
+        } else {
+            ArrayNode commerciants = mapper.createArrayNode();
+
+            outputNode.set("commerciants", commerciants);
+        }
 
         reportNode.set("output", outputNode);
         reportNode.put("timestamp", timestamp);

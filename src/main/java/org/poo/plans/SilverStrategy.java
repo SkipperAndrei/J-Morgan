@@ -11,7 +11,7 @@ public final class SilverStrategy implements Plan {
             if (sum < PlanConstants.SILVER_THRESHOLD.getValue()) {
                 return sum;
             }
-            return sum - sum / PlanConstants.SCALING_FACTOR.getValue();
+            return sum + sum / PlanConstants.SCALING_FACTOR.getValue();
         }
 
         double rate = ExchangeRateDatabase.getInstance().getExchangeRate(sumCurrency, "RON");

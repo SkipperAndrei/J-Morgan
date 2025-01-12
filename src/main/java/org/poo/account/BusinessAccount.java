@@ -11,10 +11,8 @@ import org.poo.database.UserDatabase;
 import org.poo.user.User;
 import org.poo.utils.DiscountTracker;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
+
 import lombok.Data;
 import lombok.Getter;
 
@@ -24,7 +22,7 @@ public class BusinessAccount extends Account {
     private double spendingLimit;
     private double depositLimit;
 
-    private Map<String, EmployeeInfo> personnel = new HashMap<String, EmployeeInfo>();
+    private Map<String, EmployeeInfo> personnel = new LinkedHashMap<String, EmployeeInfo>();
 
     public BusinessAccount(final String email, final String currency,
                            final String accountType, final int timestamp,
@@ -76,10 +74,16 @@ public class BusinessAccount extends Account {
         return employee.getRole().equals("owner");
     }
 
-    public void addAssociate(final String email, final String role, final String name) {
+    public boolean addAssociate(final String email, final String role, final String name) {
 
         EmployeeInfo employeeInfo = new EmployeeInfo(email, name, role);
+
+        if (personnel.containsKey(email)) {
+            return false;
+        }
+
         personnel.put(employeeInfo.getEmail(), employeeInfo);
+        return true;
     }
 
     public boolean addFundsCheck(final double amount, final String email, final int timestamp) {

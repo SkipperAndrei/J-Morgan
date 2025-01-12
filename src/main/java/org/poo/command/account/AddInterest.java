@@ -35,7 +35,6 @@ public final class AddInterest implements Command {
         try {
             amountAdded = acc.getBalance() * ((SavingAccount) acc).getInterestRate();
             acc.incrementFunds(amountAdded);
-            acc.setBalance(Math.round(acc.getBalance() * 100.0) / 100.0);
             actionCode = CommandConstants.SUCCESS;
         } catch (ClassCastException e) {
             actionCode = CommandConstants.CLASSIC_ACC;

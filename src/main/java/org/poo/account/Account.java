@@ -33,8 +33,6 @@ public class Account {
     private AccountPlans plan = AccountPlans.STANDARD;
 
     private Map<String, Card> cards = new LinkedHashMap<>();
-//    private Map<String, Double> spendingCommerciants = new LinkedHashMap<>();
-//    private Map<String, Integer> nrOfTransCommerciants = new LinkedHashMap<>();
     private CashbackTracker cashTracker;
     private ArrayList<String> deletedOneTimeCards = new ArrayList<>();
     private ArrayNode accountTransactions;
@@ -127,7 +125,6 @@ public class Account {
         }
 
         CommerciantInput commInfo = CommerciantDatabase.getInstance().getCommerciant(commId);
-        // System.out.println("Email " + email + " platesc la " + commInfo.getCommerciant());
         double cashback = cashTracker.calculateNrTransactionsCashback(commInfo.getType(), amount);
 
         if (commInfo.getCashbackStrategy().equals("nrOfTransactions")) {
@@ -142,7 +139,6 @@ public class Account {
             cashTracker.checkTechDiscount(commId);
         } else {
 
-            // System.out.println("Am ceva pe aici? " + cashTracker.getSpendingCommerciants().get(commId));
             double previousSpent = cashTracker.getSpendingCommerciants().get(commId) == null ?
                                     0 : cashTracker.getSpendingCommerciants().get(commId);
 
@@ -152,7 +148,6 @@ public class Account {
 
             cashTracker.getSpendingCommerciants().put(commId, previousSpent + newAmount);
 
-            // System.out.println("Am cheltuit la " + receiver + " suma de " + cashTracker.getSpendingCommerciants().get(commId));
             Plan accPlan = plan.getPlanStrategy();
             double spCashback = cashTracker.SpendingTransCashback(newAmount,
                                                 commId, plan.getPlanStrategy());
@@ -161,8 +156,12 @@ public class Account {
 
         }
 
+//        System.out.println("Balance before " + balance);
+//        System.out.println("Cashback ?" + cashback);
+
         balance += cashback;
-        // balance = Math.round(balance * 100.0) / 100.0;
+
+        // System.out.println("Balance after " + balance);
 
     }
 
