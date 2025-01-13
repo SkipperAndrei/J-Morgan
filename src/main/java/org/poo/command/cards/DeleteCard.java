@@ -45,8 +45,11 @@ public final class DeleteCard implements Command {
                     }
                 }
 
-                userDatabase.getDatabase().get(email).getUserAccounts().
-                                get(ac.getIban()).getCards().remove(card.getCardNumber());
+                if (ac.getBalance() == 0) {
+                    ac.getCards().remove(card.getCardNumber());
+                    actionCode = CommandConstants.FUNDS_REMAINING;
+                    return;
+                }
                 account = ac.getIban();
                 found = true;
             }
@@ -57,6 +60,10 @@ public final class DeleteCard implements Command {
 
     @Override
     public void generateOutput(final OutputGenerator outputGenerator) {
+
+        if (actionCode.equals(CommandConstants.FUNDS_REMAINING)) {
+            return;
+        }
 
         if (actionCode.equals(CommandConstants.NO_PERMISSION)) {
             outputGenerator.errorSetting(timestamp,

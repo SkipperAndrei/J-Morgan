@@ -1,7 +1,11 @@
 package org.poo.account;
 
 import lombok.Getter;
-import org.poo.plans.*;
+import org.poo.plans.Plan;
+import org.poo.plans.StandardStrategy;
+import org.poo.plans.StudentStrategy;
+import org.poo.plans.SilverStrategy;
+import org.poo.plans.GoldStrategy;
 
 
 @Getter

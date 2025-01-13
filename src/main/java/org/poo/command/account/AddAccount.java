@@ -15,7 +15,7 @@ public final class AddAccount implements Command {
 
     private String email;
     private String currency;
-    private String accountType;
+    private String accType;
     private String description;
     private int timestamp;
     private double interestRate;
@@ -26,28 +26,29 @@ public final class AddAccount implements Command {
         email = command.getEmail();
         currency = command.getCurrency();
         timestamp = command.getTimestamp();
-        accountType = command.getAccountType();
+        accType = command.getAccountType();
         interestRate = command.getInterestRate();
         description = command.getDescription();
     }
 
     @Override
     public void executeCommand(final UserDatabase userDB) {
+
         Account newAccount;
 
-        switch (accountType) {
+        switch (accType) {
             case "classic":
-                newAccount = new Account(email, currency, accountType, timestamp,
+                newAccount = new Account(email, currency, accType, timestamp,
                         userDB.getUserEntry(email).getUserData().getOccupation());
                 break;
 
             case "savings":
-                newAccount = new SavingAccount(email, currency, accountType, timestamp, interestRate,
-                        userDB.getUserEntry(email).getUserData().getOccupation());
+                newAccount = new SavingAccount(email, currency, accType, timestamp, interestRate,
+                            userDB.getUserEntry(email).getUserData().getOccupation());
                 break;
 
             case "business":
-                newAccount = new BusinessAccount(email, currency, accountType, timestamp,
+                newAccount = new BusinessAccount(email, currency, accType, timestamp,
                         userDB.getUserEntry(email).getUserData().getOccupation());
                 break;
 
@@ -57,16 +58,7 @@ public final class AddAccount implements Command {
 
         newIban = newAccount.getIban();
 
-        // System.out.println("User ul " + email + " a creat contul cu iban ul " + newIban + " la timestamp " + timestamp);
-
-        if (!userDB.getUserEntry(email).getUserAccounts().isEmpty()) {
-
-            // if the user already created accounts, set the plan from one of them
-            // it doesn't matter which one, because all have the same plan
-            newAccount.setPlan(userDB.getUserEntry(email).getUserAccounts().
-                                        values().iterator().next().getPlan());
-
-        }
+        newAccount.setPlan(userDB.getUserEntry(email).getUserPlan());
 
         userDB.getUserEntry(email).addAccount(newAccount);
         userDB.addMailEntry(newIban, email);
@@ -82,6 +74,6 @@ public final class AddAccount implements Command {
 
         Account acc = outputGenerator.getUserDatabase().getUserEntry(email).
                     getUserAccounts().get(newIban);
-        outputGenerator.tryToAddTransaction(acc, newAccountNode);
+        acc.addTransaction(newAccountNode);
     }
 }

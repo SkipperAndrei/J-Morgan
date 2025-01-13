@@ -20,6 +20,7 @@ import org.poo.utils.OutputGenerator;
 public final class WithdrawSavings implements Command {
 
     private String account;
+    private String receiverAccount;
     private double amount;
     private String currency;
     private int timestamp;
@@ -43,6 +44,7 @@ public final class WithdrawSavings implements Command {
                               final Account classicAcc, final double deductedAmm) {
 
         savingAcc.decrementFunds(deductedAmm);
+        receiverAccount = classicAcc.getIban();
         classicAcc.incrementFunds(amount);
     }
 
@@ -93,14 +95,9 @@ public final class WithdrawSavings implements Command {
 
         for (Account acc : user.getUserAccounts().values()) {
 
-            try {
-                ((SavingAccount) acc).getInterestRate();
-            } catch (ClassCastException e) {
-
-                if (acc.getCurrency().equals(currency)) {
-                    checkFundsAccount(user, acc);
-                    return;
-                }
+            if (acc.getAccountType().equals("classic") && acc.getCurrency().equals(currency)) {
+                checkFundsAccount(user, acc);
+                return;
             }
         }
 
@@ -167,25 +164,35 @@ public final class WithdrawSavings implements Command {
         ObjectNode transactionNode = outputGenerator.getMapper().createObjectNode();
         String userEmail = outputGenerator.getUserDatabase().getMailEntry(account);
         User user = outputGenerator.getUserDatabase().getUserEntry(userEmail);
+        Account acc = user.getUserAccounts().get(account);
+        Account classicAcc = user.getUserAccounts().get(receiverAccount);
 
         switch (actionCode) {
             case SUCCESS:
-                transactionNode.put("timestamp", timestamp);
-                transactionNode.put("description", "Cash withdrawal of " + amount);
                 transactionNode.put("amount", amount);
+                transactionNode.put("classicAccountIBAN", receiverAccount);
+                transactionNode.put("description", "Savings withdrawal");
+                transactionNode.put("savingsAccountIBAN", account);
+                transactionNode.put("timestamp", timestamp);
                 user.addTransaction(transactionNode);
+                user.addTransaction(transactionNode);
+                acc.addTransaction(transactionNode);
+                classicAcc.addTransaction(transactionNode);
+                break;
+
 
             case MINIMUM_AGE:
                 transactionNode.put("description", "You don't have the minimum age required.");
                 transactionNode.put("timestamp", timestamp);
                 user.addTransaction(transactionNode);
+                acc.addTransaction(transactionNode);
                 break;
 
             case UNKNOWN_CURRENCY:
                 transactionNode.put("description", "You do not have a classic account.");
                 transactionNode.put("timestamp", timestamp);
                 user.addTransaction(transactionNode);
-
+                acc.addTransaction(transactionNode);
                 break;
 
             default :

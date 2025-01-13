@@ -8,7 +8,7 @@ import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
 import org.poo.utils.OutputGenerator;
 
-public class ChangeDepositLimit implements Command {
+public final class ChangeDepositLimit implements Command {
 
     private String email;
     private double newLimit;
@@ -16,7 +16,7 @@ public class ChangeDepositLimit implements Command {
     private int timestamp;
     private CommandConstants actionCode = CommandConstants.SUCCESS;
 
-    public ChangeDepositLimit(CommandInput command) {
+    public ChangeDepositLimit(final CommandInput command) {
         email = command.getEmail();
         newLimit = command.getAmount();
         account = command.getAccount();
@@ -24,7 +24,7 @@ public class ChangeDepositLimit implements Command {
     }
 
     @Override
-    public void executeCommand(UserDatabase userDatabase) {
+    public void executeCommand(final UserDatabase userDatabase) {
 
         try {
             Account acc = userDatabase.getUserEntry(email).getUserAccounts().get(account);
@@ -36,17 +36,25 @@ public class ChangeDepositLimit implements Command {
             }
 
         } catch (ClassCastException e) {
-            return;
+
+            actionCode = CommandConstants.CLASSIC_ACC;
         }
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
 
         if (actionCode == CommandConstants.NO_PERMISSION) {
+
             String message = "You must be owner in order to change deposit limit.";
             outputGenerator.errorSetting(timestamp, message, "changeDepositLimit");
 
+        }
+
+        if (actionCode == CommandConstants.CLASSIC_ACC) {
+
+            String error = "This is not a business account";
+            outputGenerator.errorSetting(timestamp, error, "changeDepositLimit");
         }
     }
 }

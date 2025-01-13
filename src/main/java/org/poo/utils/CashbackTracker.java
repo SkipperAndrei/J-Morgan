@@ -1,14 +1,12 @@
 package org.poo.utils;
 
-import org.poo.database.CommerciantDatabase;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
-import lombok.Getter;
+import lombok.Data;
 import org.poo.plans.Plan;
 
-@Getter
-public class CashbackTracker {
+@Data
+public final class CashbackTracker {
 
     private DiscountTracker foodDiscount = DiscountTracker.NOT_ELIGIBLE;
     private DiscountTracker clothesDiscount = DiscountTracker.NOT_ELIGIBLE;
@@ -17,30 +15,37 @@ public class CashbackTracker {
     private DiscountTracker threeHundredThreshold = DiscountTracker.NOT_ELIGIBLE;
     private DiscountTracker fiveHundredThreshold = DiscountTracker.NOT_ELIGIBLE;
 
-    private Map<Integer, Double> spendingCommerciants = new LinkedHashMap<>();
+    private Double spendingCommerciants = 0.0;
     private Map<Integer, Integer> nrOfTransCommerciants = new LinkedHashMap<>();
 
-    public boolean checkFoodDiscount(final Integer commId) {
+    /**
+     * This function checks if the account already received the food discount
+     * If it didn't, then it checks if it's eligible to get it at the next Food transaction
+     * @param commId The commerciant id of the current transaction
+     */
+    public void checkFoodDiscount(final Integer commId) {
 
         if (foodDiscount.equals(DiscountTracker.CASHED_IN)) {
-            return false;
+            return;
         }
 
         Integer nrTrans = nrOfTransCommerciants.get(commId);
 
         if (nrTrans == 2 && foodDiscount.equals(DiscountTracker.NOT_ELIGIBLE)) {
             foodDiscount = DiscountTracker.ELIGIBLE;
-            return false;
         }
-
-        return nrTrans >= 2 && foodDiscount.equals(DiscountTracker.ELIGIBLE);
 
     }
 
-    public boolean checkClothesDiscount(final Integer commId) {
+    /**
+     * This function checks if the account already received the clothes discount
+     * If it didn't, then it checks if it's eligible to get it at the next clothes transaction
+     * @param commId The commerciant id of the current transaction
+     */
+    public void checkClothesDiscount(final Integer commId) {
 
         if (clothesDiscount.equals(DiscountTracker.CASHED_IN)) {
-            return false;
+            return;
         }
 
         Integer nrTrans = nrOfTransCommerciants.get(commId);
@@ -49,16 +54,18 @@ public class CashbackTracker {
                     && clothesDiscount.equals(DiscountTracker.NOT_ELIGIBLE)) {
 
             clothesDiscount = DiscountTracker.ELIGIBLE;
-            return false;
         }
 
-        return nrTrans >= DiscountTracker.CLOTHES_THRESHOLD.getValue()
-                && clothesDiscount.equals(DiscountTracker.ELIGIBLE);
     }
 
-    public boolean checkTechDiscount(final Integer commId) {
+    /**
+     *  This function checks if the account already received the tech discount
+     *  If it didn't, then it checks if it's eligible to get it at the next Tech transaction
+     * @param commId The commerciant id of the current transaction
+     */
+    public void checkTechDiscount(final Integer commId) {
         if (techDiscount.equals(DiscountTracker.CASHED_IN)) {
-            return false;
+            return;
         }
 
         Integer nrTrans = nrOfTransCommerciants.get(commId);
@@ -67,26 +74,16 @@ public class CashbackTracker {
                     && techDiscount.equals(DiscountTracker.NOT_ELIGIBLE)) {
 
             techDiscount = DiscountTracker.ELIGIBLE;
-            return false;
         }
 
-        return nrTrans >= DiscountTracker.TECH_THRESHOLD.getValue()
-                && techDiscount.equals(DiscountTracker.ELIGIBLE);
     }
 
-    public double checkOneHundThreshold(final double amount, final Integer commId,
-                                        final Plan accPlan) {
+    public double checkOneHundThreshold(final double amount, final Plan accPlan) {
 
-
-//        if (oneHundredThreshold.equals(DiscountTracker.CASHED_IN)) {
-//            return 0;
-//        }
-
-        Double moneySpent = spendingCommerciants.get(commId);
+        Double moneySpent = spendingCommerciants;
 
         if (moneySpent >= DiscountTracker.ONE_HUNDRED_THRESHOLD.getValue()) {
 
-//            oneHundredThreshold = DiscountTracker.CASHED_IN;
             return accPlan.cashbackStrategy(amount,
                                             DiscountTracker.ONE_HUNDRED_THRESHOLD.getValue());
 
@@ -95,18 +92,11 @@ public class CashbackTracker {
         return 0;
     }
 
-    public double checkThreeHundThreshold(final double amount, final Integer commId,
-                                            final Plan accPlan) {
+    public double checkThreeHundThreshold(final double amount, final Plan accPlan) {
 
-
-//        if (threeHundredThreshold.equals(DiscountTracker.CASHED_IN)) {
-//            return 0;
-//        }
-
-        Double moneySpent = spendingCommerciants.get(commId);
+        Double moneySpent = spendingCommerciants;
 
         if (moneySpent >= DiscountTracker.THREE_HUNDRED_THRESHOLD.getValue()) {
-//            threeHundredThreshold = DiscountTracker.CASHED_IN;
 
             return accPlan.cashbackStrategy(amount,
                                             DiscountTracker.THREE_HUNDRED_THRESHOLD.getValue());
@@ -116,17 +106,12 @@ public class CashbackTracker {
         return 0;
     }
 
-    public double checkFiveHundThreshold(final double amount, final Integer commId,
-                                          final Plan accPlan) {
+    public double checkFiveHundThreshold(final double amount, final Plan accPlan) {
 
-//        if (fiveHundredThreshold.equals(DiscountTracker.CASHED_IN)) {
-//            return 0;
-//        }
-
-        Double moneySpent = spendingCommerciants.get(commId);
+        Double moneySpent = spendingCommerciants;
 
         if (moneySpent >= DiscountTracker.FIVE_HUNDRED_THRESHOLD.getValue()) {
-            // fiveHundredThreshold = DiscountTracker.CASHED_IN;
+
             return accPlan.cashbackStrategy(amount,
                                             DiscountTracker.FIVE_HUNDRED_THRESHOLD.getValue());
 
@@ -137,36 +122,46 @@ public class CashbackTracker {
 
     public double calculateNrTransactionsCashback(final String commType, final double amount) {
 
-        if (commType.equals("food") && foodDiscount.equals(DiscountTracker.ELIGIBLE)) {
-            return 2 * amount / 100;
+        if (commType.equals("Food") && foodDiscount.equals(DiscountTracker.ELIGIBLE)) {
+            foodDiscount = DiscountTracker.CASHED_IN;
+
+            return amount * 2 / DiscountTracker.ONE_HUNDRED_THRESHOLD.getValue();
         }
 
-        if (commType.equals("clothes") && clothesDiscount.equals(DiscountTracker.ELIGIBLE)) {
-            return DiscountTracker.CLOTHES_THRESHOLD.getValue() * amount / 100;
+        if (commType.equals("Clothes") && clothesDiscount.equals(DiscountTracker.ELIGIBLE)) {
+            clothesDiscount = DiscountTracker.CASHED_IN;
+
+            return amount * DiscountTracker.CLOTHES_THRESHOLD.getValue()
+                    / DiscountTracker.ONE_HUNDRED_THRESHOLD.getValue();
+
         }
 
-        if (commType.equals("tech") && techDiscount.equals(DiscountTracker.ELIGIBLE)) {
-            return DiscountTracker.TECH_THRESHOLD.getValue() * amount / 100;
+        if (commType.equals("Tech") && techDiscount.equals(DiscountTracker.ELIGIBLE)) {
+            techDiscount = DiscountTracker.CASHED_IN;
+
+            return amount * DiscountTracker.TECH_THRESHOLD.getValue()
+                    / DiscountTracker.ONE_HUNDRED_THRESHOLD.getValue();
+
         }
 
         return 0;
     }
 
-    public double SpendingTransCashback(final double amount, final Integer commId, final Plan accPlan) {
+    public double spendingTransCashback(final double amount, final Plan accPlan) {
 
-        double cashback = checkFiveHundThreshold(amount, commId, accPlan);
-
-        if (cashback != 0) {
-            return cashback;
-        }
-
-        cashback = checkThreeHundThreshold(amount, commId, accPlan);
+        double cashback = checkFiveHundThreshold(amount, accPlan);
 
         if (cashback != 0) {
             return cashback;
         }
 
-        return checkOneHundThreshold(amount, commId, accPlan);
+        cashback = checkThreeHundThreshold(amount, accPlan);
+
+        if (cashback != 0) {
+            return cashback;
+        }
+
+        return checkOneHundThreshold(amount, accPlan);
 
     }
 

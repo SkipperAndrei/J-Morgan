@@ -16,7 +16,7 @@ public enum DiscountTracker {
 
     private final int value;
 
-    private DiscountTracker(final int value) {
+    DiscountTracker(final int value) {
         this.value = value;
     }
 }

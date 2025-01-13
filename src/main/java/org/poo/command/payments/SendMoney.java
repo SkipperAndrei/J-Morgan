@@ -56,9 +56,10 @@ public final class SendMoney implements Command {
             return;
         }
 
+
         if (senderAcc.getAccountType().equals("business")) {
             boolean canPay = ((BusinessAccount) senderAcc).checkPayment(commSum, email,
-                                                receiverAcc.getIban(), timestamp);
+                                                receiver, timestamp);
 
             if (!canPay) {
                 actionCode = CommandConstants.NO_PERMISSION;
@@ -68,14 +69,11 @@ public final class SendMoney implements Command {
 
         senderAcc.decrementFunds(commSum);
 
-        // TODO: Implement auto-upgrade logic if necessary
 
         if (receiverCode.equals(CommandConstants.USER_REC)) {
             receiverAcc.incrementFunds(amount);
 
-
         } else {
-            // System.out.println("Timestamp " + timestamp);
             senderAcc.handleCommerciantPayment(receiver, amount);
         }
 
@@ -127,7 +125,6 @@ public final class SendMoney implements Command {
     @Override
     public void executeCommand(final UserDatabase userDatabase) {
 
-
         if (userDatabase.getUserEntry(email).getUserAccounts().containsKey(account)) {
             senderCurrency = userDatabase.getUserEntry(email).getUserAccounts().
                             get(account).getCurrency();
@@ -135,6 +132,7 @@ public final class SendMoney implements Command {
             Integer commId = CommerciantDatabase.getInstance().getCommIbanToId().get(receiver);
 
             try {
+
                 if (commId != null && CommerciantDatabase.getInstance().
                                         getCommerciantDb().containsKey(commId)) {
 
@@ -209,10 +207,6 @@ public final class SendMoney implements Command {
                 outputGenerator.tryToAddTransaction(insufficientAcc, noFundsNode);
                 return;
 
-//            case NO_PERMISSION:
-//                outputGenerator.errorSetting(timestamp,
-//                                "You are not authorized to make this transaction.", "sendMoney");
-//                return;
 
             case NOT_FOUND:
                 outputGenerator.errorSetting(timestamp, "User not found", "sendMoney");

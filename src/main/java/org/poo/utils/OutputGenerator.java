@@ -11,7 +11,11 @@ import org.poo.database.UserDatabase;
 import org.poo.user.User;
 import lombok.Data;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Iterator;
+import java.util.TreeMap;
+import java.util.ArrayList;
 
 /**
  * This class will handle JSON output generation
@@ -345,16 +349,22 @@ public final class OutputGenerator {
         outputNode.put("deposit limit", bussAcc.getDepositLimit());
         outputNode.put("statistics type", type);
 
-        ArrayNode managers = mapper.createArrayNode();
-        ArrayNode employees = mapper.createArrayNode();
-        ArrayList<Double> moneyStats = bussAcc.getStatistics(managers, employees,
-                                        startTimestamp, endTimestamp);
+        if (type.equals("transaction")) {
+            ArrayNode managers = mapper.createArrayNode();
+            ArrayNode employees = mapper.createArrayNode();
+            ArrayList<Double> moneyStats = bussAcc.getStatistics(managers, employees,
+                    startTimestamp, endTimestamp);
 
-        outputNode.set("managers", managers);
-        outputNode.set("employees", employees);
+            outputNode.set("managers", managers);
+            outputNode.set("employees", employees);
 
-        outputNode.put("total deposited", moneyStats.get(1));
-        outputNode.put("total spent", moneyStats.get(0));
+            outputNode.put("total deposited", moneyStats.get(1));
+            outputNode.put("total spent", moneyStats.get(0));
+        } else {
+            ArrayNode commerciants = mapper.createArrayNode();
+            bussAcc.generateCommerciantReport(startTimestamp, endTimestamp, commerciants);
+            outputNode.set("commerciants", commerciants);
+        }
 
         reportNode.set("output", outputNode);
         reportNode.put("timestamp", timestamp);

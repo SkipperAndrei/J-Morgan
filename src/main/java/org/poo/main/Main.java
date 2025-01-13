@@ -7,10 +7,15 @@ import org.poo.checker.Checker;
 import org.poo.checker.CheckerConstants;
 import org.poo.command.Command;
 import org.poo.command.FactoryCommand;
+import org.poo.command.payments.SplitTracker;
 import org.poo.database.CommerciantDatabase;
 import org.poo.database.ExchangeRateDatabase;
 import org.poo.database.UserDatabase;
-import org.poo.fileio.*;
+import org.poo.fileio.ObjectInput;
+import org.poo.fileio.CommandInput;
+import org.poo.fileio.ExchangeInput;
+import org.poo.fileio.CommerciantInput;
+import org.poo.fileio.UserInput;
 import org.poo.utils.OutputGenerator;
 import org.poo.user.User;
 import org.poo.utils.Utils;
@@ -119,6 +124,7 @@ public final class Main {
         UserDatabase.getInstance().clearDatabase();
         ExchangeRateDatabase.getInstance().resetExchangeDatabase();
         CommerciantDatabase.getInstance().removeAllCommerciants();
+        SplitTracker.getInstance().getListener().clear();
         Utils.resetRandom();
 
         ObjectWriter objectWriter = objectMapper.writerWithDefaultPrettyPrinter();

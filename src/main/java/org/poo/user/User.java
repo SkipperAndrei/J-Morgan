@@ -22,6 +22,7 @@ public final class User {
     private Map<String, Account> userAccounts = new LinkedHashMap<>();
     private Map<String, Account> userAliasAccounts = new LinkedHashMap<>();
     private int bigPayments = 0;
+    private AccountPlans userPlan;
     private ArrayNode userTransactions;
 
     public User(final UserInput userData) {
@@ -31,6 +32,13 @@ public final class User {
         this.userData.setEmail(userData.getEmail());
         this.userData.setBirthDate(userData.getBirthDate());
         this.userData.setOccupation(userData.getOccupation());
+
+        if (userData.getOccupation().equals("student")) {
+            userPlan = AccountPlans.STUDENT;
+        } else {
+            userPlan = AccountPlans.STANDARD;
+        }
+
         userTransactions = new ObjectMapper().createArrayNode();
     }
 
@@ -110,12 +118,41 @@ public final class User {
     }
 
     /**
+     * This function generates a transaction for an upgrade plan
+     * @param account The account where it would be added
+     * @param timestamp The timestamp of the upgrade
+     * @param newPlan The new plan of the user
+     */
+    public void upgradePlanTrans(final String account, final int timestamp,
+                                       final String newPlan) {
+
+        ObjectNode upgradeNode = new ObjectMapper().createObjectNode();
+        upgradeNode.put("accountIBAN", account);
+        upgradeNode.put("description", "Upgrade plan");
+        upgradeNode.put("newPlanType", newPlan);
+        upgradeNode.put("timestamp", timestamp);
+
+        addTransaction(upgradeNode);
+        userAccounts.get(account).addTransaction(upgradeNode);
+
+
+    }
+
+    /**
      * This functions updates all the accounts to the new service plan
      * @param newPlanType The new plan
      */
     public void upgradeAllPlans(final String newPlanType) {
+
+        userPlan = AccountPlans.valueOf(newPlanType.toUpperCase());
+
         for (Account account : userAccounts.values()) {
-            account.setPlan(AccountPlans.valueOf(newPlanType.toUpperCase()));
+
+            // This if is to check if the user is the owner of business account
+            if (account.getEmail().equals(userData.getEmail())) {
+                account.setPlan(AccountPlans.valueOf(newPlanType.toUpperCase()));
+            }
+
         }
     }
 
@@ -135,6 +172,12 @@ public final class User {
         ArrayNode accounts = mapper.createArrayNode();
 
         for (Account acc : this.userAccounts.values()) {
+
+            if (acc.getAccountType().equals("business")
+                        && !((BusinessAccount) acc).checkOwner(userData.getEmail())) {
+                continue;
+            }
+
             accounts.add(acc.accountToJson(mapper));
         }
 
