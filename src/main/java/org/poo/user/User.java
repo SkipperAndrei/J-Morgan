@@ -117,6 +117,12 @@ public final class User {
         addTransaction(transaction);
     }
 
+    /**
+     * This function generates a transaction for an upgrade plan
+     * @param account The account where it would be added
+     * @param timestamp The timestamp of the upgrade
+     * @param newPlan The new plan of the user
+     */
     public void upgradePlanTrans(final String account, final int timestamp,
                                        final String newPlan) {
 

@@ -71,12 +71,24 @@ public final class BusinessAccount extends Account {
         }
     }
 
+    /**
+     * This function checks if the employee is the owner
+     * @param email Employee's email
+     * @return True if the email is the owner's, False otherwise
+     */
     public boolean checkOwner(final String email) {
         EmployeeInfo employee = personnel.get(email);
 
         return employee.getRole().equals("owner");
     }
 
+    /**
+     * This function handles associate adding in the personnel hashmap
+     * @param email The email of the new associate
+     * @param role The role of the new employee
+     * @param name The name of the new employee
+     * @return True, if the employee could be added, False if the employee couldn't be added
+     */
     public boolean addAssociate(final String email, final String role, final String name) {
 
         EmployeeInfo employeeInfo = new EmployeeInfo(email, name, role);
@@ -89,6 +101,16 @@ public final class BusinessAccount extends Account {
         return true;
     }
 
+    /**
+     * This function checks if the employee can deposit the amount
+     * If the employee is not at least a manager,
+     * then the amount must be checked to be lower than the deposit limit
+     * If the amount can be deposited, then a transaction is created
+     * @param amount The amount wanted to be deposited
+     * @param email The email of the employee
+     * @param timestamp The timestamp of the query
+     * @return True, if the amount can be deposited, False otherwise
+     */
     public boolean addFundsCheck(final double amount, final String email, final int timestamp) {
 
         EmployeeInfo empInfo = personnel.get(email);
@@ -114,11 +136,17 @@ public final class BusinessAccount extends Account {
         return true;
     }
 
+    /**
+     * This function checks the permission for an employee to change the spending limit
+     * If the employee is at least a manager, then the spending limit is changed
+     * @param email The email of the employee
+     * @param limit The new spending limit
+     * @return True, if successful, False otherwise
+     */
     public boolean changeSpendingLimit(final String email, final double limit) {
 
-        EmployeeInfo empInfo = personnel.get(email);
 
-        if (!empInfo.role.equals("owner")) {
+        if (!checkOwner(email)) {
             return false;
         }
 
@@ -126,6 +154,13 @@ public final class BusinessAccount extends Account {
         return true;
     }
 
+    /**
+     * This function checks the permission for an employee to change the deposit limit
+     * If the employee is at least a manager, then the deposit limit is changed
+     * @param email The email of the employee
+     * @param limit The new deposit limit
+     * @return True, if successful, False otherwise
+     */
     public boolean changeDepositLimit(final String email, final double limit) {
 
         EmployeeInfo empInfo = personnel.get(email);
@@ -138,18 +173,32 @@ public final class BusinessAccount extends Account {
         return true;
     }
 
+    /**
+     * This method checks if the employee can delete the card
+     * @param card The card to be deleted
+     * @param email The email of the employee
+     * @return True, if possible, False otherwise
+     */
     public boolean deleteCardCheck(final Card card, final String email) {
 
         EmployeeInfo empInfo = personnel.get(email);
         String cardOwner = card.getCardOwner();
 
-        if (empInfo.getRole().equals("employee") && !cardOwner.equals(empInfo.getEmail())) {
-            return false;
-        }
-
-        return true;
+        return !empInfo.getRole().equals("employee") || cardOwner.equals(empInfo.getEmail());
     }
 
+    /**
+     * This function generates the money spent and deposited for every employee, except the owner
+     * The interval of time is represented by [startTimestamp, endTimestamp]
+     * For this, the function iterates through the employees,
+     * and for each employee through it's transactions
+     * @param managers ArrayNode of managers
+     * @param employees ArrayNode of employees
+     * @param startTimestamp The start of the time interval
+     * @param endTimestamp The end of the time interval
+     * @return An array list where on the first position is the amount spent,
+     * and on the second position the amount deposited
+     */
     public ArrayList<Double> getStatistics(final ArrayNode managers, final ArrayNode employees,
                                            final int startTimestamp, final int endTimestamp) {
 
@@ -221,6 +270,17 @@ public final class BusinessAccount extends Account {
 
     }
 
+    /**
+     * This function checks if the employee can spend the amount
+     * If the employee is not at least a manager,
+     * then the amount must be checked to be lower than the spending limit
+     * If the amount can be spent, then a transaction is created
+     * @param amount The amount to pay
+     * @param email The email of the employee
+     * @param receiver The receiver of the amount (name/iban of commerciant)
+     * @param timestamp The timestamp of the payment
+     * @return True, if the employee can spend it, False otherwise
+     */
     public boolean checkPayment(final double amount, final String email,
                                 final String receiver, final int timestamp) {
 
@@ -257,6 +317,11 @@ public final class BusinessAccount extends Account {
             this.name = name;
         }
 
+        /**
+         * This function parses the information for every commerciant
+         * that received money from an employee into a JSON node
+         * @param commerciants The commerciants array node
+         */
         public void parseInformationToJson(final ArrayNode commerciants) {
 
             ObjectNode commNode = new ObjectMapper().createObjectNode();
@@ -283,6 +348,13 @@ public final class BusinessAccount extends Account {
 
     }
 
+    /**
+     * This function adds transaction information to the commerciants map, where information for
+     * the business report between two timestamps is held
+     * @param commMap The commerciants map
+     * @param transaction The current transaction to be analyzed
+     * @param empInfo The information of the employee
+     */
     private void handleCommerciantInfo(final TreeMap<String, CommerciantInfo> commMap,
                                        final ObjectNode transaction, final EmployeeInfo empInfo) {
 
@@ -301,6 +373,13 @@ public final class BusinessAccount extends Account {
 
     }
 
+    /**
+     * This function iterates through the employee transactions and adds spending transactions
+     * to the commerciants array node
+     * @param startTimestamp The left end of the timestamp interval
+     * @param endTimestamp The right end of the timestamp interval
+     * @param commerciants The commerciants array node, where output is held
+     */
     public void generateCommerciantReport(final int startTimestamp, final int endTimestamp,
                                           final ArrayNode commerciants) {
 
