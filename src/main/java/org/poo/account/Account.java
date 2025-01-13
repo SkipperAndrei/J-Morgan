@@ -127,6 +127,7 @@ public class Account {
         CommerciantInput commInfo = CommerciantDatabase.getInstance().getCommerciant(commId);
         double cashback = cashTracker.calculateNrTransactionsCashback(commInfo.getType(), amount);
 
+
         if (commInfo.getCashbackStrategy().equals("nrOfTransactions")) {
 
             int nrTrans = cashTracker.getNrOfTransCommerciants().get(commId) == null ?
@@ -139,14 +140,11 @@ public class Account {
             cashTracker.checkTechDiscount(commId);
         } else {
 
-            double previousSpent = cashTracker.getSpendingCommerciants().get(commId) == null ?
-                                    0 : cashTracker.getSpendingCommerciants().get(commId);
-
-
+            double previousSpent = cashTracker.getSpendingCommerciants();
             double currencyRate = ExchangeRateDatabase.getInstance().getExchangeRate(currency, "RON");
             double newAmount = amount * currencyRate;
 
-            cashTracker.getSpendingCommerciants().put(commId, previousSpent + newAmount);
+            cashTracker.setSpendingCommerciants(previousSpent + newAmount);
 
             Plan accPlan = plan.getPlanStrategy();
             double spCashback = cashTracker.SpendingTransCashback(newAmount,
@@ -156,12 +154,7 @@ public class Account {
 
         }
 
-//        System.out.println("Balance before " + balance);
-//        System.out.println("Cashback ?" + cashback);
-
         balance += cashback;
-
-        // System.out.println("Balance after " + balance);
 
     }
 

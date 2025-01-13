@@ -109,6 +109,21 @@ public final class User {
         addTransaction(transaction);
     }
 
+    public void upgradePlanTrans(final String account, final int timestamp,
+                                       final String newPlan) {
+
+        ObjectNode upgradeNode = new ObjectMapper().createObjectNode();
+        upgradeNode.put("accountIBAN", account);
+        upgradeNode.put("description", "Upgrade plan");
+        upgradeNode.put("newPlanType", newPlan);
+        upgradeNode.put("timestamp", timestamp);
+
+        addTransaction(upgradeNode);
+        userAccounts.get(account).addTransaction(upgradeNode);
+
+
+    }
+
     /**
      * This functions updates all the accounts to the new service plan
      * @param newPlanType The new plan

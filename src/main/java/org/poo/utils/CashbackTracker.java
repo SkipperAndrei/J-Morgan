@@ -1,13 +1,14 @@
 package org.poo.utils;
 
+import lombok.Setter;
 import org.poo.database.CommerciantDatabase;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import lombok.Getter;
+import lombok.Data;
 import org.poo.plans.Plan;
 
-@Getter
+@Data
 public class CashbackTracker {
 
     private DiscountTracker foodDiscount = DiscountTracker.NOT_ELIGIBLE;
@@ -17,7 +18,8 @@ public class CashbackTracker {
     private DiscountTracker threeHundredThreshold = DiscountTracker.NOT_ELIGIBLE;
     private DiscountTracker fiveHundredThreshold = DiscountTracker.NOT_ELIGIBLE;
 
-    private Map<Integer, Double> spendingCommerciants = new LinkedHashMap<>();
+    // private Map<Integer, Double> spendingCommerciants = new LinkedHashMap<>();
+    private Double spendingCommerciants = 0.0;
     private Map<Integer, Integer> nrOfTransCommerciants = new LinkedHashMap<>();
 
     public boolean checkFoodDiscount(final Integer commId) {
@@ -78,15 +80,11 @@ public class CashbackTracker {
                                         final Plan accPlan) {
 
 
-//        if (oneHundredThreshold.equals(DiscountTracker.CASHED_IN)) {
-//            return 0;
-//        }
-
-        Double moneySpent = spendingCommerciants.get(commId);
+        // Double moneySpent = spendingCommerciants.get(commId);
+        Double moneySpent = spendingCommerciants;
 
         if (moneySpent >= DiscountTracker.ONE_HUNDRED_THRESHOLD.getValue()) {
 
-//            oneHundredThreshold = DiscountTracker.CASHED_IN;
             return accPlan.cashbackStrategy(amount,
                                             DiscountTracker.ONE_HUNDRED_THRESHOLD.getValue());
 
@@ -99,14 +97,10 @@ public class CashbackTracker {
                                             final Plan accPlan) {
 
 
-//        if (threeHundredThreshold.equals(DiscountTracker.CASHED_IN)) {
-//            return 0;
-//        }
-
-        Double moneySpent = spendingCommerciants.get(commId);
+        // Double moneySpent = spendingCommerciants.get(commId);
+        Double moneySpent = spendingCommerciants;
 
         if (moneySpent >= DiscountTracker.THREE_HUNDRED_THRESHOLD.getValue()) {
-//            threeHundredThreshold = DiscountTracker.CASHED_IN;
 
             return accPlan.cashbackStrategy(amount,
                                             DiscountTracker.THREE_HUNDRED_THRESHOLD.getValue());
@@ -119,14 +113,11 @@ public class CashbackTracker {
     public double checkFiveHundThreshold(final double amount, final Integer commId,
                                           final Plan accPlan) {
 
-//        if (fiveHundredThreshold.equals(DiscountTracker.CASHED_IN)) {
-//            return 0;
-//        }
-
-        Double moneySpent = spendingCommerciants.get(commId);
+        // Double moneySpent = spendingCommerciants.get(commId);
+        Double moneySpent = spendingCommerciants;
 
         if (moneySpent >= DiscountTracker.FIVE_HUNDRED_THRESHOLD.getValue()) {
-            // fiveHundredThreshold = DiscountTracker.CASHED_IN;
+
             return accPlan.cashbackStrategy(amount,
                                             DiscountTracker.FIVE_HUNDRED_THRESHOLD.getValue());
 
@@ -137,16 +128,19 @@ public class CashbackTracker {
 
     public double calculateNrTransactionsCashback(final String commType, final double amount) {
 
-        if (commType.equals("food") && foodDiscount.equals(DiscountTracker.ELIGIBLE)) {
-            return 2 * amount / 100;
+        if (commType.equals("Food") && foodDiscount.equals(DiscountTracker.ELIGIBLE)) {
+            foodDiscount = DiscountTracker.CASHED_IN;
+            return amount / 50;
         }
 
-        if (commType.equals("clothes") && clothesDiscount.equals(DiscountTracker.ELIGIBLE)) {
-            return DiscountTracker.CLOTHES_THRESHOLD.getValue() * amount / 100;
+        if (commType.equals("Clothes") && clothesDiscount.equals(DiscountTracker.ELIGIBLE)) {
+            clothesDiscount = DiscountTracker.CASHED_IN;
+            return amount / 20;
         }
 
-        if (commType.equals("tech") && techDiscount.equals(DiscountTracker.ELIGIBLE)) {
-            return DiscountTracker.TECH_THRESHOLD.getValue() * amount / 100;
+        if (commType.equals("Tech") && techDiscount.equals(DiscountTracker.ELIGIBLE)) {
+            techDiscount = DiscountTracker.CASHED_IN;
+            return amount / 10;
         }
 
         return 0;

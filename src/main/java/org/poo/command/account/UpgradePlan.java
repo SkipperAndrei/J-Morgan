@@ -135,12 +135,13 @@ public class UpgradePlan implements Command {
 
             case SUCCESS:
 
-                transactionNode.put("accountIBAN", account);
-                transactionNode.put("description", "Upgrade plan");
-                transactionNode.put("newPlanType", newPlanType);
-                transactionNode.put("timestamp", timestamp);
-                user.addTransaction(transactionNode);
-                user.getUserAccounts().get(account).addTransaction(transactionNode);
+//                transactionNode.put("accountIBAN", account);
+//                transactionNode.put("description", "Upgrade plan");
+//                transactionNode.put("newPlanType", newPlanType);
+//                transactionNode.put("timestamp", timestamp);
+//                user.addTransaction(transactionNode);
+//                user.getUserAccounts().get(account).addTransaction(transactionNode);
+                user.upgradePlanTrans(account, timestamp, newPlanType);
                 return;
 
             case INSUFFICIENT_FUNDS:

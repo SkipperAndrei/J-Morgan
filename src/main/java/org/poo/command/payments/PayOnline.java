@@ -24,6 +24,7 @@ public final class PayOnline implements Command {
     private String commerciant;
     private String email;
     private CommandConstants actionCode = CommandConstants.UNKNOWN_CARD;
+    private CommandConstants upgraded = CommandConstants.NOT_FOUND;
     private boolean changeCard = false;
     private final ExchangeRateDatabase exchangeRateDatabase;
 
@@ -53,8 +54,6 @@ public final class PayOnline implements Command {
         double actualAmount = acc.getPlan().getPlanStrategy().
                             commissionStrategy(amount, acc.getCurrency());
 
-
-
         if (actualAmount > acc.getBalance()) {
             return CommandConstants.INSUFFICIENT_FUNDS;
         }
@@ -67,7 +66,9 @@ public final class PayOnline implements Command {
                 return CommandConstants.NO_PERMISSION;
             }
         }
-
+        System.out.println("Contul involved este " + acc.getIban());
+        System.out.println("Balance ul before " + acc.getBalance() + " la timestamp " + timestamp);
+        System.out.println("Platim " + amount + " si cu comision " + actualAmount);
         User user = UserDatabase.getInstance().getUserEntry(email);
         acc.decrementFunds(actualAmount);
 
@@ -90,7 +91,8 @@ public final class PayOnline implements Command {
             }
 
             if (user.getBigPayments() == 5) {
-                System.out.println("Se da upgrade my friend");
+                upgraded = CommandConstants.SUCCESS;
+//                user.upgradePlanTrans(acc.getIban(), timestamp, "gold");
                 user.upgradeAllPlans("gold");
             }
         }
@@ -170,6 +172,9 @@ public final class PayOnline implements Command {
         if (amount == 0)
             return;
 
+        User user = UserDatabase.getInstance().getUserEntry(email);
+        Account acc = user.getUserAccounts().get(iban);
+
         switch (actionCode) {
 
             case UNKNOWN_CARD:
@@ -184,8 +189,7 @@ public final class PayOnline implements Command {
                 errorNode.put("description", "Insufficient funds");
                 outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(errorNode);
 
-                Account acc = outputGenerator.getUserDatabase().getUserEntry(email).
-                                getUserAccounts().get(iban);
+
 
                 outputGenerator.tryToAddTransaction(acc, errorNode);
                 return;
@@ -195,12 +199,10 @@ public final class PayOnline implements Command {
                 ObjectNode frozenNode = outputGenerator.getMapper().createObjectNode();
                 frozenNode.put("timestamp", timestamp);
                 frozenNode.put("description", "The card is frozen");
-                outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(frozenNode);
+                user.addTransaction(frozenNode);
 
-                Account affectedAcc = outputGenerator.getUserDatabase().getUserEntry(email).
-                                    getUserAccounts().get(iban);
 
-                outputGenerator.tryToAddTransaction(affectedAcc, frozenNode);
+                outputGenerator.tryToAddTransaction(acc, frozenNode);
                 return;
 
 //            case NO_PERMISSION:
@@ -217,11 +219,13 @@ public final class PayOnline implements Command {
                 paymentNode.put("amount", amount);
                 paymentNode.put("commerciant", commerciant);
 
-                Account transAcc = outputGenerator.getUserDatabase().getUserEntry(email).
-                                getUserAccounts().get(iban);
+                user.addTransaction(paymentNode);
+                outputGenerator.tryToAddTransaction(acc, paymentNode);
 
-                outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(paymentNode);
-                outputGenerator.tryToAddTransaction(transAcc, paymentNode);
+                if (upgraded.equals(CommandConstants.SUCCESS)) {
+                    user.upgradePlanTrans(iban, timestamp, "gold");
+                }
+
                 break;
 
             default :

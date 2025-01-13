@@ -49,6 +49,8 @@ public class CommerciantDatabase {
         return commerciantDb.get(id);
     }
 
+    // public String
+
     public void removeAllCommerciants() {
         commerciantDb.clear();
     }

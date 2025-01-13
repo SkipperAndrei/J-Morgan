@@ -358,7 +358,7 @@ public final class OutputGenerator {
             outputNode.put("total spent", moneyStats.get(0));
         } else {
             ArrayNode commerciants = mapper.createArrayNode();
-
+            bussAcc.generateCommerciantReport(startTimestamp, endTimestamp, commerciants);
             outputNode.set("commerciants", commerciants);
         }
 

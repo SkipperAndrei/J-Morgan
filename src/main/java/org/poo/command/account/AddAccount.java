@@ -57,14 +57,12 @@ public final class AddAccount implements Command {
 
         newIban = newAccount.getIban();
 
-        // System.out.println("User ul " + email + " a creat contul cu iban ul " + newIban + " la timestamp " + timestamp);
-
         if (!userDB.getUserEntry(email).getUserAccounts().isEmpty()) {
 
             // if the user already created accounts, set the plan from one of them
             // it doesn't matter which one, because all have the same plan
             newAccount.setPlan(userDB.getUserEntry(email).getUserAccounts().
-                                        values().iterator().next().getPlan());
+                                values().iterator().next().getPlan());
 
         }
 
@@ -82,7 +80,6 @@ public final class AddAccount implements Command {
 
         Account acc = outputGenerator.getUserDatabase().getUserEntry(email).
                     getUserAccounts().get(newIban);
-        // outputGenerator.tryToAddTransaction(acc, newAccountNode);
         acc.addTransaction(newAccountNode);
     }
 }

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import org.poo.card.Card;
+import org.poo.database.CommerciantDatabase;
 import org.poo.database.ExchangeRateDatabase;
 import org.poo.database.UserDatabase;
 import org.poo.user.User;
@@ -189,7 +190,6 @@ public class BusinessAccount extends Account {
                     totalSpent += trans.get("amount").asDouble();
                 }
 
-
             }
 
             empNode.put("deposited", intervalDeposit);
@@ -240,6 +240,97 @@ public class BusinessAccount extends Account {
 
         empInfo.spendAndDeposits.add(spendNode);
         return true;
+    }
+
+    @Getter
+    private class CommerciantInfo {
+
+        private String name;
+        private double amountPaid = 0;
+        private ArrayList<EmployeeInfo> paid = new ArrayList<EmployeeInfo>();
+
+        public CommerciantInfo(final String name) {
+            this.name = name;
+        }
+
+        public void parseInformationToJson(final ArrayNode commerciants) {
+
+            ObjectNode commNode = new ObjectMapper().createObjectNode();
+            ArrayNode employees = new ObjectMapper().createArrayNode();
+            ArrayNode managers = new ObjectMapper().createArrayNode();
+
+            for (EmployeeInfo employeeInfo : paid) {
+
+                if (employeeInfo.role.equals("manager")) {
+                    managers.add(employeeInfo.name);
+                } else {
+                    employees.add(employeeInfo.name);
+                }
+
+            }
+
+            commNode.put("commerciant", name);
+            commNode.put("employees", employees);
+            commNode.put("managers", managers);
+            commNode.put("total received", amountPaid);
+
+            commerciants.add(commNode);
+        }
+
+    }
+
+    private void handleCommerciantInfo(final TreeMap<String, CommerciantInfo> commMap,
+                                       final ObjectNode transaction, final EmployeeInfo empInfo) {
+
+        if (commMap.containsKey(transaction.get("receiver").asText())) {
+
+            CommerciantInfo commInfo = commMap.get(transaction.get("receiver").asText());
+            commInfo.amountPaid = commInfo.amountPaid + transaction.get("amount").asDouble();
+            commInfo.paid.add(empInfo);
+            return;
+        }
+
+        CommerciantInfo commInfo = new CommerciantInfo(transaction.get("receiver").asText());
+        commInfo.amountPaid = transaction.get("amount").asDouble();
+        commInfo.paid.add(empInfo);
+        commMap.put(transaction.get("receiver").asText(), commInfo);
+
+    }
+
+    public void generateCommerciantReport(final int startTimestamp, final int endTimestamp, final ArrayNode commerciants) {
+
+        TreeMap<String, CommerciantInfo> commerciantMap = new TreeMap<>();
+
+        for (EmployeeInfo employeeInfo : personnel.values()) {
+
+            if (employeeInfo.role.equals("owner")) {
+                continue;
+            }
+
+            Iterator<JsonNode> empTransIterator = employeeInfo.spendAndDeposits.elements();
+
+            while (empTransIterator.hasNext()) {
+
+                ObjectNode trans = (ObjectNode) empTransIterator.next();
+                if (trans.get("timestamp").asInt() < startTimestamp) {
+                    continue;
+                }
+
+                if (trans.get("timestamp").asInt() > endTimestamp) {
+                    break;
+                }
+
+                if (trans.get("action").asText().equals("spend")) {
+                    handleCommerciantInfo(commerciantMap, trans, employeeInfo);
+                }
+            }
+
+        }
+
+        for (CommerciantInfo commerciantInfo : commerciantMap.values()) {
+            commerciantInfo.parseInformationToJson(commerciants);
+        }
+
     }
 
 }
