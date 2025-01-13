@@ -66,9 +66,7 @@ public final class PayOnline implements Command {
                 return CommandConstants.NO_PERMISSION;
             }
         }
-        System.out.println("Contul involved este " + acc.getIban());
-        System.out.println("Balance ul before " + acc.getBalance() + " la timestamp " + timestamp);
-        System.out.println("Platim " + amount + " si cu comision " + actualAmount);
+
         User user = UserDatabase.getInstance().getUserEntry(email);
         acc.decrementFunds(actualAmount);
 
@@ -92,7 +90,6 @@ public final class PayOnline implements Command {
 
             if (user.getBigPayments() == 5) {
                 upgraded = CommandConstants.SUCCESS;
-//                user.upgradePlanTrans(acc.getIban(), timestamp, "gold");
                 user.upgradeAllPlans("gold");
             }
         }
@@ -122,8 +119,6 @@ public final class PayOnline implements Command {
             return CommandConstants.FROZEN_CARD;
         }
 
-//        if (!card.getCardOwner().equals(email))
-//            return CommandConstants.UNKNOWN_CARD;
 
         return paymentCheck(acc, card);
 
@@ -189,8 +184,6 @@ public final class PayOnline implements Command {
                 errorNode.put("description", "Insufficient funds");
                 outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(errorNode);
 
-
-
                 outputGenerator.tryToAddTransaction(acc, errorNode);
                 return;
 
@@ -205,11 +198,6 @@ public final class PayOnline implements Command {
                 outputGenerator.tryToAddTransaction(acc, frozenNode);
                 return;
 
-//            case NO_PERMISSION:
-//
-//                outputGenerator.errorSetting(timestamp,
-//                                "You are not authorized to make this transaction.", "payOnline");
-//                break;
 
             case SUCCESS:
 

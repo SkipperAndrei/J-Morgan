@@ -1,4 +1,5 @@
 package org.poo.account;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -9,11 +10,13 @@ import org.poo.card.Card;
 import org.poo.database.CommerciantDatabase;
 import org.poo.database.ExchangeRateDatabase;
 import org.poo.fileio.CommerciantInput;
-import org.poo.plans.Plan;
 import org.poo.utils.CashbackTracker;
 import org.poo.utils.Utils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * This class will hold information about the user accounts
@@ -82,7 +85,13 @@ public class Account {
         accountTransactions.add(newTransaction);
     }
 
-    public void addTimedTransaction(final int timestamp, final ObjectNode transaction) {
+    /**
+     * This method adds a new transaction at a certain position in the transactions logs
+     * It should only be called in the Split Payment output generating
+     * @param timeTimestamp The timestamp of the Split payment command
+     * @param transaction The transaction
+     */
+    public void addTimedTransaction(final int timeTimestamp, final ObjectNode transaction) {
 
         Iterator<JsonNode> jsonIterator = accountTransactions.elements();
         int position = 0;
@@ -91,11 +100,11 @@ public class Account {
 
             ObjectNode jsonNode = (ObjectNode) jsonIterator.next();
 
-            if (jsonNode.get("timestamp").asInt() < timestamp) {
+            if (jsonNode.get("timestamp").asInt() < timeTimestamp) {
                 position += 1;
             }
 
-            if (jsonNode.get("timestamp").asInt() > timestamp) {
+            if (jsonNode.get("timestamp").asInt() > timeTimestamp) {
                 accountTransactions.insert(position, transaction);
                 return;
             }
@@ -109,14 +118,23 @@ public class Account {
     /**
      * This function will check if the account has enough money in order to pay
      * @param amount The amount required to be paid
-     * @return
+     * @return True, if it can pay, False otherwise
      */
     public boolean canPay(final double amount) {
         return !(balance < amount);
     }
 
+    /**
+     * This function is responsible for calculating the cashback in case of a commerciant payment
+     * Firstly, it gets the id of the commerciant, based on the name/iban
+     * After, it calculates cashback for commerciants of type NumberOfTransactions
+     * Then checks if it is eligible for discounts in future payments
+     * After this checks it calculates cashback for Spending Threshold commerciants
+     * Finally, it adds the cashback for Nr.Transactions and spend Threshold to the account balance
+     * @param receiver The receiver commerciant
+     * @param amount The amount to pay
+     */
     public void handleCommerciantPayment(final String receiver, final double amount) {
-
 
         Integer commId = CommerciantDatabase.getInstance().getCommIbanToId().get(receiver);
 
@@ -130,8 +148,8 @@ public class Account {
 
         if (commInfo.getCashbackStrategy().equals("nrOfTransactions")) {
 
-            int nrTrans = cashTracker.getNrOfTransCommerciants().get(commId) == null ?
-                            0 : cashTracker.getNrOfTransCommerciants().get(commId);
+            int nrTrans = cashTracker.getNrOfTransCommerciants().get(commId) == null
+                            ? 0 : cashTracker.getNrOfTransCommerciants().get(commId);
 
             cashTracker.getNrOfTransCommerciants().put(commId, nrTrans + 1);
 
@@ -141,14 +159,15 @@ public class Account {
         } else {
 
             double previousSpent = cashTracker.getSpendingCommerciants();
-            double currencyRate = ExchangeRateDatabase.getInstance().getExchangeRate(currency, "RON");
+            double currencyRate = ExchangeRateDatabase.getInstance().
+                                    getExchangeRate(currency, "RON");
+
             double newAmount = amount * currencyRate;
 
             cashTracker.setSpendingCommerciants(previousSpent + newAmount);
 
-            Plan accPlan = plan.getPlanStrategy();
             double spCashback = cashTracker.SpendingTransCashback(newAmount,
-                                                commId, plan.getPlanStrategy());
+                                            plan.getPlanStrategy());
 
             cashback += spCashback / currencyRate;
 

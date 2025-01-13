@@ -4,21 +4,21 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import lombok.Getter;
 import org.poo.card.Card;
-import org.poo.database.CommerciantDatabase;
 import org.poo.database.ExchangeRateDatabase;
 import org.poo.database.UserDatabase;
 import org.poo.user.User;
 import org.poo.utils.DiscountTracker;
-
-import java.util.*;
-
 import lombok.Data;
 import lombok.Getter;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.TreeMap;
 
 @Data
-public class BusinessAccount extends Account {
+public final class BusinessAccount extends Account {
 
     private double spendingLimit;
     private double depositLimit;
@@ -47,12 +47,14 @@ public class BusinessAccount extends Account {
         }
 
         User user = UserDatabase.getInstance().getUserEntry(email);
-        String ownerName = user.getUserData().getLastName() + " " + user.getUserData().getFirstName();
-        addAssociate(email,"owner", ownerName);
+        String ownerName = user.getUserData().getLastName() + " "
+                            + user.getUserData().getFirstName();
+
+        addAssociate(email, "owner", ownerName);
     }
 
     @Getter
-    private class EmployeeInfo {
+    private final class EmployeeInfo {
 
         private String name;
         private String email;
@@ -62,7 +64,7 @@ public class BusinessAccount extends Account {
         private ArrayNode spendAndDeposits = new ObjectMapper().createArrayNode();
 
 
-        public EmployeeInfo(final String email, final String name, final String role) {
+        private EmployeeInfo(final String email, final String name, final String role) {
             this.email = email;
             this.name = name;
             this.role = role;
@@ -219,7 +221,9 @@ public class BusinessAccount extends Account {
 
     }
 
-    public boolean checkPayment(final double amount, final String email, final String receiver, final int timestamp) {
+    public boolean checkPayment(final double amount, final String email,
+                                final String receiver, final int timestamp) {
+
         EmployeeInfo empInfo = personnel.get(email);
 
         if (empInfo.role.equals("employee")) {
@@ -243,7 +247,7 @@ public class BusinessAccount extends Account {
     }
 
     @Getter
-    private class CommerciantInfo {
+    private final class CommerciantInfo {
 
         private String name;
         private double amountPaid = 0;
@@ -270,8 +274,8 @@ public class BusinessAccount extends Account {
             }
 
             commNode.put("commerciant", name);
-            commNode.put("employees", employees);
-            commNode.put("managers", managers);
+            commNode.set("employees", employees);
+            commNode.set("managers", managers);
             commNode.put("total received", amountPaid);
 
             commerciants.add(commNode);
@@ -297,7 +301,8 @@ public class BusinessAccount extends Account {
 
     }
 
-    public void generateCommerciantReport(final int startTimestamp, final int endTimestamp, final ArrayNode commerciants) {
+    public void generateCommerciantReport(final int startTimestamp, final int endTimestamp,
+                                          final ArrayNode commerciants) {
 
         TreeMap<String, CommerciantInfo> commerciantMap = new TreeMap<>();
 

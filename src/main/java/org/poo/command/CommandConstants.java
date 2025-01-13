@@ -24,6 +24,7 @@ public enum CommandConstants {
     DEPOSIT_LIMIT(-13),
     NO_PERMISSION(-14),
     ALREADY_ASSOCIATE(-15),
+    FUNDS_REMAINING(-16),
     COMMERCIANT_REC(1),
     USER_REC(2),
     ADULT_AGE(21),

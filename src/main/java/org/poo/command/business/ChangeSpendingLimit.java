@@ -8,7 +8,7 @@ import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
 import org.poo.utils.OutputGenerator;
 
-public class ChangeSpendingLimit implements Command {
+public final class ChangeSpendingLimit implements Command {
 
     private String email;
     private double newLimit;
@@ -16,7 +16,7 @@ public class ChangeSpendingLimit implements Command {
     private int timestamp;
     private CommandConstants actionCode = CommandConstants.SUCCESS;
 
-    public ChangeSpendingLimit(CommandInput command) {
+    public ChangeSpendingLimit(final CommandInput command) {
         email = command.getEmail();
         newLimit = command.getAmount();
         account = command.getAccount();
@@ -24,7 +24,7 @@ public class ChangeSpendingLimit implements Command {
     }
 
     @Override
-    public void executeCommand(UserDatabase userDatabase) {
+    public void executeCommand(final UserDatabase userDatabase) {
 
         try {
             Account acc = userDatabase.getUserEntry(email).getUserAccounts().get(account);
@@ -36,16 +36,29 @@ public class ChangeSpendingLimit implements Command {
             }
 
         } catch (ClassCastException e) {
-            return;
+            // Doesn't matter if it's classic or savings account
+            // It's not a business account
+            actionCode = CommandConstants.CLASSIC_ACC;
         }
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
 
-        if (actionCode == CommandConstants.NO_PERMISSION) {
-            String message = "You must be owner in order to change spending limit.";
-            outputGenerator.errorSetting(timestamp, message, "changeSpendingLimit");
+        switch (actionCode) {
+
+            case NO_PERMISSION:
+                String message = "You must be owner in order to change spending limit.";
+                outputGenerator.errorSetting(timestamp, message, "changeSpendingLimit");
+                return;
+
+            case CLASSIC_ACC:
+                String error = "This is not a business account";
+                outputGenerator.errorSetting(timestamp, error, "changeSpendingLimit");
+                return;
+
+            default:
+                return;
 
         }
     }

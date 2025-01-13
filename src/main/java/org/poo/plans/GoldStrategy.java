@@ -13,15 +13,15 @@ public final class GoldStrategy implements Plan {
         switch (threshold) {
 
             case 100 -> {
-                return 5 * sum / PlanConstants.SCALING_FACTOR.getValue();
+                return sum * 0.005;
             }
 
             case 300 -> {
-                return 5.5 * sum / PlanConstants.SCALING_FACTOR.getValue();
+                return sum * 0.0055;
             }
 
             case 500 -> {
-                return 7 * sum / PlanConstants.SCALING_FACTOR.getValue();
+                return sum * 0.007;
             }
 
             default -> {

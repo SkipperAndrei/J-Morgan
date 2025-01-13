@@ -67,20 +67,13 @@ public final class SendMoney implements Command {
             }
         }
 
-//        System.out.println("Timestamp " + timestamp);
-//        System.out.println("Suma fara comision " + amount);
-//        System.out.println("Suma cu comision " + commSum);
-//        System.out.println("Balance before " + senderAcc.getBalance());
-
         senderAcc.decrementFunds(commSum);
 
-        // TODO: Implement auto-upgrade logic if necessary
 
         if (receiverCode.equals(CommandConstants.USER_REC)) {
             receiverAcc.incrementFunds(amount);
 
         } else {
-            // System.out.println("Timestamp " + timestamp);
             senderAcc.handleCommerciantPayment(receiver, amount);
         }
 
@@ -131,8 +124,6 @@ public final class SendMoney implements Command {
 
     @Override
     public void executeCommand(final UserDatabase userDatabase) {
-
-
 
         if (userDatabase.getUserEntry(email).getUserAccounts().containsKey(account)) {
             senderCurrency = userDatabase.getUserEntry(email).getUserAccounts().
@@ -216,10 +207,6 @@ public final class SendMoney implements Command {
                 outputGenerator.tryToAddTransaction(insufficientAcc, noFundsNode);
                 return;
 
-//            case NO_PERMISSION:
-//                outputGenerator.errorSetting(timestamp,
-//                                "You are not authorized to make this transaction.", "sendMoney");
-//                return;
 
             case NOT_FOUND:
                 outputGenerator.errorSetting(timestamp, "User not found", "sendMoney");

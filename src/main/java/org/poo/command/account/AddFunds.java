@@ -36,16 +36,13 @@ public final class AddFunds implements Command {
             try {
                 Account acc = usr.getUserAccounts().get(account);
                 ((BusinessAccount) acc).getDepositLimit();
-                System.out.println("Inainte de adaugare in contul " + account + " cu suma " + amount + "de catre " + email + " la timestamp " + timestamp);
-                System.out.println("Balance ul este " + acc.getBalance());
+
                 boolean canAdd = ((BusinessAccount) acc).addFundsCheck(amount, email, timestamp);
 
                 if (!canAdd) {
                     actionCode = CommandConstants.DEPOSIT_LIMIT;
                 }
 
-                System.out.println("Dupa adaugare in contul " + account + " cu suma " + amount + "de catre " + email + " la timestamp " + timestamp);
-                System.out.println("Balance ul este " + acc.getBalance());
             } catch (ClassCastException e) {
                 usr.getUserAccounts().get(account).incrementFunds(amount);
                 return;
@@ -58,10 +55,6 @@ public final class AddFunds implements Command {
     @Override
     public void generateOutput(final OutputGenerator outputGenerator) {
 
-//        if (actionCode.equals(CommandConstants.DEPOSIT_LIMIT)) {
-//            outputGenerator.errorSetting(timestamp,
-//                        "You are not authorised to make this tranzaction", "addFunds");
-//        }
         return;
     }
 }

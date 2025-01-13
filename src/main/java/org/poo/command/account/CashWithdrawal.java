@@ -11,7 +11,7 @@ import org.poo.fileio.CommandInput;
 import org.poo.user.User;
 import org.poo.utils.OutputGenerator;
 
-public class CashWithdrawal implements Command {
+public final class CashWithdrawal implements Command {
 
     private String cardNumber;
     private String userEmail;
@@ -20,7 +20,7 @@ public class CashWithdrawal implements Command {
     private int timestamp;
     private CommandConstants actionCode = CommandConstants.SUCCESS;
 
-    public CashWithdrawal(CommandInput command) {
+    public CashWithdrawal(final CommandInput command) {
         cardNumber = command.getCardNumber();
         userEmail = command.getEmail();
         amount = command.getAmount();
@@ -84,10 +84,6 @@ public class CashWithdrawal implements Command {
                 return;
             }
 
-//            if (acc.getDeletedOneTimeCards().contains(cardNumber)) {
-//                actionCode = CommandConstants.DELETED_CARD;
-//                return;
-//            }
         }
 
         actionCode = CommandConstants.UNKNOWN_CARD;
@@ -95,7 +91,7 @@ public class CashWithdrawal implements Command {
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
 
         ObjectNode transactionNode = outputGenerator.getMapper().createObjectNode();
 

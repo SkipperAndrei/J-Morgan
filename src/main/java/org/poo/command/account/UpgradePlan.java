@@ -12,7 +12,7 @@ import org.poo.plans.PlanConstants;
 import org.poo.user.User;
 import org.poo.utils.OutputGenerator;
 
-public class UpgradePlan implements Command {
+public final class UpgradePlan implements Command {
 
     private String account;
     private String newPlanType;
@@ -129,22 +129,16 @@ public class UpgradePlan implements Command {
 
         ObjectNode transactionNode = outputGenerator.getMapper().createObjectNode();
         User user = outputGenerator.getUserDatabase().getUserEntry(userEmail);
-        // Account acc = user.getUserAccounts().get(account);
 
         switch (actionCode) {
 
             case SUCCESS:
 
-//                transactionNode.put("accountIBAN", account);
-//                transactionNode.put("description", "Upgrade plan");
-//                transactionNode.put("newPlanType", newPlanType);
-//                transactionNode.put("timestamp", timestamp);
-//                user.addTransaction(transactionNode);
-//                user.getUserAccounts().get(account).addTransaction(transactionNode);
                 user.upgradePlanTrans(account, timestamp, newPlanType);
                 return;
 
             case INSUFFICIENT_FUNDS:
+
                 transactionNode.put("description", "Insufficient funds");
                 transactionNode.put("timestamp", timestamp);
                 user.addTransaction(transactionNode);
@@ -152,6 +146,7 @@ public class UpgradePlan implements Command {
                 return;
 
             case INFERIOR_PLAN:
+
                 String message = "The user already has the " + newPlanType + " plan.";
                 transactionNode.put("description", message);
                 transactionNode.put("timestamp", timestamp);

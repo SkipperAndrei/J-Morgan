@@ -6,7 +6,7 @@ import java.util.Map;
 import lombok.Data;
 
 @Data
-public class CommerciantDatabase {
+public final class CommerciantDatabase {
 
     private static CommerciantDatabase instance;
     private Map<String, Integer> commNameToId;
@@ -49,7 +49,6 @@ public class CommerciantDatabase {
         return commerciantDb.get(id);
     }
 
-    // public String
 
     public void removeAllCommerciants() {
         commerciantDb.clear();

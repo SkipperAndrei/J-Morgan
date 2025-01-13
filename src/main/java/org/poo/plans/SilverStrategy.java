@@ -30,15 +30,15 @@ public final class SilverStrategy implements Plan {
         switch (threshold) {
 
             case 100 -> {
-                return 3 * sum / PlanConstants.SCALING_FACTOR.getValue();
+                return sum * 0.003;
             }
 
             case 300 -> {
-                return 4 * sum / PlanConstants.SCALING_FACTOR.getValue();
+                return sum * 0.004;
             }
 
             case 500 -> {
-                return 5 * sum / PlanConstants.SCALING_FACTOR.getValue();
+                return sum * 0.005;
             }
 
             default -> {

@@ -6,15 +6,14 @@ import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
 import org.poo.utils.OutputGenerator;
 
-public class AcceptSplitPayment implements Command {
-
+public final class AcceptSplitPayment implements Command {
 
     private String email;
     private String type;
     private int timestamp;
     private SplitPayment payment;
 
-    public AcceptSplitPayment(CommandInput command) {
+    public AcceptSplitPayment(final CommandInput command) {
 
         email = command.getEmail();
         type = command.getSplitPaymentType();
@@ -22,13 +21,13 @@ public class AcceptSplitPayment implements Command {
     }
 
     @Override
-    public void executeCommand(UserDatabase userDatabase) {
+    public void executeCommand(final UserDatabase userDatabase) {
 
         payment = SplitTracker.getInstance().accept(email, type);
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
 
         if (payment.getActionCode().equals(CommandConstants.NOT_FOUND)) {
             outputGenerator.errorSetting(timestamp, "User not found", "acceptSplitPayment");

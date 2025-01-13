@@ -22,6 +22,7 @@ public final class User {
     private Map<String, Account> userAccounts = new LinkedHashMap<>();
     private Map<String, Account> userAliasAccounts = new LinkedHashMap<>();
     private int bigPayments = 0;
+    private AccountPlans userPlan;
     private ArrayNode userTransactions;
 
     public User(final UserInput userData) {
@@ -31,6 +32,13 @@ public final class User {
         this.userData.setEmail(userData.getEmail());
         this.userData.setBirthDate(userData.getBirthDate());
         this.userData.setOccupation(userData.getOccupation());
+
+        if (userData.getOccupation().equals("student")) {
+            userPlan = AccountPlans.STUDENT;
+        } else {
+            userPlan = AccountPlans.STANDARD;
+        }
+
         userTransactions = new ObjectMapper().createArrayNode();
     }
 
@@ -129,6 +137,9 @@ public final class User {
      * @param newPlanType The new plan
      */
     public void upgradeAllPlans(final String newPlanType) {
+
+        userPlan = AccountPlans.valueOf(newPlanType.toUpperCase());
+
         for (Account account : userAccounts.values()) {
 
             // This if is to check if the user is the owner of business account

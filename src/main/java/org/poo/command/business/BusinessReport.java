@@ -9,7 +9,7 @@ import org.poo.fileio.CommandInput;
 import org.poo.user.User;
 import org.poo.utils.OutputGenerator;
 
-public class BusinessReport implements Command {
+public final class BusinessReport implements Command {
 
     private String type;
     private int startTimestamp;
@@ -29,28 +29,29 @@ public class BusinessReport implements Command {
     }
 
     @Override
-    public void executeCommand(UserDatabase userDatabase) {
+    public void executeCommand(final UserDatabase userDatabase) {
 
         try {
+
             email = userDatabase.getMailEntry(account);
             User user = userDatabase.getUserEntry(email);
             Account acc = user.getUserAccounts().get(account);
             ((BusinessAccount) acc).getDepositLimit();
+
         } catch (NullPointerException e) {
+
             actionCode = CommandConstants.NOT_FOUND;
-            return;
         } catch (ClassCastException e) {
 
             // Doesn't matter if it's a classic account or a savings account
             // It only matters that it isn't a business account
             actionCode = CommandConstants.CLASSIC_ACC;
-            return;
         }
 
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
 
         switch (actionCode) {
 

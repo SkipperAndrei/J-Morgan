@@ -13,15 +13,15 @@ public final class StudentStrategy implements Plan {
         switch (threshold) {
 
             case 100 -> {
-                return sum / PlanConstants.SCALING_FACTOR.getValue();
+                return sum * 0.001;
             }
 
             case 300 -> {
-                return 2 * sum / PlanConstants.SCALING_FACTOR.getValue();
+                return sum * 0.002;
             }
 
             case 500 -> {
-                return 2.5 * sum / PlanConstants.SCALING_FACTOR.getValue();
+                return  sum * 0.0025;
             }
 
             default -> {
