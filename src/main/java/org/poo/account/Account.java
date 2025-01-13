@@ -166,7 +166,7 @@ public class Account {
 
             cashTracker.setSpendingCommerciants(previousSpent + newAmount);
 
-            double spCashback = cashTracker.SpendingTransCashback(newAmount,
+            double spCashback = cashTracker.spendingTransCashback(newAmount,
                                             plan.getPlanStrategy());
 
             cashback += spCashback / currencyRate;

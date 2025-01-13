@@ -167,9 +167,8 @@ public final class User {
 
         for (Account acc : this.userAccounts.values()) {
 
-            if (acc.getAccountType().equals("business") &&
-                        !((BusinessAccount) acc).checkOwner(userData.getEmail())) {
-
+            if (acc.getAccountType().equals("business")
+                        && !((BusinessAccount) acc).checkOwner(userData.getEmail())) {
                 continue;
             }
 

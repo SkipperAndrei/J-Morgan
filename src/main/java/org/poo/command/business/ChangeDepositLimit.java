@@ -36,17 +36,25 @@ public final class ChangeDepositLimit implements Command {
             }
 
         } catch (ClassCastException e) {
-            return;
+
+            actionCode = CommandConstants.CLASSIC_ACC;
         }
     }
 
     @Override
-    public void generateOutput(OutputGenerator outputGenerator) {
+    public void generateOutput(final OutputGenerator outputGenerator) {
 
         if (actionCode == CommandConstants.NO_PERMISSION) {
+
             String message = "You must be owner in order to change deposit limit.";
             outputGenerator.errorSetting(timestamp, message, "changeDepositLimit");
 
+        }
+
+        if (actionCode == CommandConstants.CLASSIC_ACC) {
+
+            String error = "This is not a business account";
+            outputGenerator.errorSetting(timestamp, error, "changeDepositLimit");
         }
     }
 }

@@ -1,5 +1,6 @@
 package org.poo.plans;
 
+
 public final class StandardStrategy implements Plan {
 
     @Override
@@ -10,23 +11,18 @@ public final class StandardStrategy implements Plan {
     @Override
     public double cashbackStrategy(final double sum, final int threshold) {
 
-        switch (threshold) {
-
-            case 100 -> {
-                return sum * 0.001;
-            }
-
-            case 300 -> {
-                return sum * 0.002;
-            }
-
-            case 500 -> {
-                return sum * 0.0025;
-            }
-
-            default -> {
-                return 0;
-            }
+        if (threshold == PlanConstants.FIRST_THRESHOLD.getValue()) {
+            return sum * CashbackConstants.STD_ONE_HUNDRED_PERCENTAGE.getValue();
         }
+
+        if (threshold == PlanConstants.SECOND_THRESHOLD.getValue()) {
+            return sum * CashbackConstants.STD_THREE_HUNDRED_PERCENTAGE.getValue();
+        }
+
+        if (threshold == PlanConstants.FINAL_THRESHOLD.getValue()) {
+            return sum * CashbackConstants.STD_FIVE_HUNDRED_PERCENTAGE.getValue();
+        }
+
+        return 0;
     }
 }

@@ -57,15 +57,19 @@ public final class BusinessReport implements Command {
 
             case NOT_FOUND:
                 outputGenerator.errorSetting(timestamp, "Account not found", "businessReport");
+
                 break;
 
             case CLASSIC_ACC:
                 outputGenerator.errorSetting(timestamp,
                                     "Account is not of type business", "businessReport");
+
                 break;
 
             case SUCCESS:
-                outputGenerator.generateBusinessReport(startTimestamp, endTimestamp, timestamp, type, account, email);
+                outputGenerator.generateBusinessReport(startTimestamp, endTimestamp,
+                                                        timestamp, type, account, email);
+
                 break;
 
             default:

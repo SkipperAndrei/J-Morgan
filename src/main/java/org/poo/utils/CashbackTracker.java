@@ -18,6 +18,11 @@ public final class CashbackTracker {
     private Double spendingCommerciants = 0.0;
     private Map<Integer, Integer> nrOfTransCommerciants = new LinkedHashMap<>();
 
+    /**
+     * This function checks if the account already received the food discount
+     * If it didn't, then it checks if it's eligible to get it at the next Food transaction
+     * @param commId The commerciant id of the current transaction
+     */
     public void checkFoodDiscount(final Integer commId) {
 
         if (foodDiscount.equals(DiscountTracker.CASHED_IN)) {
@@ -32,6 +37,11 @@ public final class CashbackTracker {
 
     }
 
+    /**
+     * This function checks if the account already received the clothes discount
+     * If it didn't, then it checks if it's eligible to get it at the next clothes transaction
+     * @param commId The commerciant id of the current transaction
+     */
     public void checkClothesDiscount(final Integer commId) {
 
         if (clothesDiscount.equals(DiscountTracker.CASHED_IN)) {
@@ -48,6 +58,11 @@ public final class CashbackTracker {
 
     }
 
+    /**
+     *  This function checks if the account already received the tech discount
+     *  If it didn't, then it checks if it's eligible to get it at the next Tech transaction
+     * @param commId The commerciant id of the current transaction
+     */
     public void checkTechDiscount(final Integer commId) {
         if (techDiscount.equals(DiscountTracker.CASHED_IN)) {
             return;
@@ -109,23 +124,30 @@ public final class CashbackTracker {
 
         if (commType.equals("Food") && foodDiscount.equals(DiscountTracker.ELIGIBLE)) {
             foodDiscount = DiscountTracker.CASHED_IN;
-            return amount * 0.02;
+
+            return amount * 2 / DiscountTracker.ONE_HUNDRED_THRESHOLD.getValue();
         }
 
         if (commType.equals("Clothes") && clothesDiscount.equals(DiscountTracker.ELIGIBLE)) {
             clothesDiscount = DiscountTracker.CASHED_IN;
-            return amount * 0.05;
+
+            return amount * DiscountTracker.CLOTHES_THRESHOLD.getValue()
+                    / DiscountTracker.ONE_HUNDRED_THRESHOLD.getValue();
+
         }
 
         if (commType.equals("Tech") && techDiscount.equals(DiscountTracker.ELIGIBLE)) {
             techDiscount = DiscountTracker.CASHED_IN;
-            return amount * 0.1;
+
+            return amount * DiscountTracker.TECH_THRESHOLD.getValue()
+                    / DiscountTracker.ONE_HUNDRED_THRESHOLD.getValue();
+
         }
 
         return 0;
     }
 
-    public double SpendingTransCashback(final double amount, final Plan accPlan) {
+    public double spendingTransCashback(final double amount, final Plan accPlan) {
 
         double cashback = checkFiveHundThreshold(amount, accPlan);
 

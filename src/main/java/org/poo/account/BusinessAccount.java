@@ -253,7 +253,7 @@ public final class BusinessAccount extends Account {
         private double amountPaid = 0;
         private ArrayList<EmployeeInfo> paid = new ArrayList<EmployeeInfo>();
 
-        public CommerciantInfo(final String name) {
+        private CommerciantInfo(final String name) {
             this.name = name;
         }
 

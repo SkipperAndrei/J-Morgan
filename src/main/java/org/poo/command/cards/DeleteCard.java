@@ -45,7 +45,6 @@ public final class DeleteCard implements Command {
                     }
                 }
 
-                // System.out.println("Sterg cardul " + card.getCardNumber() + " initiat de " + email +" la timestamp " + timestamp);
                 if (ac.getBalance() == 0) {
                     ac.getCards().remove(card.getCardNumber());
                     actionCode = CommandConstants.FUNDS_REMAINING;

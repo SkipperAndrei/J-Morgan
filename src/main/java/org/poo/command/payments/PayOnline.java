@@ -11,6 +11,7 @@ import org.poo.command.CommandConstants;
 import org.poo.database.ExchangeRateDatabase;
 import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
+import org.poo.plans.PlanConstants;
 import org.poo.user.User;
 import org.poo.utils.OutputGenerator;
 
@@ -75,7 +76,9 @@ public final class PayOnline implements Command {
             if (acc.getCurrency().equals("ron") || currency.equals("RON")) {
 
                 int bigPayments = user.getBigPayments();
-                bigPayments = actualAmount >= 300 ? bigPayments + 1 : bigPayments;
+                bigPayments = actualAmount >= PlanConstants.AUTO_UPGRADE_THRESHOLD.getValue()
+                            ? bigPayments + 1 : bigPayments;
+
                 user.setBigPayments(bigPayments);
 
             } else {
@@ -83,12 +86,14 @@ public final class PayOnline implements Command {
                 double rate = ExchangeRateDatabase.getInstance().getExchangeRate(currency, "RON");
                 double checkedAmount = actualAmount * rate;
                 int bigPayments = user.getBigPayments();
-                bigPayments = checkedAmount >= 300 ? bigPayments + 1 : bigPayments;
+
+                bigPayments = checkedAmount >= PlanConstants.AUTO_UPGRADE_THRESHOLD.getValue()
+                            ? bigPayments + 1 : bigPayments;
 
                 user.setBigPayments(bigPayments);
             }
 
-            if (user.getBigPayments() == 5) {
+            if (user.getBigPayments() == PlanConstants.BIG_PAY_AUTO_UPGRADE.getValue()) {
                 upgraded = CommandConstants.SUCCESS;
                 user.upgradeAllPlans("gold");
             }
@@ -148,8 +153,9 @@ public final class PayOnline implements Command {
     @Override
     public void executeCommand(final UserDatabase userDatabase) {
 
-        if (amount == 0)
+        if (amount == 0) {
             return;
+        }
 
         for (Account acc : userDatabase.getUserEntry(email).getUserAccounts().values()) {
 
@@ -164,8 +170,9 @@ public final class PayOnline implements Command {
     @Override
     public void generateOutput(final OutputGenerator outputGenerator) {
 
-        if (amount == 0)
+        if (amount == 0) {
             return;
+        }
 
         User user = UserDatabase.getInstance().getUserEntry(email);
         Account acc = user.getUserAccounts().get(iban);

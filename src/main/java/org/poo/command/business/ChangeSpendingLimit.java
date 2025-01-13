@@ -36,6 +36,7 @@ public final class ChangeSpendingLimit implements Command {
             }
 
         } catch (ClassCastException e) {
+
             // Doesn't matter if it's classic or savings account
             // It's not a business account
             actionCode = CommandConstants.CLASSIC_ACC;

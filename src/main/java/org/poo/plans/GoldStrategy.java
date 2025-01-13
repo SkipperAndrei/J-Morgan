@@ -10,24 +10,20 @@ public final class GoldStrategy implements Plan {
     @Override
     public double cashbackStrategy(final double sum, final int threshold) {
 
-        switch (threshold) {
-
-            case 100 -> {
-                return sum * 0.005;
-            }
-
-            case 300 -> {
-                return sum * 0.0055;
-            }
-
-            case 500 -> {
-                return sum * 0.007;
-            }
-
-            default -> {
-                return 0;
-            }
+        if (threshold == PlanConstants.FIRST_THRESHOLD.getValue()) {
+            return sum * CashbackConstants.GOLD_ONE_HUNDRED_PERCENTAGE.getValue();
         }
+
+        if (threshold == PlanConstants.SECOND_THRESHOLD.getValue()) {
+            return sum * CashbackConstants.GOLD_THREE_HUNDRED_PERCENTAGE.getValue();
+        }
+
+        if (threshold == PlanConstants.FINAL_THRESHOLD.getValue()) {
+            return sum * CashbackConstants.GOLD_FIVE_HUNDRED_PERCENTAGE.getValue();
+        }
+
+        return 0;
+
     }
 
 

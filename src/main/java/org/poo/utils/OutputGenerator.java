@@ -11,7 +11,11 @@ import org.poo.database.UserDatabase;
 import org.poo.user.User;
 import lombok.Data;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Iterator;
+import java.util.TreeMap;
+import java.util.ArrayList;
 
 /**
  * This class will handle JSON output generation
