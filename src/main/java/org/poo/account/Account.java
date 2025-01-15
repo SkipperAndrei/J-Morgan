@@ -7,9 +7,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.poo.card.Card;
+import org.poo.card.OneTimeCard;
 import org.poo.database.CommerciantDatabase;
 import org.poo.database.ExchangeRateDatabase;
 import org.poo.fileio.CommerciantInput;
+import org.poo.user.User;
 import org.poo.utils.CashbackTracker;
 import org.poo.utils.Utils;
 
@@ -174,6 +176,38 @@ public class Account {
         }
 
         balance += cashback;
+
+    }
+
+    /**
+     * This method generates two transactions for regenerating One-Time card number
+     * This method should only be used inside of try-catch block,
+     * because it can generate ClassCastException
+     * @param user The user that is thw owner of the card
+     * @param card The one time card
+     * @param prevCardNumber The previous card number, before regenerating
+     * @param time The timestamp of the regeneration
+     */
+    public void newCardCreatedTrans(final User user, final OneTimeCard card,
+                                    final String prevCardNumber, final int time) {
+
+        deletedOneTimeCards.add(card.getCardNumber());
+
+        String description = "The card has been destroyed";
+
+        ObjectNode affectedCardNode = card.updateCardNumber(time, description, true);
+        affectedCardNode.put("cardHolder", email);
+        affectedCardNode.put("account", iban);
+        cards.remove(prevCardNumber);
+        cards.put(card.getCardNumber(), card);
+
+        user.addTransaction(affectedCardNode);
+
+        ObjectNode createdCardNode = affectedCardNode.deepCopy();
+        createdCardNode.put("description", "New card created");
+        createdCardNode.put("card", card.getCardNumber());
+
+        user.addTransaction(createdCardNode);
 
     }
 

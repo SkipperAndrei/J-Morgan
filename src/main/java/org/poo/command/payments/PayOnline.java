@@ -229,27 +229,13 @@ public final class PayOnline implements Command {
         }
 
         if (changeCard) {
-            Account affectedAcc = outputGenerator.getUserDatabase().getUserEntry(email).
-                                getUserAccounts().get(iban);
 
-            Card affectedCard = affectedAcc.getCards().get(cardNumber);
-            affectedAcc.getDeletedOneTimeCards().add(cardNumber);
-            ObjectNode affectedCardNode = ((OneTimeCard) affectedCard).updateCardNumber(timestamp,
-                                "The card has been destroyed", true);
-            affectedCardNode.put("cardHolder", email);
-            affectedCardNode.put("account", iban);
-            affectedAcc.getCards().remove(cardNumber);
-            affectedAcc.getCards().put(affectedCard.getCardNumber(), affectedCard);
+            Card affectedCard = acc.getCards().get(cardNumber);
 
-            outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(affectedCardNode);
+            // This will not generate ClassCastException because we know it's a OneTimeCard
+            acc.newCardCreatedTrans(user, (OneTimeCard) affectedCard, cardNumber, timestamp);
 
-            ObjectNode createdCardNode = affectedCardNode.deepCopy();
-            createdCardNode.put("description", "New card created");
-            createdCardNode.put("card", affectedCard.getCardNumber());
-
-            outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(createdCardNode);
         }
 
     }
 }
-
