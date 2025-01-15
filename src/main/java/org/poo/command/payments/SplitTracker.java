@@ -10,6 +10,13 @@ import lombok.Getter;
 import org.poo.database.UserDatabase;
 import org.poo.user.User;
 
+/**
+ * In this class, all the pending split payment commands will be placed in an ArrayList
+ * This class is designed as a singleton
+ * A split payment command will be removed from the ArrayList
+ * When all accounts accepted the payment, and then the command will be executed
+ * When an account rejected the payment, and output will be generated
+ */
 @Getter
 public final class SplitTracker {
 
@@ -20,6 +27,10 @@ public final class SplitTracker {
         listener = new ArrayList<>();
     }
 
+    /**
+     * This is the instance getter of the SplitTracker class
+     * @return The instance of the class
+     */
     public static SplitTracker getInstance() {
 
         if (instance == null) {
@@ -29,6 +40,14 @@ public final class SplitTracker {
 
     }
 
+    /**
+     * This method implements
+     * @param email The email of the user that accepts the payment
+     * @param type The type of the split payment
+     * @return The split payment instance, in case a payment was fully accepted
+     * The function returns null if no payment was fully accepted as a result of this command
+     * Returns a split payment with an error signal, if the user doesn't exist
+     */
     public SplitPayment accept(final String email, final String type) {
 
         User user = UserDatabase.getInstance().getUserEntry(email);
@@ -49,6 +68,7 @@ public final class SplitTracker {
 
                 // checking if the account is in the payment, and it hasn't already accepted
                 // and if the type of payment is correct
+
                 if (payment.getAcceptedAccounts().containsKey(acc.getIban())
                         && payment.getAcceptedAccounts().get(acc.getIban()).equals(false)
                         && payment.getType().equals(type)) {
@@ -84,6 +104,11 @@ public final class SplitTracker {
         }
     }
 
+    /**
+     * This method implements the reject mechanism of the split payment
+     * @param email The email of the user that rejected the payment
+     * @return The rejected split payment, or null if the user wasn't found
+     */
     public SplitPayment reject(final String email) {
 
         User user = UserDatabase.getInstance().getUserEntry(email);

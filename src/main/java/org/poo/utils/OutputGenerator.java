@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.account.Account;
 import org.poo.account.BusinessAccount;
 import org.poo.account.SavingAccount;
+import org.poo.command.business.BusinessReport;
 import org.poo.database.UserDatabase;
 import org.poo.user.User;
 import lombok.Data;
@@ -135,33 +136,35 @@ public final class OutputGenerator {
     /**
      * This function will try to add the transaction to an account.
      * If the account is a savings account it won't add it.
-     * @param acc The account
+     *
+     * @param acc         The account
      * @param transaction The transaction
-     * @return True, if it was added, False otherwise
      */
-    public boolean tryToAddTransaction(final Account acc, final ObjectNode transaction) {
+    public void tryToAddTransaction(final Account acc, final ObjectNode transaction) {
 
         try {
             ((SavingAccount) acc).getInterestRate();
-            return false;
         } catch (ClassCastException e) {
             userDatabase.getUserEntry(acc.getEmail()).getUserAccounts().
                         get(acc.getIban()).addTransaction(transaction);
-            return true;
         }
 
     }
 
-    public boolean tryToAddTimestampTransaction(final int timestamp,
-                                                final Account acc, final ObjectNode transaction) {
+    /**
+     * This method is responsible for adding transactions based on the timestamp
+     * @param timestamp The timestamp of the transaction
+     * @param acc The account connected to the transaction
+     * @param transaction The transaction
+     */
+    public void tryToAddTimestampTransaction(final int timestamp,
+                                             final Account acc, final ObjectNode transaction) {
 
         try {
             ((SavingAccount) acc).getInterestRate();
-            return false;
         } catch (ClassCastException e) {
             userDatabase.getUserEntry(acc.getEmail()).getUserAccounts().
                     get(acc.getIban()).addTimedTransaction(timestamp, transaction);
-            return true;
         }
 
     }
@@ -330,30 +333,36 @@ public final class OutputGenerator {
 
     }
 
-    public void generateBusinessReport(final int startTimestamp, final int endTimestamp,
-                                       final int timestamp, final String type,
-                                       final String account, final String email) {
+    /**
+     * This function generates a business report for a business account
+     * The report is made for information between two timestamps
+     * @param businessRep The command information
+     */
+    public void generateBusinessReport(final BusinessReport businessRep) {
 
         ObjectNode reportNode = mapper.createObjectNode();
         reportNode.put("command", "businessReport");
-        Account acc = userDatabase.getUserEntry(email).getUserAccounts().get(account);
+        String email = businessRep.getEmail();
+        String iban = businessRep.getAccount();
+        Account acc = userDatabase.getUserEntry(email).getUserAccounts().get(iban);
 
         ObjectNode outputNode = mapper.createObjectNode();
 
-        outputNode.put("IBAN", account);
+        outputNode.put("IBAN", iban);
         outputNode.put("balance", acc.getBalance());
         outputNode.put("currency", acc.getCurrency());
 
         BusinessAccount bussAcc = ((BusinessAccount) acc);
         outputNode.put("spending limit", bussAcc.getSpendingLimit());
         outputNode.put("deposit limit", bussAcc.getDepositLimit());
-        outputNode.put("statistics type", type);
+        outputNode.put("statistics type", businessRep.getType());
 
-        if (type.equals("transaction")) {
+        if (businessRep.getType().equals("transaction")) {
             ArrayNode managers = mapper.createArrayNode();
             ArrayNode employees = mapper.createArrayNode();
             ArrayList<Double> moneyStats = bussAcc.getStatistics(managers, employees,
-                    startTimestamp, endTimestamp);
+                                                    businessRep.getStartTimestamp(),
+                                                    businessRep.getEndTimestamp());
 
             outputNode.set("managers", managers);
             outputNode.set("employees", employees);
@@ -362,12 +371,13 @@ public final class OutputGenerator {
             outputNode.put("total spent", moneyStats.get(0));
         } else {
             ArrayNode commerciants = mapper.createArrayNode();
-            bussAcc.generateCommerciantReport(startTimestamp, endTimestamp, commerciants);
+            bussAcc.generateCommerciantReport(businessRep.getStartTimestamp(),
+                                        businessRep.getEndTimestamp(), commerciants);
             outputNode.set("commerciants", commerciants);
         }
 
         reportNode.set("output", outputNode);
-        reportNode.put("timestamp", timestamp);
+        reportNode.put("timestamp", businessRep.getTimestamp());
         output.add(reportNode);
 
     }

@@ -24,6 +24,10 @@ public final class AddNewBusinessAssociate implements Command {
         timestamp = command.getTimestamp();
     }
 
+    /**
+     * This function checks if a user can be added as an employee associate
+     * @param acc The business account
+     */
     public void addAssociate(final BusinessAccount acc) {
 
         User user = UserDatabase.getInstance().getUserEntry(associateEmail);
