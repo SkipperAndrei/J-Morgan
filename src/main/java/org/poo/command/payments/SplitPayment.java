@@ -121,6 +121,10 @@ public final class SplitPayment implements Command {
 
     }
 
+    /**
+     * This function is the actual execution of a split payment after every user accepted
+     * @param userDatabase The user database
+     */
     public void finallyExecuteCommand(final UserDatabase userDatabase) {
 
         ListIterator<String> argsIterator = args.listIterator();
@@ -145,6 +149,11 @@ public final class SplitPayment implements Command {
 
     }
 
+    /**
+     * This function actually generates the output of the split payment command
+     * This method is called after a payment was accepted by every account or rejected by one
+     * @param outputGenerator The output generator class responsible for STDOUT printing
+     */
     public void finallyGenerateOutput(final OutputGenerator outputGenerator) {
 
         ObjectNode successNode = outputGenerator.defaultSplitOutput(args, timestamp,

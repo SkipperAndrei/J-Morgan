@@ -78,6 +78,13 @@ public final class CashbackTracker {
 
     }
 
+    /**
+     * This function checks if the transaction is eligible for the cashback on the
+     * one hundred threshold for "spending threshold" commerciants
+     * @param amount The amount paid
+     * @param accPlan The plan of the account
+     * @return The cashback that has to be paid
+     */
     public double checkOneHundThreshold(final double amount, final Plan accPlan) {
 
         Double moneySpent = spendingCommerciants;
@@ -92,6 +99,13 @@ public final class CashbackTracker {
         return 0;
     }
 
+    /**
+     * This function checks if the transaction is eligible for the cashback on the
+     * three hundred threshold for "spending threshold" commerciants
+     * @param amount The amount paid
+     * @param accPlan The plan of the account
+     * @return The cashback that has to be paid
+     */
     public double checkThreeHundThreshold(final double amount, final Plan accPlan) {
 
         Double moneySpent = spendingCommerciants;
@@ -106,6 +120,13 @@ public final class CashbackTracker {
         return 0;
     }
 
+    /**
+     * This function checks if the transaction is eligible for the cashback on the
+     * five hundred threshold for "spending threshold" commerciants
+     * @param amount The amount paid
+     * @param accPlan The plan of the account
+     * @return The cashback that has to be paid
+     */
     public double checkFiveHundThreshold(final double amount, final Plan accPlan) {
 
         Double moneySpent = spendingCommerciants;
@@ -120,6 +141,14 @@ public final class CashbackTracker {
         return 0;
     }
 
+    /**
+     * This function is responsible for calculating cashback that can be received from
+     * commerciants that have the cashback strategy of "Nr. of transactions"
+     * After the discount is cashed-in, it marks the permission to not receive it again
+     * @param commType The type of commerciant
+     * @param amount The amount paid by the user
+     * @return The cashback
+     */
     public double calculateNrTransactionsCashback(final String commType, final double amount) {
 
         if (commType.equals("Food") && foodDiscount.equals(DiscountTracker.ELIGIBLE)) {
@@ -147,6 +176,13 @@ public final class CashbackTracker {
         return 0;
     }
 
+    /**
+     * This method is responsible for calculating the cashback for commerciants
+     * that have the cashback strategy of "spending threshold"
+     * @param amount The sum paid in the transaction
+     * @param accPlan The plan of the account to calculate the cashback
+     * @return The calculated cashback
+     */
     public double spendingTransCashback(final double amount, final Plan accPlan) {
 
         double cashback = checkFiveHundThreshold(amount, accPlan);

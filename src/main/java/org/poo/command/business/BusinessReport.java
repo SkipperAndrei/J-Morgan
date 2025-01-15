@@ -8,7 +8,9 @@ import org.poo.database.UserDatabase;
 import org.poo.fileio.CommandInput;
 import org.poo.user.User;
 import org.poo.utils.OutputGenerator;
+import lombok.Getter;
 
+@Getter
 public final class BusinessReport implements Command {
 
     private String type;
@@ -67,8 +69,7 @@ public final class BusinessReport implements Command {
                 break;
 
             case SUCCESS:
-                outputGenerator.generateBusinessReport(startTimestamp, endTimestamp,
-                                                        timestamp, type, account, email);
+                outputGenerator.generateBusinessReport(this);
 
                 break;
 

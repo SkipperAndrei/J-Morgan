@@ -28,6 +28,13 @@ public final class CashWithdrawal implements Command {
         timestamp = command.getTimestamp();
     }
 
+    /**
+     * This method checks if the user has enough funds to withdraw the funds requested
+     * The amount is first converted into RON's, because the ATM only calculates in RON's
+     * @param user The user that requested the query
+     * @param acc The account from where the query was requested
+     * @param card The card inserted into the ATM
+     */
     public void checkAmount(final User user, final Account acc, final Card card) {
 
         double commSum = acc.getPlan().getPlanStrategy().
@@ -56,6 +63,12 @@ public final class CashWithdrawal implements Command {
 
     }
 
+    /**
+     * This function checks if the card is frozen
+     * @param user The user that requested the query
+     * @param acc The account that the card is associated to
+     * @param card The card inserted into the ATM
+     */
     public void checkCardStatus(final User user, final Account acc, final Card card) {
 
         if (card.getStatus().toString().equals("frozen")) {
