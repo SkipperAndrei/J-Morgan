@@ -103,5 +103,5 @@
 * These methods will be called in "main".
 * Commands can generate output directly to stdout, or in the transactions list.
 * Since commands can produce errors, the CommandConstants enum has the current present signal codes.
-* The commands are instantiated using a <b> command factory design pattern </b> in the FactoryCommand class.
-* Then, the commands are executed in a sequential manner.
+* The commands are instantiated using a <b> factory design pattern </b> in the FactoryCommand class.
+* Then, the commands are executed in a sequential manner, and using the <b> command design pattern </b>.

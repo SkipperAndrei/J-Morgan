@@ -43,6 +43,7 @@ public final class CashWithdrawal implements Command {
         if (acc.getCurrency().equals("RON")) {
 
             if (acc.canPay(commSum)) {
+
                 acc.decrementFunds(commSum);
                 return;
             }
@@ -55,6 +56,7 @@ public final class CashWithdrawal implements Command {
             double convAmount = commSum / exchangeRate;
 
             if (acc.canPay(convAmount)) {
+
                 acc.decrementFunds(convAmount);
                 return;
             }
@@ -86,7 +88,7 @@ public final class CashWithdrawal implements Command {
         User user = userDatabase.getUserEntry(userEmail);
 
         if (user == null) {
-            // NOT_FOUND in this context means the user wasn't found
+
             actionCode = CommandConstants.NOT_FOUND;
             return;
         }

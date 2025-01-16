@@ -147,7 +147,6 @@ public class Account {
         CommerciantInput commInfo = CommerciantDatabase.getInstance().getCommerciant(commId);
         double cashback = cashTracker.calculateNrTransactionsCashback(commInfo.getType(), amount);
 
-
         if (commInfo.getCashbackStrategy().equals("nrOfTransactions")) {
 
             int nrTrans = cashTracker.getNrOfTransCommerciants().get(commId) == null
@@ -213,7 +212,7 @@ public class Account {
 
     /**
      * This function maps the contents of the account in JSON format
-     * @param mapper
+     * @param mapper The object mapper used to create the node
      * @return The mapped JSON node
      */
     public ObjectNode accountToJson(final ObjectMapper mapper) {
