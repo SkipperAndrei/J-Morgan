@@ -94,6 +94,7 @@ public final class PayOnline implements Command {
             }
 
             if (user.getBigPayments() == PlanConstants.BIG_PAY_AUTO_UPGRADE.getValue()) {
+
                 upgraded = CommandConstants.SUCCESS;
                 user.upgradeAllPlans("gold");
             }

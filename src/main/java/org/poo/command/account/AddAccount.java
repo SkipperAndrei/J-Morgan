@@ -74,6 +74,7 @@ public final class AddAccount implements Command {
 
         Account acc = outputGenerator.getUserDatabase().getUserEntry(email).
                     getUserAccounts().get(newIban);
+
         acc.addTransaction(newAccountNode);
     }
 }

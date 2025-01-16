@@ -320,6 +320,7 @@ public final class OutputGenerator {
         ArrayNode commerciantArrayNode = mapper.createArrayNode();
 
         for (Map.Entry<String, Double> entry : commerciants.entrySet()) {
+
             ObjectNode commerciantNode = mapper.createObjectNode();
             commerciantNode.put("commerciant", entry.getKey());
             commerciantNode.put("total", entry.getValue());
@@ -342,22 +343,18 @@ public final class OutputGenerator {
 
         ObjectNode reportNode = mapper.createObjectNode();
         reportNode.put("command", "businessReport");
+
         String email = businessRep.getEmail();
         String iban = businessRep.getAccount();
         Account acc = userDatabase.getUserEntry(email).getUserAccounts().get(iban);
-
-        ObjectNode outputNode = mapper.createObjectNode();
-
-        outputNode.put("IBAN", iban);
-        outputNode.put("balance", acc.getBalance());
-        outputNode.put("currency", acc.getCurrency());
-
         BusinessAccount bussAcc = ((BusinessAccount) acc);
-        outputNode.put("spending limit", bussAcc.getSpendingLimit());
-        outputNode.put("deposit limit", bussAcc.getDepositLimit());
+
+        ObjectNode outputNode = bussAcc.businessToJson(mapper);
+
         outputNode.put("statistics type", businessRep.getType());
 
         if (businessRep.getType().equals("transaction")) {
+
             ArrayNode managers = mapper.createArrayNode();
             ArrayNode employees = mapper.createArrayNode();
             ArrayList<Double> moneyStats = bussAcc.getStatistics(managers, employees,

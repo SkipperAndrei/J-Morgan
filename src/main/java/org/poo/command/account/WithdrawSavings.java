@@ -56,6 +56,7 @@ public final class WithdrawSavings implements Command {
      * @param classicAcc The account where the money will be sent
      */
     public void checkFundsAccount(final User user, final Account classicAcc) {
+
         Account userSavingAccount = user.getUserAccounts().get(account);
         double userSavingBalance = userSavingAccount.getBalance();
 
@@ -148,10 +149,12 @@ public final class WithdrawSavings implements Command {
     public void executeCommand(final UserDatabase userDatabase) {
 
         try {
+
             String userEmail = userDatabase.getMailEntry(account);
             User user = userDatabase.getUserEntry(userEmail);
             checkUserAge(user);
         } catch (NullPointerException e) {
+
             actionCode = CommandConstants.NOT_FOUND;
             return;
         }

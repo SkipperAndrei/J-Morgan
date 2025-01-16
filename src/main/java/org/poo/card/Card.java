@@ -24,7 +24,7 @@ public class Card {
 
     /**
      * Change the status of the card
-     * @param stat Can only be "active", "warning" or "frozen"
+     * @param stat Can only be "active" or "frozen"
      */
     public void customSetStatus(final String stat) {
         status.setLength(0);
@@ -45,7 +45,7 @@ public class Card {
 
     /**
      * Function that maps the contents of a card to a JSON node
-     * @param mapper
+     * @param mapper The object mapper
      * @return The mapped JSON node
      */
     public ObjectNode cardToJson(final ObjectMapper mapper) {

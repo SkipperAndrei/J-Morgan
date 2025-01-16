@@ -417,4 +417,24 @@ public final class BusinessAccount extends Account {
 
     }
 
+    /**
+     * This function maps the contents of the account in JSON format
+     * @param mapper The object mapper used to create the node
+     * @return The mapped JSON node
+     */
+    public ObjectNode businessToJson(final ObjectMapper mapper) {
+
+        ObjectNode outputNode = mapper.createObjectNode();
+
+        outputNode.put("IBAN", super.getIban());
+        outputNode.put("balance", super.getBalance());
+        outputNode.put("currency", super.getCurrency());
+
+
+        outputNode.put("spending limit", spendingLimit);
+        outputNode.put("deposit limit", depositLimit);
+
+        return outputNode;
+    }
+
 }

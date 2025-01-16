@@ -11,6 +11,7 @@ public final class SilverStrategy implements Plan {
             if (sum < PlanConstants.SILVER_THRESHOLD.getValue()) {
                 return sum;
             }
+
             return sum + sum / PlanConstants.SCALING_FACTOR.getValue();
         }
 
@@ -20,6 +21,7 @@ public final class SilverStrategy implements Plan {
         if (newSum < PlanConstants.SILVER_THRESHOLD.getValue()) {
             return sum;
         }
+
         return sum + sum / PlanConstants.SCALING_FACTOR.getValue();
 
     }
