@@ -125,7 +125,6 @@ public final class PayOnline implements Command {
             return CommandConstants.FROZEN_CARD;
         }
 
-
         return paymentCheck(acc, card);
 
     }
