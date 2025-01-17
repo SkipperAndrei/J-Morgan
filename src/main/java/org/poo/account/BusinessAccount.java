@@ -203,8 +203,8 @@ public final class BusinessAccount extends Account {
                                            final int startTimestamp, final int endTimestamp) {
 
         ArrayList<Double> moneyStats = new ArrayList<>(2);
-        Double totalSpent = 0.0;
-        Double totalDeposit = 0.0;
+        double totalSpent = 0.0;
+        double totalDeposit = 0.0;
 
         ObjectMapper map = new ObjectMapper();
         for (EmployeeInfo employeeInfo : personnel.values()) {

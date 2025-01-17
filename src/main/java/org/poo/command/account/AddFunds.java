@@ -34,6 +34,7 @@ public final class AddFunds implements Command {
         if (usr.getUserAccounts().containsKey(account)) {
 
             try {
+
                 Account acc = usr.getUserAccounts().get(account);
                 ((BusinessAccount) acc).getDepositLimit();
 
@@ -44,8 +45,8 @@ public final class AddFunds implements Command {
                 }
 
             } catch (ClassCastException e) {
+
                 usr.getUserAccounts().get(account).incrementFunds(amount);
-                return;
             }
 
         }

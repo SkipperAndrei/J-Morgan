@@ -24,14 +24,18 @@ public final class DeleteAccount implements Command {
     public void executeCommand(final UserDatabase userDatabase) {
 
         try {
+
             if (userDatabase.getUserEntry(email).getUserAccounts().get(account).getBalance() != 0) {
+
                 error = true;
             } else {
+
                 userDatabase.getUserEntry(email).getUserAccounts().get(account).getCards().clear();
                 userDatabase.getUserEntry(email).getUserAccounts().remove(account);
                 userDatabase.removeMailEntry(account);
             }
         } catch (Exception ex) {
+
             error = true;
         }
 
@@ -39,6 +43,7 @@ public final class DeleteAccount implements Command {
 
     @Override
     public void generateOutput(final OutputGenerator outputGenerator) {
+
         User user = outputGenerator.getUserDatabase().getUserEntry(email);
         outputGenerator.deleteAccount(timestamp, error, user);
     }

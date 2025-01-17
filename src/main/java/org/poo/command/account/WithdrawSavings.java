@@ -35,12 +35,11 @@ public final class WithdrawSavings implements Command {
 
     /**
      * This function will update the balances in the accounts based on the service plan
-     * @param user The user that requested the command
      * @param savingAcc The saving account of the user
      * @param classicAcc The classic account of the user
      * @param deductedAmm The amount to be deducted from the savings account
      */
-    public void handlePayment(final User user, final Account savingAcc,
+    public void handlePayment(final Account savingAcc,
                               final Account classicAcc, final double deductedAmm) {
 
         savingAcc.decrementFunds(deductedAmm);
@@ -68,8 +67,7 @@ public final class WithdrawSavings implements Command {
                 return;
             }
 
-            handlePayment(user, userSavingAccount, classicAcc, amount);
-            actionCode = CommandConstants.SUCCESS;
+            handlePayment(userSavingAccount, classicAcc, amount);
         } else {
 
             double rate = ExchangeRateDatabase.getInstance().
@@ -81,9 +79,10 @@ public final class WithdrawSavings implements Command {
                 return;
             }
 
-            handlePayment(user, userSavingAccount, classicAcc, amount * rate);
-            actionCode = CommandConstants.SUCCESS;
+            handlePayment(userSavingAccount, classicAcc, amount * rate);
         }
+
+        actionCode = CommandConstants.SUCCESS;
     }
 
     /**
@@ -137,10 +136,11 @@ public final class WithdrawSavings implements Command {
         long userYears = ChronoUnit.YEARS.between(userBirthday, currentDate);
 
         if (userYears >= CommandConstants.ADULT_AGE.getValue()) {
+
             checkSavingsAccount(user);
         } else {
+
             actionCode = CommandConstants.MINIMUM_AGE;
-            return;
         }
 
     }
@@ -156,7 +156,6 @@ public final class WithdrawSavings implements Command {
         } catch (NullPointerException e) {
 
             actionCode = CommandConstants.NOT_FOUND;
-            return;
         }
 
     }
@@ -171,12 +170,15 @@ public final class WithdrawSavings implements Command {
         Account classicAcc = user.getUserAccounts().get(receiverAccount);
 
         switch (actionCode) {
+
             case SUCCESS:
+
                 transactionNode.put("amount", amount);
                 transactionNode.put("classicAccountIBAN", receiverAccount);
                 transactionNode.put("description", "Savings withdrawal");
                 transactionNode.put("savingsAccountIBAN", account);
                 transactionNode.put("timestamp", timestamp);
+
                 user.addTransaction(transactionNode);
                 user.addTransaction(transactionNode);
                 acc.addTransaction(transactionNode);
@@ -185,6 +187,7 @@ public final class WithdrawSavings implements Command {
 
 
             case MINIMUM_AGE:
+
                 transactionNode.put("description", "You don't have the minimum age required.");
                 transactionNode.put("timestamp", timestamp);
                 user.addTransaction(transactionNode);
@@ -192,6 +195,7 @@ public final class WithdrawSavings implements Command {
                 break;
 
             case UNKNOWN_CURRENCY:
+
                 transactionNode.put("description", "You do not have a classic account.");
                 transactionNode.put("timestamp", timestamp);
                 user.addTransaction(transactionNode);

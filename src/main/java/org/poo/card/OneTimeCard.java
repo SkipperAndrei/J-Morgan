@@ -21,8 +21,8 @@ public class OneTimeCard extends Card {
 
     /**
      * This function maps the change of the card number after one payment in a JSON node
-     * @param timestamp
-     * @param description
+     * @param timestamp The timestamp of the change
+     * @param description The description of the transaction
      * @param change This marks if the payment happened
      * @return The mapped JSON node
      */
@@ -36,7 +36,8 @@ public class OneTimeCard extends Card {
         cardNode.put("card", super.getCardNumber());
 
         if (change) {
-            // if payment happened, change it's card number
+
+            // if payment happened, change its card number
             super.setCardNumber(Utils.generateCardNumber());
         }
 

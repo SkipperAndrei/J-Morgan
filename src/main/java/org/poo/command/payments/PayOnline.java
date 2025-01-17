@@ -60,6 +60,7 @@ public final class PayOnline implements Command {
         }
 
         if (acc.getAccountType().equals("business")) {
+
             boolean belowLimit = ((BusinessAccount) acc).checkPayment(amount, email,
                                     commerciant, timestamp);
 
@@ -103,9 +104,11 @@ public final class PayOnline implements Command {
         acc.handleCommerciantPayment(commerciant, amount);
 
         try {
+
             ((OneTimeCard) card).getExpired();
             changeCard = true;
         } catch (ClassCastException e) {
+
             return CommandConstants.SUCCESS;
         }
 
@@ -142,9 +145,11 @@ public final class PayOnline implements Command {
         }
 
         try {
+
             amount *= exchangeRateDatabase.getExchangeRate(currency, acc.getCurrency());
             return cardCheck(acc);
         } catch (NullPointerException e) {
+
             return CommandConstants.UNKNOWN_CURRENCY;
         }
 

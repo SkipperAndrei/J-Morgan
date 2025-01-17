@@ -51,6 +51,7 @@ public final class AddNewBusinessAssociate implements Command {
             String userEmail = userDatabase.getMailEntry(account);
             User owner = userDatabase.getUserEntry(userEmail);
             Account acc = owner.getUserAccounts().get(account);
+
             ((BusinessAccount) acc).getDepositLimit();
             addAssociate((BusinessAccount) acc);
 

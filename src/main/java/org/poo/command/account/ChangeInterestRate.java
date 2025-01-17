@@ -33,9 +33,11 @@ public final class ChangeInterestRate implements Command {
     public void checkAccount(final Account acc) {
 
         try {
+
             ((SavingAccount) acc).setInterestRate(interestRate);
             actionCode = CommandConstants.SUCCESS;
         } catch (ClassCastException e) {
+
             actionCode = CommandConstants.CLASSIC_ACC;
         }
 

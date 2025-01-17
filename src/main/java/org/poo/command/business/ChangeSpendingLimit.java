@@ -27,11 +27,13 @@ public final class ChangeSpendingLimit implements Command {
     public void executeCommand(final UserDatabase userDatabase) {
 
         try {
+
             Account acc = userDatabase.getUserEntry(email).getUserAccounts().get(account);
             BusinessAccount bussAcc = (BusinessAccount) acc;
             boolean canChange = bussAcc.changeSpendingLimit(email, newLimit);
 
             if (!canChange) {
+
                 actionCode = CommandConstants.NO_PERMISSION;
             }
 
@@ -49,11 +51,13 @@ public final class ChangeSpendingLimit implements Command {
         switch (actionCode) {
 
             case NO_PERMISSION:
+
                 String message = "You must be owner in order to change spending limit.";
                 outputGenerator.errorSetting(timestamp, message, "changeSpendingLimit");
                 return;
 
             case CLASSIC_ACC:
+
                 String error = "This is not a business account";
                 outputGenerator.errorSetting(timestamp, error, "changeSpendingLimit");
                 return;

@@ -50,6 +50,7 @@ public final class DeleteCard implements Command {
                     actionCode = CommandConstants.FUNDS_REMAINING;
                     return;
                 }
+
                 account = ac.getIban();
                 found = true;
             }
@@ -75,11 +76,13 @@ public final class DeleteCard implements Command {
         deleteCardNode.put("timestamp", timestamp);
 
         if (found) {
+
             deleteCardNode.put("description", "The card has been destroyed");
             deleteCardNode.put("card", cardNumber);
             deleteCardNode.put("cardHolder", email);
             deleteCardNode.put("account", account);
         } else {
+
             deleteCardNode.put("description", "Card not found");
         }
 

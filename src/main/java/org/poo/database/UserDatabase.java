@@ -25,12 +25,14 @@ public final class UserDatabase {
     /**
      * Function that gets the unique instance of the user database.
      * If there isn't an instance previously defined, it creates it.
-     * @return
+     * @return The unique instance of the database
      */
     public static UserDatabase getInstance() {
+
         if (instance == null) {
             instance = new UserDatabase();
         }
+
         return instance;
     }
 
@@ -47,7 +49,7 @@ public final class UserDatabase {
 
     /**
      * This method removes a pair email-user
-     * @param userEmail
+     * @param userEmail The email of the user
      */
     public void removeUserEntry(final String userEmail) {
         database.remove(userEmail);
@@ -55,7 +57,7 @@ public final class UserDatabase {
 
     /**
      * This function gets an user based on it's email
-     * @param userEmail
+     * @param userEmail The email of the user
      * @return The user
      */
     public User getUserEntry(final String userEmail) {
@@ -81,8 +83,8 @@ public final class UserDatabase {
 
     /**
      * This method retrieves the email of the owner of an account based on the iban of the account
-     * @param iban
-     * @return
+     * @param iban The iban of the account
+     * @return The email of the account with the provided iban, Null if undefined
      */
     public String getMailEntry(final String iban) {
         return mailDatabase.get(iban);

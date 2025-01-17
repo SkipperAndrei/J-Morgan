@@ -13,6 +13,7 @@ public class SavingAccount extends Account {
 
     public SavingAccount(final String email, final String currency, final String accountType,
                          final int timestamp, final double interestRate, final String occupation) {
+
         super(email, currency, accountType, timestamp, occupation);
         this.interestRate = interestRate;
     }

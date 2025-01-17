@@ -45,6 +45,7 @@ public class Account {
     public Account(final String email, final String currency,
                    final String accountType, final int timestamp,
                    final String occupation) {
+
         this.email = email;
         this.currency = currency;
         this.accountType = accountType;
@@ -180,7 +181,7 @@ public class Account {
 
     /**
      * This method generates two transactions for regenerating One-Time card number
-     * This method should only be used inside of try-catch block,
+     * This method should only be used inside the try-catch block,
      * because it can generate ClassCastException
      * @param user The user that is thw owner of the card
      * @param card The one time card

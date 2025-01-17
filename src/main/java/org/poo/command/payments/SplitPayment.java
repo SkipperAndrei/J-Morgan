@@ -100,7 +100,6 @@ public final class SplitPayment implements Command {
             }
         }
 
-
         try {
 
             double amountToPay = amountPerAccount;
@@ -142,7 +141,9 @@ public final class SplitPayment implements Command {
         }
 
         argsIterator = args.listIterator();
+
         while (argsIterator.hasNext()) {
+
             String argument = argsIterator.next();
             makePayment(userDatabase, argument);
         }

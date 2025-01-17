@@ -22,7 +22,9 @@ public final class SetAlias implements Command {
     public void executeCommand(final UserDatabase userDatabase) {
 
         try {
+
             if (userDatabase.getDatabase().get(email).getUserAccounts().containsKey(account)) {
+
                 Account acc = userDatabase.getDatabase().get(email).getUserAccounts().get(account);
                 userDatabase.getDatabase().get(email).addAccountAlias(acc, alias);
             }

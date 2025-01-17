@@ -27,6 +27,7 @@ public final class CreateCard implements Command {
     public void executeCommand(final UserDatabase userDatabase) {
 
         if (userDatabase.getUserEntry(cardHolder).getUserAccounts().containsKey(account)) {
+
             Card card = new Card();
             card.setCardOwner(cardHolder);
             cardNumber = card.getCardNumber();
@@ -44,7 +45,9 @@ public final class CreateCard implements Command {
         createCardNode.put("timestamp", timestamp);
 
         switch (actionCode) {
+
             case SUCCESS:
+
                 createCardNode.put("description", "New card created");
                 createCardNode.put("card", cardNumber);
                 createCardNode.put("cardHolder", cardHolder);
@@ -52,6 +55,7 @@ public final class CreateCard implements Command {
                 break;
 
             case NOT_FOUND:
+
                 createCardNode.put("description", "Couldn't create card");
                 break;
 
@@ -63,6 +67,7 @@ public final class CreateCard implements Command {
         outputGenerator.getUserDatabase().getUserEntry(cardHolder).addTransaction(createCardNode);
         Account acc = outputGenerator.getUserDatabase().getUserEntry(cardHolder).
                                                 getUserAccounts().get(account);
+
         outputGenerator.tryToAddTransaction(acc, createCardNode);
     }
 
