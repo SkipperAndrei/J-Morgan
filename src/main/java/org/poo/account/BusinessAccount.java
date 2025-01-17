@@ -23,7 +23,7 @@ public final class BusinessAccount extends Account {
     private double spendingLimit;
     private double depositLimit;
 
-    private Map<String, EmployeeInfo> personnel = new LinkedHashMap<String, EmployeeInfo>();
+    private Map<String, EmployeeInfo> personnel = new LinkedHashMap<>();
 
     public BusinessAccount(final String email, final String currency,
                            final String accountType, final int timestamp,
@@ -322,7 +322,7 @@ public final class BusinessAccount extends Account {
          * that received money from an employee into a JSON node
          * @param commerciants The commerciants array node
          */
-        public void parseInformationToJson(final ArrayNode commerciants) {
+        private void parseInformationToJson(final ArrayNode commerciants) {
 
             ObjectNode commNode = new ObjectMapper().createObjectNode();
             ArrayNode employees = new ObjectMapper().createArrayNode();

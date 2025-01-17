@@ -143,8 +143,10 @@ public final class OutputGenerator {
     public void tryToAddTransaction(final Account acc, final ObjectNode transaction) {
 
         try {
+
             ((SavingAccount) acc).getInterestRate();
         } catch (ClassCastException e) {
+
             userDatabase.getUserEntry(acc.getEmail()).getUserAccounts().
                         get(acc.getIban()).addTransaction(transaction);
         }

@@ -11,10 +11,6 @@ public final class CashbackTracker {
     private DiscountTracker foodDiscount = DiscountTracker.NOT_ELIGIBLE;
     private DiscountTracker clothesDiscount = DiscountTracker.NOT_ELIGIBLE;
     private DiscountTracker techDiscount = DiscountTracker.NOT_ELIGIBLE;
-    private DiscountTracker oneHundredThreshold = DiscountTracker.NOT_ELIGIBLE;
-    private DiscountTracker threeHundredThreshold = DiscountTracker.NOT_ELIGIBLE;
-    private DiscountTracker fiveHundredThreshold = DiscountTracker.NOT_ELIGIBLE;
-
     private Double spendingCommerciants = 0.0;
     private Map<Integer, Integer> nrOfTransCommerciants = new LinkedHashMap<>();
 
