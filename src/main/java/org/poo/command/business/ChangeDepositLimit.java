@@ -27,11 +27,13 @@ public final class ChangeDepositLimit implements Command {
     public void executeCommand(final UserDatabase userDatabase) {
 
         try {
+
             Account acc = userDatabase.getUserEntry(email).getUserAccounts().get(account);
             BusinessAccount bussAcc = (BusinessAccount) acc;
             boolean canChange = bussAcc.changeDepositLimit(email, newLimit);
 
             if (!canChange) {
+
                 actionCode = CommandConstants.NO_PERMISSION;
             }
 

@@ -148,12 +148,14 @@ public final class CashbackTracker {
     public double calculateNrTransactionsCashback(final String commType, final double amount) {
 
         if (commType.equals("Food") && foodDiscount.equals(DiscountTracker.ELIGIBLE)) {
+
             foodDiscount = DiscountTracker.CASHED_IN;
 
             return amount * 2 / DiscountTracker.ONE_HUNDRED_THRESHOLD.getValue();
         }
 
         if (commType.equals("Clothes") && clothesDiscount.equals(DiscountTracker.ELIGIBLE)) {
+
             clothesDiscount = DiscountTracker.CASHED_IN;
 
             return amount * DiscountTracker.CLOTHES_THRESHOLD.getValue()
@@ -162,6 +164,7 @@ public final class CashbackTracker {
         }
 
         if (commType.equals("Tech") && techDiscount.equals(DiscountTracker.ELIGIBLE)) {
+
             techDiscount = DiscountTracker.CASHED_IN;
 
             return amount * DiscountTracker.TECH_THRESHOLD.getValue()

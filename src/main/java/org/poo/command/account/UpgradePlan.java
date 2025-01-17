@@ -51,6 +51,7 @@ public final class UpgradePlan implements Command {
                             getExchangeRate("RON", upgradeAcc.getCurrency());
 
         double newAmount = amount * exchangeRate;
+
         if (upgradeAcc.canPay(newAmount)) {
 
             upgradeAcc.decrementFunds(newAmount);
@@ -63,20 +64,21 @@ public final class UpgradePlan implements Command {
 
     /**
      * This function determines what is the amount that the user has to pay for the new plan
-     * @param user The user that requested the upgrade
      * @param upgradeAcc The account from where he will pay for the upgrade
      */
-    public void getNewPlan(final User user, final Account upgradeAcc) {
+    public void getNewPlan(final Account upgradeAcc) {
 
         short diff = (short) (AccountPlans.valueOf(newPlanType.toUpperCase()).
                             getPriority() - upgradeAcc.getPlan().getPriority());
 
         if (diff == 2) {
+
             checkBalance(upgradeAcc, PlanConstants.STD_TO_GOLD.getValue());
             return;
         }
 
         if (newPlanType.equals("silver")) {
+
             checkBalance(upgradeAcc, PlanConstants.STD_TO_SILVER.getValue());
             return;
         }
@@ -86,10 +88,9 @@ public final class UpgradePlan implements Command {
 
     /**
      * This method checks if the user wants to upgrade to the next plan
-     * @param user The user that requested the upgrade
      * @param upgradeAcc The account from where he will pay for the upgrade
      */
-    public void checkAccountPlan(final User user, final Account upgradeAcc) {
+    public void checkAccountPlan(final Account upgradeAcc) {
 
 
         if (upgradeAcc.getPlan().getPriority() >= AccountPlans.valueOf(newPlanType.toUpperCase())
@@ -99,7 +100,7 @@ public final class UpgradePlan implements Command {
             return;
         }
 
-        getNewPlan(user, upgradeAcc);
+        getNewPlan(upgradeAcc);
     }
 
     @Override
@@ -110,7 +111,7 @@ public final class UpgradePlan implements Command {
             userEmail = userDatabase.getMailEntry(account);
             User user = userDatabase.getUserEntry(userEmail);
             Account upgradedAcc = user.getUserAccounts().get(account);
-            checkAccountPlan(user, upgradedAcc);
+            checkAccountPlan(upgradedAcc);
 
             if (actionCode == CommandConstants.SUCCESS) {
                 user.upgradeAllPlans(newPlanType);
@@ -118,7 +119,6 @@ public final class UpgradePlan implements Command {
 
         } catch (NullPointerException e) {
             actionCode = CommandConstants.NOT_FOUND;
-            return;
         }
 
     }

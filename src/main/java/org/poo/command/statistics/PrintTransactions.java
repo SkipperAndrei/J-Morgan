@@ -23,6 +23,7 @@ public final class PrintTransactions implements Command {
 
     @Override
     public void generateOutput(final OutputGenerator outputGenerator) {
+
         outputGenerator.printTransaction(timestamp, outputGenerator.
                                                     getUserDatabase().getUserEntry(email));
     }

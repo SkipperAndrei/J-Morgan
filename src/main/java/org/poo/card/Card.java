@@ -27,6 +27,7 @@ public class Card {
      * @param stat Can only be "active" or "frozen"
      */
     public void customSetStatus(final String stat) {
+
         status.setLength(0);
         status.append(stat);
     }

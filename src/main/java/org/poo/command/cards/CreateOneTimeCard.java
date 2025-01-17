@@ -28,6 +28,7 @@ public final class CreateOneTimeCard implements Command {
     public void executeCommand(final UserDatabase userDatabase) {
 
         if (userDatabase.getUserEntry(email).getUserAccounts().containsKey(account)) {
+
             Card card = new OneTimeCard();
             card.setCardOwner(email);
             cardNumber = card.getCardNumber();
@@ -45,11 +46,14 @@ public final class CreateOneTimeCard implements Command {
         oneTimeNode.put("timestamp", timestamp);
 
         if (actionCode == CommandConstants.SUCCESS) {
+
             oneTimeNode.put("description", "New card created");
             oneTimeNode.put("card", cardNumber);
             oneTimeNode.put("cardHolder", email);
             oneTimeNode.put("account", account);
+
         } else {
+
             oneTimeNode.put("description", "Card not created");
         }
 

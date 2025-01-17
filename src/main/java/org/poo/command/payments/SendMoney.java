@@ -126,6 +126,7 @@ public final class SendMoney implements Command {
     public void executeCommand(final UserDatabase userDatabase) {
 
         if (userDatabase.getUserEntry(email).getUserAccounts().containsKey(account)) {
+
             senderCurrency = userDatabase.getUserEntry(email).getUserAccounts().
                             get(account).getCurrency();
 
@@ -145,6 +146,7 @@ public final class SendMoney implements Command {
                 throw new NullPointerException();
 
             } catch (NullPointerException e) {
+
                 checkReceiver(userDatabase,
                         userDatabase.getDatabase().get(email).getUserAccounts().get(account));
             }
@@ -196,6 +198,7 @@ public final class SendMoney implements Command {
                 return;
 
             case INSUFFICIENT_FUNDS:
+
                 ObjectNode noFundsNode = outputGenerator.getMapper().createObjectNode();
                 noFundsNode.put("timestamp", timestamp);
                 noFundsNode.put("description", "Insufficient funds");

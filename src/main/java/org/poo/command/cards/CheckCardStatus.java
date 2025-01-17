@@ -42,9 +42,11 @@ public final class CheckCardStatus implements Command {
             for (Account acc : user.getUserAccounts().values()) {
 
                 if (acc.getCards().containsKey(cardNumber)) {
+
                     iban = acc.getIban();
                     email = acc.getEmail();
                     card = acc.getCards().get(cardNumber);
+
                     checkStatus(acc, acc.getCards().get(cardNumber));
                 }
             }
@@ -74,13 +76,16 @@ public final class CheckCardStatus implements Command {
                     return;
 
                 case "frozen" :
+
                     ObjectNode frozNode = outputGenerator.getMapper().createObjectNode();
+
                     if (previousStatus.equals("frozen")) {
                         return;
                     }
+
                     frozNode.put("timestamp", timestamp);
                     frozNode.put("description", "You have reached the minimum amount of "
-                                    + "funds, the card will be frozen");
+                                                            + "funds, the card will be frozen");
 
                     outputGenerator.getUserDatabase().getUserEntry(email).addTransaction(frozNode);
                     Account frozenAccount = outputGenerator.getUserDatabase().getUserEntry(email).

@@ -70,7 +70,6 @@ public final class BusinessReport implements Command {
 
             case SUCCESS:
                 outputGenerator.generateBusinessReport(this);
-
                 break;
 
             default:

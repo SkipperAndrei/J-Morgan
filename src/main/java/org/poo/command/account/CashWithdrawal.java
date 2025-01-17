@@ -117,40 +117,33 @@ public final class CashWithdrawal implements Command {
                 transactionNode.put("description", "Cash withdrawal of " + amount);
                 transactionNode.put("amount", amount);
                 UserDatabase.getInstance().getUserEntry(userEmail).addTransaction(transactionNode);
-                break;
             }
 
             case UNKNOWN_CARD -> {
                 outputGenerator.errorSetting(timestamp, "Card not found", "cashWithdrawal");
-                break;
             }
 
             case INSUFFICIENT_FUNDS -> {
                 transactionNode.put("timestamp", timestamp);
                 transactionNode.put("description", "Insufficient funds");
                 UserDatabase.getInstance().getUserEntry(userEmail).addTransaction(transactionNode);
-                break;
             }
 
             case DELETED_CARD -> {
                 transactionNode.put("timestamp", timestamp);
                 transactionNode.put("description", "Card has already been used");
-                break;
             }
 
             case FROZEN_CARD -> {
                 transactionNode.put("timestamp", timestamp);
                 transactionNode.put("description", "Card is frozen");
-                break;
             }
 
             case NOT_FOUND -> {
                 outputGenerator.errorSetting(timestamp, "User not found", "cashWithdrawal");
-                break;
             }
 
             default -> {
-                break;
             }
         }
 

@@ -18,8 +18,11 @@ public final class SetMinimumBalance implements Command {
 
     @Override
     public void executeCommand(final UserDatabase userDatabase) {
+
         for (User usr: userDatabase.getDatabase().values()) {
+
             if (usr.getUserAccounts().containsKey(account)) {
+
                 usr.getUserAccounts().get(account).setMinimumBalance(amount);
                 break;
             }

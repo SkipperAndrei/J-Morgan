@@ -78,6 +78,7 @@ public final class ExchangeRateDatabase {
         GraphPath<String, DefaultWeightedEdge> path = dijkstra.getPath(from, to);
 
         try {
+
             if (path.getEdgeList().size() == 1) {
                 return true;
             }
@@ -86,8 +87,10 @@ public final class ExchangeRateDatabase {
             for (DefaultWeightedEdge edge : path.getEdgeList()) {
                 startingRate *= exchangeGraph.getEdgeWeight(edge);
             }
+
             addNewExchange(from, to, startingRate);
             return true;
+
         } catch (NullPointerException e) {
             return false;
         }

@@ -36,9 +36,11 @@ public final class SpendingReport implements Command {
         }
 
         try {
+
             Account acc = userDatabase.getUserEntry(email).getUserAccounts().get(account);
             ((SavingAccount) acc).getInterestRate();
             actionCode = CommandConstants.SAVING_ACC;
+
         } catch (ClassCastException | NullPointerException e) {
             return;
         }
@@ -51,21 +53,26 @@ public final class SpendingReport implements Command {
         switch (actionCode) {
 
             case SAVING_ACC:
+
                 ObjectNode savingAccNode = outputGenerator.getMapper().createObjectNode();
                 savingAccNode.put("command", "spendingsReport");
                 ObjectNode errorNode = outputGenerator.getMapper().createObjectNode();
+
                 errorNode.put("error", "This kind of report is not supported "
                             + "for a saving account");
+
                 savingAccNode.set("output", errorNode);
                 savingAccNode.put("timestamp", timestamp);
                 outputGenerator.getOutput().add(savingAccNode);
                 return;
 
             case NOT_FOUND:
+
                 outputGenerator.errorSetting(timestamp, "Account not found", "spendingsReport");
                 return;
 
             case SUCCESS:
+
                 outputGenerator.generateSpendingReport(startTimestamp, endTimestamp,
                                 email, account, timestamp);
                 return;

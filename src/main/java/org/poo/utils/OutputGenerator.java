@@ -194,8 +194,10 @@ public final class OutputGenerator {
         successNode.put("currency", currency);
 
         if (type.equals("equal")) {
+
             successNode.put("amount", amount / args.size());
         } else {
+
             ArrayNode amounts = mapper.createArrayNode();
             for (Double amm : amountsPerAccount) {
                 amounts.add(amm);
@@ -205,6 +207,7 @@ public final class OutputGenerator {
         }
 
         ArrayNode involvedAccounts = mapper.createArrayNode();
+
         for (String arg : args) {
             involvedAccounts.add(arg);
         }
@@ -230,14 +233,13 @@ public final class OutputGenerator {
 
         reportNode.put("command", "report");
         ObjectNode outputNode = mapper.createObjectNode();
-
         Account acc = userDatabase.getUserEntry(email).getUserAccounts().get(account);
+
         outputNode.put("IBAN", account);
         outputNode.put("balance", acc.getBalance());
         outputNode.put("currency", acc.getCurrency());
 
         ArrayNode transactions = mapper.createArrayNode();
-
         Iterator<JsonNode> jsonIterator = acc.getAccountTransactions().elements();
 
         while (jsonIterator.hasNext()) {
@@ -282,6 +284,7 @@ public final class OutputGenerator {
 
         Account acc = userDatabase.getUserEntry(email).getUserAccounts().get(iban);
         ObjectNode outputNode = mapper.createObjectNode();
+
         outputNode.put("IBAN", iban);
         outputNode.put("balance", acc.getBalance());
         outputNode.put("currency", acc.getCurrency());
@@ -369,6 +372,7 @@ public final class OutputGenerator {
             outputNode.put("total deposited", moneyStats.get(1));
             outputNode.put("total spent", moneyStats.get(0));
         } else {
+
             ArrayNode commerciants = mapper.createArrayNode();
             bussAcc.generateCommerciantReport(businessRep.getStartTimestamp(),
                                         businessRep.getEndTimestamp(), commerciants);

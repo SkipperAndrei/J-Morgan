@@ -31,7 +31,9 @@ public final class RejectSplitPayment implements Command {
         try {
 
             payment.finallyGenerateOutput(outputGenerator);
+
         } catch (NullPointerException e) {
+
             outputGenerator.errorSetting(timestamp, "User not found", "rejectSplitPayment");
         }
 
